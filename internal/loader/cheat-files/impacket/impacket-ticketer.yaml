@@ -3,85 +3,85 @@ tags: [pentest, security, kerberos, impacket, exploitation, persistence, windows
 
 actions:
   # === GOLDEN TICKET OPERATIONS ===
-  - title: impacket-ticketer - generate golden ticket with nt hash
+  - title: impacket-ticketer - 使用 NT 哈希生成黄金票据
     desc: |
-      Generates a Kerberos Golden Ticket (TGT) using the KRBTGT account's NT hash. 
-      This allows for long-term persistence within an Active Directory environment by spoofing a Ticket Granting Ticket for any user. 
-      The resulting .ccache file can be used for authentication across the domain by setting the KRB5CCNAME environment variable. 
-      Note that this requires the SID of the domain and the compromised KRBTGT hash.
+      使用 KRBTGT 帐户的 NT 哈希生成 Kerberos 黄金票据（TGT）。
+      这通过为任意用户伪造票据授予票据（TGT），允许在 Active Directory 环境中长期持久化。
+      生成的 .ccache 文件可通过设置 KRB5CCNAME 环境变量用于跨域身份验证。
+      请注意，这需要域的 SID 和已泄露的 KRBTGT 哈希。
     command: "impacket-ticketer -domain {{domain}} -domain-sid {{domain_sid}} -nthash {{krbtgt_nt_hash}} {{username|Administrator}}"
 
-  - title: impacket-ticketer - generate golden ticket with aes key
+  - title: impacket-ticketer - 使用 AES 密钥生成黄金票据
     desc: |
-      Creates a Golden Ticket using the KRBTGT account's AES-128 or AES-256 key instead of an NT hash. 
-      Using AES keys is generally more resilient against detection and is the modern standard for Kerberos encryption in newer Windows environments. 
-      This command creates a ticket for the specified user (usually Administrator) granting full domain-level access. 
-      The generated ticket is stored in the current directory as a .ccache file.
+      使用 KRBTGT 帐户的 AES-128 或 AES-256 密钥而非 NT 哈希创建黄金票据。
+      使用 AES 密钥通常更能抵抗检测，并且是较新 Windows 环境中 Kerberos 加密的现代标准。
+      此命令为指定用户（通常是 Administrator）创建票据，授予完全的域级别访问权限。
+      生成的票据作为 .ccache 文件存储在当前目录中。
     command: "impacket-ticketer -domain {{domain}} -domain-sid {{domain_sid}} -aesKey {{aes_key}} {{username|Administrator}}"
 
-  - title: impacket-ticketer - golden ticket with custom groups
+  - title: impacket-ticketer - 带自定义组的黄金票据
     desc: |
-      Generates a ticket and modifies the PAC (Privilege Attribute Certificate) to include specific Group RIDs. 
-      By default, it includes Domain Admins (512), but you can provide a comma-separated list to include other groups like Enterprise Admins or Schema Admins. 
-      This is critical for elevating privileges across different levels of the forest or bypassing specific group-based access controls. 
-      Standard RIDs include 512 (Domain Admins), 513 (Domain Users), and 544 (Administrators).
+      生成票据并修改 PAC（特权属性证书）以包含特定的组 RID。
+      默认情况下，它包含 Domain Admins（512），但你可以提供逗号分隔的列表以包含 Enterprise Admins 或 Schema Admins 等其他组。
+      这对于在林的各个层级提升权限或绕过特定基于组的访问控制至关重要。
+      标准 RID 包括 512（Domain Admins）、513（Domain Users）和 544（Administrators）。
     command: "impacket-ticketer -domain {{domain}} -domain-sid {{domain_sid}} -nthash {{krbtgt_nt_hash}} -groups {{group_rids|513,512,520,518,519}} {{username|Administrator}}"
 
-  - title: impacket-ticketer - golden ticket with extra sid
+  - title: impacket-ticketer - 带额外 SID 的黄金票据
     desc: |
-      Creates a ticket containing an Extra SID in the PAC, typically used for SID History exploitation. 
-      This technique allows a user in a child domain to gain Domain Admin rights in a forest root domain if SID filtering is not enabled. 
-      It is a powerful method for cross-domain lateral movement and escalation from a compromised child domain to the forest root. 
-      Ensure you have the correct SID for the target administrative group in the parent domain.
+      创建在 PAC 中包含额外 SID 的票据，通常用于 SID 历史利用。
+      此技术允许子域中的用户在未启用 SID 过滤的情况下获得林根域中的域管理员权限。
+      它是从受感染的子域到林根进行跨域横向移动和权限提升的强大方法。
+      确保你拥有父域中目标管理组的正确 SID。
     command: "impacket-ticketer -domain {{domain}} -domain-sid {{domain_sid}} -nthash {{krbtgt_nt_hash}} -extra-sid {{extra_sid}} {{username|Administrator}}"
 
   # === SILVER TICKET OPERATIONS ===
-  - title: impacket-ticketer - generate silver ticket
+  - title: impacket-ticketer - 生成白银票据
     desc: |
-      Generates a Silver Ticket (TGS) for a specific service using the service account's NT hash. 
-      Unlike a Golden Ticket, a Silver Ticket only grants access to a specific service on a specific host (e.g., CIFS, HTTP, MSSQL). 
-      This is useful when you have the hash of a computer account or a service account but do not have the KRBTGT account hash. 
-      Silver tickets are harder to detect because they do not involve communication with the Domain Controller.
+      使用服务帐户的 NT 哈希为特定服务生成白银票据（TGS）。
+      与黄金票据不同，白银票据只授予对特定主机上特定服务的访问权限（例如 CIFS、HTTP、MSSQL）。
+      当你拥有计算机帐户或服务帐户的哈希但没有 KRBTGT 帐户哈希时，这很有用。
+      白银票据更难检测，因为它们不涉及与域控制器的通信。
     command: "impacket-ticketer -domain {{domain}} -domain-sid {{domain_sid}} -nthash {{service_nt_hash}} -spn {{spn|cifs/target.corp.local}} {{username|Administrator}}"
 
-  - title: impacket-ticketer - silver ticket using aes key
+  - title: impacket-ticketer - 使用 AES 密钥生成白银票据
     desc: |
-      Generates a Silver Ticket for a target service using the AES key of the service account. 
-      Using the AES key is often necessary in environments where DES and RC4 are disabled for Kerberos. 
-      The resulting ticket allows the attacker to authenticate to the specified SPN (Service Principal Name) with the privileges of the chosen user. 
-      This is a common post-exploitation technique after obtaining a machine account's long-term keys.
+      使用服务帐户的 AES 密钥为目标服务生成白银票据。
+      在 Kerberos 禁用 DES 和 RC4 的环境中，通常必须使用 AES 密钥。
+      生成的票据允许攻击者以所选用户的权限对指定的 SPN（服务主体名称）进行身份验证。
+      这是获取计算机帐户长期密钥后常见的后利用技术。
     command: "impacket-ticketer -domain {{domain}} -domain-sid {{domain_sid}} -aesKey {{aes_key}} -spn {{spn|cifs/target.corp.local}} {{username|Administrator}}"
 
   # === ADVANCED TICKET TYPES ===
-  - title: impacket-ticketer - sapphire ticket generation
+  - title: impacket-ticketer - 生成蓝宝石票据
     desc: |
-      Generates a Sapphire Ticket by impersonating a target user to extract their PAC via S4U2Self and U2U. 
-      This allows for the creation of a valid ticket with a real PAC for any user without needing to know their actual password. 
-      It requires valid credentials for a domain user to perform the initial Kerberos requests to the Domain Controller. 
-      The technique is highly effective for creating indistinguishable tickets from legitimate ones.
+      通过模拟目标用户，通过 S4U2Self 和 U2U 提取其 PAC 来生成蓝宝石票据。
+      这允许为任意用户创建带有真实 PAC 的有效票据，而无需知道其实际密码。
+      它需要一个有效的域用户凭据来向域控制器执行初始 Kerberos 请求。
+      该技术对于创建与合法票据无法区分的票据非常有效。
     command: "impacket-ticketer -domain {{domain}} -domain-sid {{domain_sid}} -aesKey {{krbtgt_aes_key}} -impersonate {{target_user}} -user {{current_user}} -password {{password}} {{username|Administrator}}"
 
-  - title: impacket-ticketer - request and clone ticket
+  - title: impacket-ticketer - 请求并克隆票据
     desc: |
-      Requests a ticket from the Domain Controller and clones it while allowing modifications to the supplied user information. 
-      This requires specifying a valid domain user and their authentication (password or hashes) to talk to the DC. 
-      The tool fetches a legitimate ticket and then applies your custom SID or Group modifications to it. 
-      This can be used to bypass certain PAC validation checks by starting with a "real" ticket structure.
+      从域控制器请求票据并克隆它，同时允许修改所提供的用户信息。
+      这需要指定有效的域用户及其身份验证（密码或哈希）才能与 DC 通信。
+      工具获取合法票据，然后对其应用你的自定义 SID 或组修改。
+      这可用于通过以“真实”票据结构为起点来绕过某些 PAC 验证检查。
     command: "impacket-ticketer -domain {{domain}} -domain-sid {{domain_sid}} -nthash {{krbtgt_nt_hash}} -request -user {{user}} -password {{password}} {{username|Administrator}}"
 
   # === UTILITY & STRUCTURE ===
-  - title: impacket-ticketer - ticket with old pac structure
+  - title: impacket-ticketer - 使用旧 PAC 结构的票据
     desc: |
-      Generates a ticket using the older PAC structure, excluding PAC_ATTRIBUTES_INFO and PAC_REQUESTOR. 
-      This might be necessary for compatibility with older Windows systems or specific legacy applications. 
-      It can also be used as an evasion technique to see if security monitors only look for modern PAC signatures. 
-      The command otherwise behaves like a standard Golden Ticket creation.
+      使用较旧的 PAC 结构生成票据，排除 PAC_ATTRIBUTES_INFO 和 PAC_REQUESTOR。
+      为了与较旧的 Windows 系统或特定遗留应用程序兼容，这可能是必要的。
+      它也可用作规避技术，以查看安全监控是否只查找现代 PAC 特征。
+      除此之外，该命令的行为与标准黄金票据创建类似。
     command: "impacket-ticketer -domain {{domain}} -domain-sid {{domain_sid}} -nthash {{krbtgt_nt_hash}} -old-pac {{username|Administrator}}"
 
-  - title: impacket-ticketer - custom duration ticket
+  - title: impacket-ticketer - 自定义有效期票据
     desc: |
-      Generates a ticket with a custom duration for its expiration. 
-      By default, Impacket creates tickets valid for 10 years, which is excellent for persistence but might be noisy. 
-      Reducing the duration can help in scenarios where you want the ticket to expire shortly after your operation. 
-      The duration value is provided in hours.
+      生成具有自定义过期时长的票据。
+      默认情况下，Impacket 创建的票据有效期为 10 年，这对持久化非常有利，但可能比较显眼。
+      缩短有效期有助于在你想让票据在操作后不久过期时使用。
+      时长值以小时为单位提供。
     command: "impacket-ticketer -domain {{domain}} -domain-sid {{domain_sid}} -nthash {{krbtgt_nt_hash}} -duration {{hours|24}} {{username|Administrator}}"

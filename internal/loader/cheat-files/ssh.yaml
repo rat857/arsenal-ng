@@ -3,70 +3,96 @@ tags: [network, security, pentest, authentication, enumeration, exploitation, fi
 
 actions:
   # === BASIC USAGE ===
-  - title: ssh - basic connection
+  - title: ssh - 基础连接
     desc: |
-      Establish a standard secure shell connection to a remote host. This is the primary method for accessing a remote terminal securely over an unencrypted network. It will use the default port 22 and attempt authentication with the current local username unless specified otherwise.
+      与远程主机建立标准的安全 shell 连接。
+      这是通过不加密网络安全访问远程终端的主要方法。
+      除非另有指定，它将使用默认端口 22 并尝试使用当前本地用户名认证。
     command: "ssh {{user}}@{{host}}"
 
-  - title: ssh - connection on specific port
+  - title: ssh - 在特定端口连接
     desc: |
-      Connect to a remote server that is listening on a non-standard SSH port. Administrators often change the default port from 22 to a random high port to reduce the noise from automated brute-force bots. Always ensure the target port is open in the firewall before attempting the connection.
+      连接到监听非标准 SSH 端口的远程服务器。
+      管理员经常将默认端口从 22 更改为随机高位端口，以减少自动化暴力破解机器人的噪声。
+      在尝试连接之前，始终确保目标端口在防火墙中开放。
     command: "ssh -p {{port|2222}} {{user}}@{{host}}"
 
-  - title: ssh - connection using private key
+  - title: ssh - 使用私钥连接
     desc: |
-      Authenticate to a remote server using a specific SSH private key file. This is significantly more secure than password authentication and is mandatory for most cloud providers like AWS or GCP. The private key file must have restricted permissions (typically chmod 600) or the client will refuse to use it for security reasons.
+      使用特定的 SSH 私钥文件对远程服务器进行认证。
+      这比密码认证安全得多，并且是 AWS 或 GCP 等大多数云提供商的强制要求。
+      私钥文件必须具有受限权限（通常为 chmod 600），否则客户端出于安全原因会拒绝使用它。
     command: "ssh -i {{identity_file|~/.ssh/id_rsa}} {{user}}@{{host}}"
 
-  - title: ssh - execute remote command
+  - title: ssh - 执行远程命令
     desc: |
-      Run a single command or script on the remote host without opening a persistent interactive shell. The command executes, the output is returned to your local terminal, and the connection is immediately terminated. This is highly useful for automation, cron jobs, or quick system checks across multiple servers.
+      在不打开持久交互式 shell 的情况下，在远程主机上运行单个命令或脚本。
+      命令执行后，输出返回到你的本地终端，连接立即终止。
+      这对于自动化、定时任务或跨多台服务器的快速系统检查非常有用。
     command: "ssh {{user}}@{{host}} \"{{remote_command|uptime}}\""
 
   # === PORT FORWARDING & TUNNELING ===
-  - title: ssh - local port forwarding
+  - title: ssh - 本地端口转发
     desc: |
-      Forward a local port on your machine to a specific port on the remote server or a host reachable by that server. This creates a secure tunnel that allows you to access internal services like databases or web panels that are not exposed to the public internet. Traffic sent to the local port is encrypted and tunneled through the SSH connection.
+      将本机上的本地端口转发到远程服务器或该服务器可达主机上的特定端口。
+      这会创建一条安全隧道，使你能够访问未暴露在公共互联网上的内部服务（如数据库或 Web 面板）。
+      发送到本地端口的流量会被加密并通过 SSH 连接隧道传输。
     command: "ssh -L {{local_port|8080}}:{{remote_destination|127.0.0.1}}:{{remote_port|80}} {{user}}@{{host}}"
 
-  - title: ssh - remote port forwarding
+  - title: ssh - 远程端口转发
     desc: |
-      Forward a port from the remote server back to a port on your local machine. This allows users on the remote server or external network to access a service running on your local workstation. Note that the 'GatewayPorts' option must be enabled in the remote server's sshd_config for the port to be accessible from other external machines.
+      将远程服务器上的端口转发回本机上的端口。
+      这允许远程服务器或外部网络上的用户访问运行在你本地工作站上的服务。
+      请注意，必须在远程服务器的 sshd_config 中启用 GatewayPorts 选项，该端口才能从其他外部机器访问。
     command: "ssh -R {{remote_port|9090}}:{{local_destination|127.0.0.1}}:{{local_port|80}} {{user}}@{{host}}"
 
-  - title: ssh - dynamic port forwarding
+  - title: ssh - 动态端口转发
     desc: |
-      Create a SOCKS proxy on your local machine that tunnels all traffic through the remote SSH server. This is a powerful technique for bypassing restrictive firewalls or masking your original IP address by routing traffic through the remote host. Most modern web browsers and networking tools can be configured to use this SOCKS proxy.
+      在本机上创建 SOCKS 代理，通过远程 SSH 服务器隧道传输所有流量。
+      这是通过远程主机路由流量来绕过限制性防火墙或掩盖原始 IP 地址的强大技术。
+      大多数现代 Web 浏览器和网络工具都可以配置为使用此 SOCKS 代理。
     command: "ssh -D {{proxy_port|1080}} {{user}}@{{host}}"
 
   # === PROXY & MULTI-HOP ===
-  - title: ssh - connection via jump host
+  - title: ssh - 通过跳板主机连接
     desc: |
-      Connect to a destination server by bouncing through an intermediate "jump" or bastion host. This is the modern and preferred way to access servers within a private subnet that do not have direct public internet access. The SSH client handles the multi-hop authentication and tunneling automatically in a single command.
+      通过中间「跳板」或堡垒主机跳转连接到目标服务器。
+      这是访问没有直接公共互联网访问的私有子网中服务器的现代首选方式。
+      SSH 客户端在单条命令中自动处理多跳认证和隧道。
     command: "ssh -J {{jump_user}}@{{jump_host}} {{user}}@{{host}}"
 
-  - title: ssh - reverse shell/proxy via jump host (ProxyCommand)
+  - title: ssh - 通过跳板主机的反向 shell/代理（ProxyCommand）
     desc: |
-      Establish a connection using a proxy command to reach the target. This is useful for older versions of SSH that do not support the -J flag or for complex routing scenarios involving tools like netcat (nc). It allows the client to pipe the connection through a secondary process to reach the final destination.
+      使用代理命令建立连接以到达目标。
+      这对于不支持 -J 标志的旧版本 SSH，或涉及 netcat（nc）等工具的复杂路由场景很有用。
+      它允许客户端通过二级进程管道连接以到达最终目标。
     command: "ssh -o ProxyCommand=\"ssh -W %h:%p {{jump_host}}\" {{user}}@{{host}}"
 
   # === ADVANCED OPTIONS & DEBUGGING ===
-  - title: ssh - enable X11 forwarding
+  - title: ssh - 启用 X11 转发
     desc: |
-      Forward the X11 graphical protocol from the remote server to your local machine. This allows you to run GUI-based Linux applications on the server and interact with them in a window on your local desktop. You must have an X server (like XQuartz or VcXsrv) running locally for the window to render correctly.
+      将 X11 图形协议从远程服务器转发到你的本机。
+      这允许你在服务器上运行基于 GUI 的 Linux 应用程序，并在本地桌面的窗口中与之交互。
+      你必须在本地运行 X 服务器（如 XQuartz 或 VcXsrv）才能使窗口正确渲染。
     command: "ssh -X {{user}}@{{host}}"
 
-  - title: ssh - verbose debugging mode
+  - title: ssh - 详细调试模式
     desc: |
-      Increase the logging level to provide detailed information about the connection process and handshake. This is essential for troubleshooting authentication failures, key exchange issues, or unexpected disconnects. Adding more 'v' characters (up to -vvv) provides even more granular technical details about the SSH protocol exchange.
+      提高日志级别，提供关于连接过程和握手的详细信息。
+      这对于排查认证失败、密钥交换问题或意外断开至关重要。
+      添加更多 v 字符（最高 -vvv）可提供关于 SSH 协议交换的更细粒度技术细节。
     command: "ssh -v {{user}}@{{host}}"
 
-  - title: ssh - disable host key checking
+  - title: ssh - 禁用主机密钥检查
     desc: |
-      Connect to a host while skipping the verification of its public key against the known_hosts file. This is useful for automated environments or when frequently rebuilding virtual machines where the host key changes often. Warning: This facilitates Man-in-the-Middle (MITM) attacks and should only be used in trusted or controlled environments.
+      连接主机时跳过对其公钥与 known_hosts 文件的验证。
+      这对于自动化环境或经常重建虚拟机导致主机密钥经常变化的情况很有用。
+      警告：这会助长中间人（MITM）攻击，应仅在受信任或受控环境中使用。
     command: "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {{user}}@{{host}}"
 
-  - title: ssh - compression and performance
+  - title: ssh - 压缩与性能
     desc: |
-      Enable data compression for the SSH session to improve performance on slow or high-latency connections. Compression is applied to all data sent and received, which is particularly beneficial for large text-based outputs or X11 forwarding. On fast local networks, this might actually decrease performance due to the CPU overhead of compression.
+      为 SSH 会话启用数据压缩，以改善慢速或高延迟连接上的性能。
+      压缩会应用于所有发送和接收的数据，对大型文本输出或 X11 转发特别有益。
+      在快速的本地网络上，由于压缩的 CPU 开销，这可能实际上降低性能。
     command: "ssh -C {{user}}@{{host}}"

@@ -3,89 +3,87 @@ tags: [network, reconnaissance, security, pentest, enumeration, cdn, cloud, waf]
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: cdncheck - basic check
+  - title: cdncheck - 基础检查
     desc: |
-      Perform a basic identification scan on a single IP or domain name. This command checks the target against 
-      known ranges of CDNs, Cloud providers, and WAFs. It is the most common starting point for initial 
-      infrastructure reconnaissance to determine if a target is behind a protective layer.
+      对单个 IP 或域名执行基础识别扫描。该命令将目标与
+      CDN、云服务商与 WAF 的已知网段进行比对。它是确定目标是否位于防护层之后的初始基础设施侦察的最常见起点。
     command: "cdncheck -i {{target}}"
 
-  - title: cdncheck - silent mode for piping
+  - title: cdncheck - 用于管道输出的静默模式
     desc: |
-      Run the tool in silent mode to output only the results without banners or metadata. This is ideal for 
-      piping results into other tools or saving them directly to a list for further processing. It reduces 
-      noise in the terminal and simplifies automation scripts.
+      以静默模式运行工具，仅输出结果而不输出横幅或元数据。这非常适合
+      将结果管道到其他工具或直接保存到列表以供进一步处理。它减少终端噪音并简化自动化脚本。
     command: "cdncheck -i {{target}} -silent"
 
-  - title: cdncheck - detect and display technology
+  - title: cdncheck - 检测并显示技术
     desc: |
-      Identify the infrastructure and display the specific technology or provider name in the output. This 
-      adds a "response" field showing exactly which service (e.g., Cloudflare, Akamai, AWS) is being used. 
-      Use this when you need to know the specific vendor to tailor your testing methodology.
+      识别基础设施并在输出中显示具体技术或服务商名称。这会
+      添加一个 "response" 字段，准确显示正在使用的服务（如 Cloudflare、Akamai、AWS）。
+      当你需要了解具体厂商以定制测试方法时使用。
     command: "cdncheck -i {{target}} -resp"
 
   # === DETECTION FILTERS ===
-  - title: cdncheck - identify CDN only
+  - title: cdncheck - 仅识别 CDN
     desc: |
-      Filter the scan results to display only those targets that are identified as part of a Content Delivery Network. 
-      This is useful when you want to isolate the edge distribution nodes from the backend or cloud infrastructure. 
-      It helps map out how a target's content is distributed globally.
+      过滤扫描结果，仅显示被识别为内容分发网络一部分的目标。
+      当你想将边缘分发节点与后端或云基础设施隔离时很有用。
+      它帮助绘制目标内容在全球的分发方式。
     command: "cdncheck -i {{target}} -cdn"
 
-  - title: cdncheck - identify Cloud providers only
+  - title: cdncheck - 仅识别云服务商
     desc: |
-      Filter the scan results to display only targets hosted on cloud infrastructure like AWS, Azure, or GCP. 
-      This helps in identifying the hosting environment of the target, which is crucial for determining the 
-      applicable security policies and legal boundaries. It excludes WAF and CDN-specific IP ranges.
+      过滤扫描结果，仅显示托管在 AWS、Azure 或 GCP 等云基础设施上的目标。
+      这有助于识别目标的托管环境，对确定适用的安全策略与法律边界至关重要。
+      它排除 WAF 与 CDN 特定的 IP 网段。
     command: "cdncheck -i {{target}} -cloud"
 
-  - title: cdncheck - identify WAF only
+  - title: cdncheck - 仅识别 WAF
     desc: |
-      Narrow the output to show only targets protected by a Web Application Firewall (WAF). This is vital for 
-      penetration testers to identify which endpoints will require WAF bypass techniques or specific payload 
-      encoding. Knowing the WAF presence early prevents unnecessary account lockouts or detection.
+      缩小输出范围，仅显示受 Web 应用防火墙（WAF）保护的目标。这对渗透测试人员
+      识别哪些端点需要 WAF 绕过技术或特定载荷编码至关重要。
+      尽早了解 WAF 的存在可防止不必要的账户锁定或检测。
     command: "cdncheck -i {{target}} -waf"
 
   # === ADVANCED MATCHING AND FILTERING ===
-  - title: cdncheck - match specific providers
+  - title: cdncheck - 匹配特定服务商
     desc: |
-      Filter results to show only matches for specific, user-defined providers like Cloudfront or Fastly. This 
-      allows for highly targeted reconnaissance when looking for specific infrastructure misconfigurations. 
-      You can provide a comma-separated list of providers to match against multiple vendors simultaneously.
+      过滤结果，仅显示 Cloudfront 或 Fastly 等用户指定服务商的匹配项。这
+      在寻找特定基础设施错误配置时允许高度定向的侦察。
+      你可以提供逗号分隔的服务商列表，以同时匹配多个厂商。
     command: "cdncheck -i {{target_list}} -mcdn {{provider|cloudfront,fastly}}"
 
-  - title: cdncheck - exclude detected infrastructure
+  - title: cdncheck - 排除已检测的基础设施
     desc: |
-      Exclude any IP addresses that match known CDN, Cloud, or WAF ranges from the final output. This is 
-      a powerful technique for "Origin Discovery," as it filters out the noise to reveal potential backend 
-      IP addresses. This is often used after a large-scale DNS brute-force or port scan.
+      从最终输出中排除任何匹配已知 CDN、云或 WAF 网段的 IP 地址。这是
+      "源站发现"的强大技术，它过滤噪音以揭示潜在的后端 IP 地址。
+      这常用于大规模 DNS 暴力破解或端口扫描之后。
     command: "cdncheck -i {{target_list}} -e"
 
-  - title: cdncheck - filter out specific WAF providers
+  - title: cdncheck - 过滤特定 WAF 服务商
     desc: |
-      Run a scan but explicitly hide results that belong to a specific WAF provider like Cloudflare. This 
-      is helpful when you already know certain segments are protected and you want to focus on less 
-      protected parts of the network. It helps in prioritizing targets that might have fewer security layers.
+      运行扫描，但显式隐藏属于 Cloudflare 等特定 WAF 服务商的结果。这
+      在你已知某些网段受保护、想聚焦于网络保护较少的部分时很有帮助。
+      它有助于优先处理可能安全层较少的优先目标。
     command: "cdncheck -i {{target_list}} -fwaf {{provider|cloudflare}}"
 
   # === OUTPUT AND CONFIGURATION ===
-  - title: cdncheck - export results to JSON
+  - title: cdncheck - 将结果导出为 JSON
     desc: |
-      Save the identification results in JSONL format for programmatic parsing and data analysis. This 
-      format is highly compatible with log aggregators and custom Python/Go scripts for automated 
-      security pipelines. Using the output flag ensures that the data is persisted to a file for later review.
+      以 JSONL 格式保存识别结果，以便程序化解析与数据分析。该
+      格式与日志聚合器及自动化安全管道中的自定义 Python/Go 脚本高度兼容。
+      使用 output 标志可确保数据持久化到文件以供后续审查。
     command: "cdncheck -i {{target}} -j -o {{output_file|results.json}}"
 
-  - title: cdncheck - custom resolvers and retries
+  - title: cdncheck - 自定义解析器与重试
     desc: |
-      Configure the tool to use a specific list of DNS resolvers and increase the retry count for better accuracy. 
-      Custom resolvers can help bypass local DNS caching issues or rate limits imposed by public providers. 
-      Increasing retries is recommended when scanning over unstable network connections to avoid false negatives.
+      配置工具使用特定 DNS 解析器列表并增加重试次数以提高准确性。
+      自定义解析器有助于绕过本地 DNS 缓存问题或公共提供商施加的限速。
+      在连接不稳定的网络上扫描时，建议增加重试以避免漏报。
     command: "cdncheck -i {{target}} -r {{resolvers_file|resolvers.txt}} -retry {{retry_count|3}}"
 
-  - title: cdncheck - update tool
+  - title: cdncheck - 更新工具
     desc: |
-      Update the cdncheck utility to the latest version directly from the source. Regular updates are 
-      important because infrastructure provider IP ranges change frequently, and staying up-to-date 
-      ensures the highest detection accuracy. This command requires an active internet connection.
+      直接从源更新 cdncheck 工具到最新版本。定期更新很重要，
+      因为基础设施服务商的 IP 网段变化频繁，保持最新可确保最高的检测准确率。
+      该命令需要有效的互联网连接。
     command: "cdncheck -up"

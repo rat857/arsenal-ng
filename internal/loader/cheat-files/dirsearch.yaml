@@ -3,113 +3,87 @@ tags: [web, pentest, reconnaissance, enumeration, scanner, security, brute-force
 
 actions:
   # === BASIC USAGE ===
-  - title: dirsearch - basic scan
+  - title: dirsearch - 基本扫描
     desc: |
-      Perform a basic directory search against a single target URL using specific extensions.
-      This is the most common starting point for discovering hidden files and directories on a web server.
-      Providing extensions like php, asp, or html helps the tool narrow down the search to relevant file types for the target environment.
-      Always ensure you have permission to scan the target to avoid legal issues.
+      使用特定扩展名对单个目标 URL 执行基本的目录搜索。
+      这是发现 Web 服务器上隐藏文件和目录的最常见起点，提供 php、asp 或 html 等扩展名有助于缩小到目标环境的相关文件类型。
     command: "dirsearch -u {{url}} -e {{extensions|php,html,js,txt}}"
 
-  - title: dirsearch - scan list of urls
+  - title: dirsearch - 扫描 URL 列表
     desc: |
-      Scan multiple target URLs simultaneously by providing a text file containing one URL per line.
-      This is highly efficient when performing reconnaissance across a large infrastructure or multiple subdomains.
-      The tool will iterate through each URL using the same configuration and extension settings provided.
-      Be cautious of system resource usage when scanning a large list of targets with many threads.
+      通过提供每行一个 URL 的文本文件，同时扫描多个目标 URL。
+      在对大型基础设施或多个子域名进行侦察时非常高效，工具会使用相同的配置和扩展名设置遍历每个 URL。
     command: "dirsearch -l {{url_file_path}} -e {{extensions|*}}"
 
   # === DICTIONARY & WORDLIST SETTINGS ===
-  - title: dirsearch - custom wordlist
+  - title: dirsearch - 自定义字典
     desc: |
-      Use a specific wordlist for the directory brute-forcing process instead of the default internal list.
-      This is useful when you have technology-specific wordlists or high-quality discovery lists like SecLists.
-      You can provide multiple wordlists separated by commas to combine different sets of potential paths.
-      Ensure the wordlist path is correct and accessible by the user running the command.
+      使用特定的字典进行目录暴力破解，而不是默认的内部列表。
+      当你有针对特定技术的字典或 SecLists 等高质量发现列表时非常有用，可用逗号分隔提供多个字典。
     command: "dirsearch -u {{url}} -e {{extensions|*}} -w {{wordlist_path|/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt}}"
 
-  - title: dirsearch - prefixes and suffixes
+  - title: dirsearch - 前缀与后缀
     desc: |
-      Append custom prefixes or suffixes to every entry in the wordlist during the scan.
-      This is particularly helpful for finding backup files (e.g., .bak, .old) or environment-specific hidden folders.
-      Prefixes are added to the beginning of the wordlist entry, while suffixes are added to the end.
-      Using this feature can significantly increase the total number of requests sent to the server.
+      扫描时为字典中的每个条目追加自定义前缀或后缀。
+      对查找备份文件（如 .bak、.old）或环境特定的隐藏文件夹尤为有帮助，前缀加在条目开头，后缀加在末尾。
     command: "dirsearch -u {{url}} -e {{extensions|php}} --prefixes {{prefixes|_,backup-}} --suffixes {{suffixes|~,.swp}}"
 
   # === FILTERING & STATUS CODES ===
-  - title: dirsearch - filter status codes
+  - title: dirsearch - 过滤状态码
     desc: |
-      Include or exclude specific HTTP status codes from the results to reduce noise.
-      By default, dirsearch shows many codes, but you might only be interested in 200 (OK) or 301 (Redirect).
-      Excluding codes like 403 (Forbidden) or 500 (Internal Server Error) helps focus on accessible resources.
-      You can specify individual codes or ranges, such as 200-299, separated by commas.
+      在结果中包含或排除特定的 HTTP 状态码以减少噪声。
+      默认 dirsearch 显示许多状态码，但你或许只关心 200（OK）或 301（重定向），可指定单个状态码或用逗号分隔的范围（如 200-299）。
     command: "dirsearch -u {{url}} -e {{extensions|*}} -i {{include_codes|200,301}} -x {{exclude_codes|400,403,500-599}}"
 
-  - title: dirsearch - filter by size or text
+  - title: dirsearch - 按大小或文本过滤
     desc: |
-      Exclude responses based on their body size or the presence of specific text/regex.
-      This is extremely useful for filtering out "fake" 200 OK pages or custom error pages that all return the same size.
-      If a server returns a specific message for all non-existent pages, you can use --exclude-text to hide them.
-      This helps in identifying unique responses that might actually represent valid hidden files.
+      根据响应体大小或特定文本/正则表达式的存在来排除响应。
+      对过滤掉所有返回相同大小的假 200 OK 页面或自定义错误页极为有用。
     command: "dirsearch -u {{url}} -e {{extensions|*}} --exclude-sizes {{sizes|0B,123B}} --exclude-text {{text|'Page Not Found'}}"
 
   # === RECURSION ===
-  - title: dirsearch - recursive scan
+  - title: dirsearch - 递归扫描
     desc: |
-      Automatically initiate a new scan for every directory discovered during the initial brute-force.
-      This allows for deep exploration of the web application's directory structure without manual intervention.
-      You should set a maximum recursion depth to prevent the scan from running indefinitely on complex sites.
-      Recursive scanning significantly increases the time required for the scan to complete.
+      对初始暴力破解中发现的每个目录自动发起新的扫描。
+      无需人工干预即可深入探索 Web 应用的目录结构，应设置最大递归深度以防在复杂站点上无限运行。
     command: "dirsearch -u {{url}} -e {{extensions|php}} -r -R {{max_depth|3}}"
 
   # === REQUEST CUSTOMIZATION ===
-  - title: dirsearch - authenticated scan
+  - title: dirsearch - 认证扫描
     desc: |
-      Perform a scan using specific authentication credentials or session cookies.
-      This is essential for discovering files and directories located within authenticated areas of a web application.
-      You can specify the authentication type such as basic, digest, or bearer depending on the server's requirements.
-      Make sure the session remains active; if the cookie expires, you will likely only see 302 or 403 responses.
+      使用特定的认证凭据或会话 Cookie 执行扫描。
+      对发现 Web 应用认证区域内的文件和目录至关重要，可根据服务器要求指定 basic、digest 或 bearer 等认证类型。
     command: "dirsearch -u {{url}} -e {{extensions|php}} --cookie \"{{cookie_string}}\" --auth {{credentials|user:password}} --auth-type {{auth_type|basic}}"
 
-  - title: dirsearch - custom http method and headers
+  - title: dirsearch - 自定义 HTTP 方法和请求头
     desc: |
-      Change the default GET method to other HTTP verbs like POST, PUT, or HEAD.
-      Adding custom headers can help bypass some Web Application Firewalls (WAFs) or simulate specific client environments.
-      For example, adding an 'X-Forwarded-For' header might trick the server into thinking the request is coming from a trusted local IP.
-      This is also useful for API fuzzing where specific 'Content-Type' or 'Accept' headers are mandatory.
+      将默认的 GET 方法改为 POST、PUT 或 HEAD 等其他 HTTP 动词。
+      添加自定义请求头可帮助绕过某些 Web 应用防火墙（WAF）或模拟特定客户端环境，对强制要求特定 Content-Type 或 Accept 请求头的 API 模糊测试也很有用。
     command: "dirsearch -u {{url}} -e {{extensions|*}} -m {{method|POST}} -H \"{{header_name|X-Forwarded-For}}: {{header_value|127.0.0.1}}\""
 
   # === CONNECTION & PERFORMANCE ===
-  - title: dirsearch - performance tuning
+  - title: dirsearch - 性能调优
     desc: |
-      Adjust the number of threads and the delay between requests to optimize the scan's speed and stealth.
-      Increasing threads will speed up the process but may cause a Denial of Service (DoS) or trigger rate-limiting.
-      Adding a delay is recommended when dealing with targets that have aggressive Intrusion Detection Systems (IDS).
-      A balanced approach is usually best to ensure accuracy while maintaining a reasonable scanning speed.
+      调整线程数和请求之间的延迟，以优化扫描的速度和隐蔽性。
+      增加线程可加快进程，但可能造成拒绝服务（DoS）或触发速率限制，对带有激进入侵检测系统（IDS）的目标建议添加延迟。
     command: "dirsearch -u {{url}} -e {{extensions|*}} -t {{threads|50}} --delay {{delay|0.1}} --max-rate {{rate|20}}"
 
-  - title: dirsearch - scan via proxy or tor
+  - title: dirsearch - 通过代理或 Tor 扫描
     desc: |
-      Route all scanning traffic through a proxy server or the Tor network to mask your original IP address.
-      This is a common practice in red teaming to avoid being blocked by the target's firewall or to bypass Geo-IP restrictions.
-      When using the --tor flag, ensure the Tor service is running locally on your machine.
-      Using proxies may slow down the scan significantly depending on the proxy's bandwidth and latency.
+      将所有扫描流量经由代理服务器或 Tor 网络转发，以掩盖你的原始 IP 地址。
+      这是红队演练中避免被目标防火墙封禁或绕过 Geo-IP 限制的常见做法，使用 --tor 标志时需确保本地 Tor 服务正在运行。
     command: "dirsearch -u {{url}} -e {{extensions|*}} --proxy {{proxy_url|http://127.0.0.1:8080}} --tor"
 
   # === OUTPUT & LOGGING ===
-  - title: dirsearch - save output to file
+  - title: dirsearch - 保存输出到文件
     desc: |
-      Export the discovery results into a formatted file for documentation or further automated analysis.
-      Supported formats include JSON, XML, HTML, CSV, and Markdown, making it easy to integrate with other tools.
-      Saving results is highly recommended for long-running scans to ensure data is not lost if the terminal closes.
-      The JSON format is particularly useful for piping results into custom scripts or databases.
+      将发现结果导出为格式化文件，用于文档记录或进一步的自动化分析。
+      支持 JSON、XML、HTML、CSV 和 Markdown 等格式，便于与其他工具集成，长时间扫描强烈建议保存结果以防数据丢失。
     command: "dirsearch -u {{url}} -e {{extensions|*}} -o {{output_path|results.json}} --format {{format|json}}"
 
   # === ADVANCED FEATURES ===
-  - title: dirsearch - crawl for new paths
+  - title: dirsearch - 爬取新路径
     desc: |
-      Enable the crawler to find new paths by parsing the HTML responses of discovered pages.
-      This combines traditional wordlist-based brute-forcing with spidering capabilities for better coverage.
-      The crawler will extract links from tags like <a>, <script>, and <img> to find valid endpoints.
-      This feature is effective for discovering paths that are not present in standard wordlists.
+      启用爬虫，通过解析已发现页面的 HTML 响应来寻找新路径。
+      将传统的基于字典的暴力破解与爬取能力相结合以获得更好的覆盖，爬虫会从 <a>、<script> 和 <img> 等标签中提取链接。
     command: "dirsearch -u {{url}} -e {{extensions|*}} --crawl"

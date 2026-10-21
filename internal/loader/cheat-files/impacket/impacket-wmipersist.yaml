@@ -4,54 +4,54 @@ tags: [pentest, persistence, wmi, windows, impacket, exploitation, red-team]
 actions:
   # === INSTALLATION ACTIONS ===
 
-  - title: impacket-wmipersist - install persistence with password
+  - title: impacket-wmipersist - 使用密码安装持久化
     desc: |
-      Installs a WMI Event Consumer and Filter on a remote target using cleartext credentials. 
-      This is a common method for establishing long-term persistence by executing a VBScript when a specific WMI event occurs. 
-      The VQL filter defines the trigger condition, such as a specific time or a system event. 
-      Be aware that this requires administrative privileges and will leave permanent WMI objects on the target system.
+      使用明文凭据在远程目标上安装 WMI 事件消费者和过滤器。
+      这是一种常见的长期持久化方法，在特定 WMI 事件发生时执行 VBScript。
+      VQL 过滤器定义触发条件，例如特定时间或系统事件。
+      请注意，这需要管理员权限，并会在目标系统上留下永久的 WMI 对象。
     command: "impacket-wmipersist {{domain}}/{{username}}:{{password}}@{{target_ip}} install -name {{persistence_name|BackupSync}} -vbs {{vbs_file_path}} -filter \"{{wql_filter|SELECT * FROM __InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA 'Win32_LocalTime' AND TargetInstance.Hour = 12}}\""
 
-  - title: impacket-wmipersist - install persistence using NTLM hashes
+  - title: impacket-wmipersist - 使用 NTLM 哈希安装持久化
     desc: |
-      Establishes WMI persistence using Pass-the-Hash (PtH) authentication instead of a cleartext password. 
-      This is highly effective when you have extracted NTLM hashes from memory or a SAM database but cannot crack them. 
-      The tool creates a subscription that links an event filter to a script consumer. 
-      Ensure the VBScript provided is reachable or its content is correctly handled by the tool for remote execution.
+      使用传递哈希（PtH）身份验证而非明文密码建立 WMI 持久化。
+      当你从内存或 SAM 数据库提取到 NTLM 哈希但无法破解时，这非常有效。
+      该工具创建一个将事件过滤器链接到脚本消费者的订阅。
+      确保所提供的 VBScript 可达，或其内容能被工具正确处理以进行远程执行。
     command: "impacket-wmipersist {{domain}}/{{username}}@{{target_ip}} -hashes {{hash}} install -name {{persistence_name|SystemUpdate}} -vbs {{vbs_file_path}} -filter \"{{wql_filter}}\""
 
-  - title: impacket-wmipersist - install with timer-based trigger
+  - title: impacket-wmipersist - 使用基于定时器的触发器安装
     desc: |
-      Configures persistence to trigger based on a simple timer interval rather than a complex WQL filter. 
-      This is useful for periodic execution of a payload (e.g., a beacon or reverse shell) every few minutes or hours. 
-      The interval is typically specified in milliseconds. 
-      It creates a `__TimerInstruction` object in the WMI repository to manage the timing.
+      将持久化配置为基于简单的定时器间隔触发，而非复杂的 WQL 过滤器。
+      这对于每隔几分钟或几小时定期执行载荷（例如信标或反向 shell）很有用。
+      间隔通常以毫秒为单位指定。
+      它在 WMI 存储库中创建一个 __TimerInstruction 对象来管理定时。
     command: "impacket-wmipersist {{domain}}/{{username}}:{{password}}@{{target_ip}} install -name {{persistence_name|PeriodicTask}} -vbs {{vbs_file_path}} -timer {{interval_ms|300000}}"
 
   # === ADVANCED AUTHENTICATION ===
 
-  - title: impacket-wmipersist - persistence using Kerberos authentication
+  - title: impacket-wmipersist - 使用 Kerberos 身份验证的持久化
     desc: |
-      Performs the persistence installation using Kerberos tickets, which is useful in environments where NTLM is restricted. 
-      The `-k` flag tells the tool to look for a valid Kerberos ticket in the path specified by the `KRB5CCNAME` environment variable. 
-      You must use the FQDN of the target instead of an IP address for Kerberos to function correctly. 
-      The `-dc-ip` flag is often necessary to point the tool to the Domain Controller for ticket validation.
+      使用 Kerberos 票据执行持久化安装，这在限制 NTLM 的环境中很有用。
+      -k 标志告诉工具在 KRB5CCNAME 环境变量指定的路径中查找有效的 Kerberos 票据。
+      你必须使用目标的 FQDN 而非 IP 地址，Kerberos 才能正常工作。
+      通常需要 -dc-ip 标志将工具指向域控制器以进行票据验证。
     command: "impacket-wmipersist {{domain}}/{{username}}@{{target_fqdn}} -k -no-pass -dc-ip {{dc_ip}} install -name {{persistence_name}} -vbs {{vbs_file_path}} -filter \"{{wql_filter}}\""
 
   # === MAINTENANCE AND CLEANUP ===
 
-  - title: impacket-wmipersist - remove WMI persistence
+  - title: impacket-wmipersist - 移除 WMI 持久化
     desc: |
-      Removes the previously installed WMI Event Consumer, Filter, and the Binding between them. 
-      This command is essential for cleanup after a penetration test or red team engagement to avoid leaving backdoors. 
-      You must provide the exact same name used during the installation phase. 
-      Failure to remove these objects can lead to detection by security software or blue teams monitoring WMI repository changes.
+      移除先前安装的 WMI 事件消费者、过滤器以及它们之间的绑定。
+      此命令对于渗透测试或红队评估后的清理至关重要，以避免留下后门。
+      你必须提供与安装阶段使用的完全相同的名称。
+      未能移除这些对象可能导致被监控 WMI 存储库更改的安全软件或蓝队检测到。
     command: "impacket-wmipersist {{domain}}/{{username}}:{{password}}@{{target_ip}} remove -name {{persistence_name|BackupSync}}"
 
-  - title: impacket-wmipersist - debug and troubleshoot connection
+  - title: impacket-wmipersist - 调试和排查连接问题
     desc: |
-      Runs the tool with the debug flag enabled to troubleshoot connection issues or RPC/DCOM errors. 
-      This provides verbose output regarding the authentication handshake and WMI object creation process. 
-      It is particularly helpful when encountering "Access Denied" errors or firewall restrictions. 
-      The timestamps help in correlating the tool's actions with server-side logs.
+      以启用调试标志的方式运行工具，排查连接问题或 RPC/DCOM 错误。
+      这提供有关身份验证握手和 WMI 对象创建过程的详细输出。
+      当遇到“Access Denied”错误或防火墙限制时特别有用。
+      时间戳有助于将工具的操作与服务器端日志相关联。
     command: "impacket-wmipersist -debug -ts {{domain}}/{{username}}:{{password}}@{{target_ip}} install -name {{persistence_name}} -vbs {{vbs_file_path}} -filter \"{{wql_filter}}\""

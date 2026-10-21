@@ -3,39 +3,29 @@ tags: [network, enumeration, security, pentest, smb, rpc, information-gathering]
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: impacket-DumpNTLMInfo - Basic SMB Information Gathering
+  - title: impacket-DumpNTLMInfo - 基础 SMB 信息收集
     desc: |
-      This command performs an NTLM handshake over the SMB protocol to retrieve target system information. 
-      It is highly effective for identifying the internal domain name, DNS hostname, and OS version without providing valid credentials. 
-      Security professionals use this as an initial reconnaissance step to map the target's network environment and identity.
+      此命令通过 SMB 协议执行 NTLM 握手，以获取目标系统信息。它对于在无需提供有效凭据的情况下识别内部域名、DNS 主机名和 OS 版本非常有效。安全专业人员将其用作初步侦察步骤，以绘制目标的网络环境和身份。
     command: "impacket-DumpNTLMInfo {{target}}"
 
-  - title: impacket-DumpNTLMInfo - RPC Protocol Enumeration
+  - title: impacket-DumpNTLMInfo - RPC 协议枚举
     desc: |
-      This command targets the RPC service, which typically resides on port 135, to leak system details. 
-      It is a vital alternative when SMB (port 445) is blocked or filtered by network firewalls. 
-      By initiating an RPC bind, the tool forces an NTLM challenge that contains the same metadata as an SMB handshake.
+      此命令针对 RPC 服务（通常位于 135 端口），以泄漏系统详细信息。当 SMB（445 端口）被网络防火墙阻止或过滤时，它是至关重要的替代方案。通过发起 RPC 绑定，工具强制进行包含与 SMB 握手相同元数据的 NTLM 质询。
     command: "impacket-DumpNTLMInfo -protocol RPC -port {{port|135}} {{target}}"
 
   # === ADVANCED TARGETING ===
-  - title: impacket-DumpNTLMInfo - Specify Target IP for NetBIOS Resolution
+  - title: impacket-DumpNTLMInfo - 为 NetBIOS 解析指定目标 IP
     desc: |
-      Use this command when the target is specified by a NetBIOS name that your local machine cannot resolve. 
-      The `-target-ip` flag forces the tool to connect to a specific network address while maintaining the logical target name. 
-      This is particularly useful in internal pentests where DNS resolution is inconsistent or multi-homed systems are involved.
+      当目标由本地机器无法解析的 NetBIOS 名称指定时使用此命令。-target-ip 参数强制工具连接到特定网络地址，同时保持逻辑目标名称。在 DNS 解析不一致或涉及多宿主系统的内部渗透测试中特别有用。
     command: "impacket-DumpNTLMInfo -target-ip {{target_ip}} {{target_name}}"
 
-  - title: impacket-DumpNTLMInfo - Custom Port Enumeration
+  - title: impacket-DumpNTLMInfo - 自定义端口枚举
     desc: |
-      This command allows the user to specify a non-standard destination port for the NTLM information leak attempt. 
-      It is useful in environments where services like SMB are proxied, port-forwarded, or hosted on non-default listener ports. 
-      Ensuring the correct port is specified allows the tool to successfully initiate the handshake required for data extraction.
+      此命令允许用户为 NTLM 信息泄漏尝试指定非标准目标端口。在 SMB 等服务被代理、端口转发或托管在非默认监听端口的环境中非常有用。确保指定正确的端口，使工具能够成功发起数据提取所需的握手。
     command: "impacket-DumpNTLMInfo -port {{port}} {{target}}"
 
   # === TROUBLESHOOTING & LOGGING ===
-  - title: impacket-DumpNTLMInfo - Debug Mode with Timestamps
+  - title: impacket-DumpNTLMInfo - 带时间戳的调试模式
     desc: |
-      Enables verbose debug output and prepends timestamps to every logging entry for precise analysis. 
-      This mode is essential for troubleshooting failed connections or understanding packet-level NTLM SSP errors. 
-      Use this when the target does not return information to determine if the issue is network-related or protocol-specific.
+      启用详细调试输出，并为每条日志条目添加时间戳，以便精确分析。此模式对于排查连接失败或理解数据包级 NTLM SSP 错误至关重要。当目标未返回信息时使用，以确定问题是网络相关还是协议特定。
     command: "impacket-DumpNTLMInfo -debug -ts {{target}}"

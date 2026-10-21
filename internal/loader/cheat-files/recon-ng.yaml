@@ -3,91 +3,94 @@ tags: [reconnaissance, osint, framework, pentest, enumeration, discovery, inform
 
 actions:
 # === WORKSPACE MANAGEMENT ===
- - title: recon-ng - Start with Workspace
+ - title: recon-ng - 使用工作区启动
    desc: |
-     Starts the framework within a specific workspace context. This is essential for keeping data organized between different projects and clients. 
-     If the workspace does not exist, recon-ng will create it automatically upon initialization. 
-     Using workspaces prevents data contamination across different assessment targets.
+     在特定工作区上下文中启动框架。
+     这对于在不同项目和客户之间保持数据组织有序至关重要。
+     如果工作区不存在，recon-ng 会在初始化时自动创建它。
+     使用工作区可防止不同评估目标之间的数据污染。
    command: "recon-ng -w {{workspace_name|internal_audit}}"
 
- - title: recon-ng - List Workspaces
+ - title: recon-ng - 列出工作区
    desc: |
-     Displays all existing workspaces within the recon-ng environment. This allows the user to see which projects have already been created and populated with data. 
-     It is a helpful management command to navigate between different engagement datasets. 
-     Note that switching workspaces usually happens at the start of a session or via the interactive shell.
+     显示 recon-ng 环境中所有现有的工作区。
+     这允许用户查看已创建并填充了数据的项目。
+     它是一个有助于在不同行动数据集之间导航的管理命令。
+     请注意，切换工作区通常在会话开始时或通过交互式 shell 进行。
    command: "recon-ng -C \"workspaces list\""
 
 # === MARKETPLACE & MODULE MANAGEMENT ===
- - title: recon-ng - Search Marketplace
+ - title: recon-ng - 搜索市场
    desc: |
-     Searches the online module repository for specific keywords to find relevant reconnaissance tools. 
-     Since version 5, recon-ng uses a marketplace system where modules must be discovered and installed individually. 
-     Use this to find modules for specific platforms like GitHub, Twitter, or DNS providers.
+     在在线模块仓库中搜索特定关键字，以查找相关的侦察工具。
+     自版本 5 起，recon-ng 使用市场系统，模块必须单独发现和安装。
+     用它来查找针对 GitHub、Twitter 或 DNS 提供商等特定平台的模块。
    command: "recon-ng -C \"marketplace search {{keyword|dns}}\""
 
- - title: recon-ng - Install Module
+ - title: recon-ng - 安装模块
    desc: |
-     Downloads and installs a specific module from the remote marketplace to the local framework. 
-     This step is mandatory before a module can be loaded or executed in a workflow. 
-     Ensure you have an active internet connection to reach the official module repository. 
-     Specify the full path provided by the marketplace search command.
+     从远程市场下载并安装特定模块到本地框架。
+     在模块可以加载或在工作流中执行之前，此步骤是必需的。
+     确保你有活跃的互联网连接以访问官方模块仓库。
+     指定市场搜索命令提供的完整路径。
    command: "recon-ng -C \"marketplace install {{module_path|recon/domains-hosts/brute_hosts}}\""
 
- - title: recon-ng - Update All Modules
+ - title: recon-ng - 更新所有模块
    desc: |
-     Updates all currently installed modules to their latest versions from the marketplace. 
-     Running this regularly ensures that you have the most up-to-date scripts and bug fixes for your reconnaissance tasks. 
-     It is considered a best practice to update before starting a new engagement to avoid issues with broken APIs.
+     将所有已安装的模块更新到市场中的最新版本。
+     定期运行可确保你拥有最新的脚本和错误修复以用于侦察任务。
+     在开始新的行动前更新被认为是最佳实践，以避免 API 损坏的问题。
    command: "recon-ng -C \"marketplace install all\""
 
 # === DATABASE OPERATIONS ===
- - title: recon-ng - Insert Domain
+ - title: recon-ng - 插入域名
    desc: |
-     Adds a target domain into the current workspace database. This serves as the primary seed or starting point for many automated reconnaissance modules. 
-     Most 'recon' modules look at the 'domains' table to determine what targets to scan. 
-     You should verify that you are in the correct workspace before inserting target data.
+     将目标域名添加到当前工作区数据库。
+     这是许多自动化侦察模块的主要种子或起点。
+     大多数 recon 模块会查看 domains 表来确定要扫描的目标。
+     在插入目标数据之前，应确认你处于正确的工作区中。
    command: "recon-ng -w {{workspace_name}} -C \"db insert domains {{domain_name|example.com}}\""
 
- - title: recon-ng - Show Database Table
+ - title: recon-ng - 显示数据库表
    desc: |
-     Displays the contents of a specific table within the workspace database. 
-     This is used to review discovered information such as hosts, contacts, locations, or credentials. 
-     It helps the tester track progress and see what information has been successfully gathered so far.
+     显示工作区数据库中特定表的内容。
+     用于查看已发现的信息，如主机、联系人、位置或凭据。
+     它有助于测试者跟踪进度并查看目前已成功收集到哪些信息。
    command: "recon-ng -w {{workspace_name}} -C \"db show {{table_name|hosts}}\""
 
 # === MODULE EXECUTION & CONFIGURATION ===
- - title: recon-ng - Run Specific Module
+ - title: recon-ng - 运行特定模块
    desc: |
-     Loads and executes a specific module against the data stored in the current workspace. 
-     This is the core functional command for performing automated reconnaissance tasks like DNS brute forcing or search engine scraping. 
-     The module will automatically pull relevant targets from the database based on its internal logic.
+     针对当前工作区中存储的数据加载并执行特定模块。
+     这是执行 DNS 暴力破解或搜索引擎抓取等自动化侦察任务的核心功能命令。
+     模块会根据其内部逻辑自动从数据库提取相关目标。
    command: "recon-ng -w {{workspace_name}} -C \"modules load {{module_path|recon/domains-hosts/google_site_web}} ; run\""
 
- - title: recon-ng - Set Module Options
+ - title: recon-ng - 设置模块选项
    desc: |
-     Configures specific parameters for a module before it is executed. 
-     This is used to define custom wordlists, toggle verbosity, or set source requirements for the scan. 
-     These options are only applied to the current module context and persist until the module is reloaded or the session ends.
+     在模块执行之前配置其特定参数。
+     用于定义自定义词表、切换详细输出或设置扫描的源要求。
+     这些选项仅应用于当前模块上下文，并持续到模块重新加载或会话结束。
    command: "recon-ng -C \"modules load {{module_path}} ; options set {{option_name|SOURCE}} {{value}} ; run\""
 
- - title: recon-ng - Add API Keys
+ - title: recon-ng - 添加 API 密钥
    desc: |
-     Stores an API key for external services like Shodan, Censys, or FullContact. 
-     Many high-quality OSINT modules require these keys to interact with third-party APIs and retrieve data. 
-     Keys are stored globally and are available across all workspaces once added to the framework.
+     存储 Shodan、Censys 或 FullContact 等外部服务的 API 密钥。
+     许多高质量的 OSINT 模块需要这些密钥来与第三方 API 交互并获取数据。
+     密钥会全局存储，一旦添加到框架后即可在所有工作区中使用。
    command: "recon-ng -C \"keys add {{key_name|shodan_api}} {{key_value}}\""
 
 # === AUTOMATION & REPORTING ===
- - title: recon-ng - Execute Resource File
+ - title: recon-ng - 执行资源文件
    desc: |
-     Runs a series of recon-ng commands stored in a plain text file. 
-     This is highly effective for automating repetitive workflows or setting up standardized reconnaissance pipelines. 
-     It allows for consistent results and saves time by avoiding manual entry of every individual command.
+     运行存储在纯文本文件中的一系列 recon-ng 命令。
+     这对于自动化重复工作流或建立标准化侦察流水线非常有效。
+     它可以提供一致的结果，并避免手动输入每条单独的命令而节省时间。
    command: "recon-ng -r {{resource_file|setup.rc}}"
 
- - title: recon-ng - Generate HTML Report
+ - title: recon-ng - 生成 HTML 报告
    desc: |
-     Exports the data collected in the workspace database into a structured HTML report. 
-     This provides a readable summary of all discovered hosts, leaked emails, and other metadata found during the reconnaissance phase. 
-     Make sure the 'reporting/html' module is installed from the marketplace before attempting to run this command.
+     将工作区数据库中收集的数据导出为结构化的 HTML 报告。
+     它提供侦察阶段发现的所有主机、泄露的电子邮件和其他元数据的可读摘要。
+     在尝试运行此命令之前，确保已从市场安装 reporting/html 模块。
    command: "recon-ng -w {{workspace_name}} -C \"modules load reporting/html ; options set FILENAME {{output_path|/tmp/report.html}} ; options set CUSTOMER {{customer_name}} ; run\""

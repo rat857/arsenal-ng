@@ -3,74 +3,74 @@ tags: [pentest, security, active-directory, kerberos, kerberoasting, enumeration
 
 actions:
   # === ENUMERATION ===
-  - title: impacket-GetUserSPNs - list available SPNs
+  - title: impacket-GetUserSPNs - 列出可用的 SPN
     desc: |
-      Performs basic enumeration of Service Principal Names (SPNs) associated with normal user accounts in the domain.
-      This is the primary reconnaissance step of a Kerberoasting attack to identify which accounts can be targeted for ticket requests.
-      It requires valid domain credentials and queries the Domain Controller via LDAP to find accounts where the 'servicePrincipalName' attribute is set.
+      对域中普通用户账户关联的服务主体名称（SPN）执行基础枚举。
+      这是 Kerberoasting 攻击的主要侦察步骤，用于识别可对其请求票据的账户。
+      它需要有效的域凭据，并通过 LDAP 查询域控制器以找出设置了“servicePrincipalName”属性的账户。
     command: "impacket-GetUserSPNs {{domain}}/{{username}}:{{password}} -dc-ip {{dc_ip}}"
 
-  - title: impacket-GetUserSPNs - stealthy enumeration
+  - title: impacket-GetUserSPNs - 隐蔽枚举
     desc: |
-      Modifies the LDAP query by removing the explicit (servicePrincipalName=*) filter to avoid detection by certain security monitoring tools.
-      While this method is stealthier, it can result in significant memory consumption or errors in very large Active Directory environments because it retrieves more objects.
-      Use this when you suspect the environment has active monitoring for standard Kerberoasting enumeration patterns.
+      通过移除显式的（servicePrincipalName=*）过滤器来修改 LDAP 查询，以避免被某些安全监控工具发现。
+      此方法更隐蔽，但在非常大的 Active Directory 环境中会检索更多对象，可能导致内存占用过高或报错。
+      当你怀疑环境正在监控标准 Kerberoasting 枚举模式时使用。
     command: "impacket-GetUserSPNs {{domain}}/{{username}}:{{password}} -dc-ip {{dc_ip}} -stealth"
 
-  - title: impacket-GetUserSPNs - list machine accounts only
+  - title: impacket-GetUserSPNs - 仅列出计算机账户
     desc: |
-      Adjusts the LDAP query to search for machine accounts instead of user accounts by changing the object category to 'computer'.
-      Machine accounts often have complex, randomly generated passwords that are difficult to crack, but they may still be useful in specific lateral movement scenarios.
-      Note that Active Directory may limit LDAP results to 1,000 objects by default, requiring paging for larger environments.
+      通过将对象类别改为“computer”来调整 LDAP 查询，搜索计算机账户而非用户账户。
+      计算机账户通常具有难以破解的复杂随机密码，但在特定横向移动场景中仍可能有用。
+      注意 Active Directory 默认可能将 LDAP 结果限制为 1000 个对象，较大的环境需要分页。
     command: "impacket-GetUserSPNs {{domain}}/{{username}}:{{password}} -dc-ip {{dc_ip}} -machine-only"
 
   # === EXPLOITATION (KERBEROASTING) ===
-  - title: impacket-GetUserSPNs - request TGS for Kerberoasting
+  - title: impacket-GetUserSPNs - 请求 TGS 进行 Kerberoasting
     desc: |
-      Requests Ticket Granting Service (TGS) tickets for all discovered service accounts and outputs them in a format compatible with cracking tools.
-      The output is displayed in the terminal in a format that can be directly used by Hashcat (mode 13100) or John the Ripper.
-      Be cautious as requesting a large number of tickets in a short time is a high-signal event that often triggers "Honeytoken" alerts or SIEM detections.
+      为所有发现的服务账户请求票据授予服务（TGS）票据，并以兼容破解工具的格式输出。
+      输出显示在终端中，可直接供 Hashcat（模式 13100）或 John the Ripper 使用。
+      请注意短时间内请求大量票据是高信号事件，常会触发“蜜标”告警或 SIEM 检测。
     command: "impacket-GetUserSPNs {{domain}}/{{username}}:{{password}} -dc-ip {{dc_ip}} -request"
 
-  - title: impacket-GetUserSPNs - request and save tickets to file
+  - title: impacket-GetUserSPNs - 请求票据并保存到文件
     desc: |
-      Requests TGS tickets for all eligible accounts and automatically saves the resulting hashes into a specified local file.
-      This is the most efficient way to capture hashes for offline cracking without having to manually copy-paste from the terminal output.
-      The generated file will contain the hashes in the standard Kerberoasting format ($krb5tgs$...).
+      为所有符合条件的账户请求 TGS 票据，并将生成的哈希自动保存到指定的本地文件。
+      这是捕获哈希进行离线破解的最高效方式，无需手动从终端输出复制粘贴。
+      生成的文件将包含标准 Kerberoasting 格式（$krb5tgs$...）的哈希。
     command: "impacket-GetUserSPNs {{domain}}/{{username}}:{{password}} -dc-ip {{dc_ip}} -outputfile {{output_file|hashes.txt}}"
 
-  - title: impacket-GetUserSPNs - target specific user for ticket request
+  - title: impacket-GetUserSPNs - 针对特定用户请求票据
     desc: |
-      Requests a TGS ticket for a single, specific service account identified by its username.
-      This targeted approach is much quieter than requesting tickets for every account in the domain and helps avoid detection.
-      It is highly recommended if you have already identified a high-value or likely-vulnerable service account during the enumeration phase.
+      为按其用户名标识的单个特定服务账户请求 TGS 票据。
+      这种有针对性的方法比请求域中每个账户的票据安静得多，有助于规避检测。
+      如果你已在枚举阶段识别出高价值或可能易受攻击的服务账户，强烈推荐使用。
     command: "impacket-GetUserSPNs {{domain}}/{{username}}:{{password}} -dc-ip {{dc_ip}} -request-user {{target_service_user}}"
 
   # === AUTHENTICATION VARIATIONS ===
-  - title: impacket-GetUserSPNs - authenticate using NTLM hashes
+  - title: impacket-GetUserSPNs - 使用 NTLM 哈希认证
     desc: |
-      Uses NTLM hashes for authentication to the Domain Controller instead of a cleartext password (Pass-the-Hash).
-      The hash format should be LMHASH:NTHASH; if you only have the NT hash, provide the LM part as 32 zeros or leave it blank as shown.
-      This is essential when you have recovered a user's hash from memory or a SAM database but cannot decrypt it to a plaintext password.
+      使用 NTLM 哈希而非明文密码向域控制器认证（Pass-the-Hash）。
+      哈希格式应为 LMHASH:NTHASH；如果只有 NT 哈希，请将 LM 部分写为 32 个零或按示例留空。
+      当你已从内存或 SAM 数据库恢复用户哈希但无法解密为明文密码时，这是必需的。
     command: "impacket-GetUserSPNs {{domain}}/{{username}} -hashes {{hash}} -dc-ip {{dc_ip}} -request"
 
-  - title: impacket-GetUserSPNs - authenticate using Kerberos ticket (ccache)
+  - title: impacket-GetUserSPNs - 使用 Kerberos 票据（ccache）认证
     desc: |
-      Performs the SPN query and ticket requests using an existing Kerberos ticket-granting ticket (TGT) stored in a ccache file.
-      You must set the environment variable KRB5CCNAME to the path of your .ccache file before running this command.
-      This method is useful for "Pass-the-Ticket" scenarios or when you want to avoid putting any passwords/hashes in the process command line.
+      使用存储在 ccache 文件中的现有 Kerberos 票据授予票据（TGT）执行 SPN 查询和票据请求。
+      运行此命令前必须将 KRB5CCNAME 环境变量设置为 .ccache 文件的路径。
+      此方法适用于“Pass-the-Ticket”场景，或想避免在进程命令行中放置任何密码/哈希时。
     command: "impacket-GetUserSPNs -k -no-pass {{domain}}/{{username}} -dc-ip {{dc_ip}} -request"
 
-  - title: impacket-GetUserSPNs - cross-domain Kerberoasting
+  - title: impacket-GetUserSPNs - 跨域 Kerberoasting
     desc: |
-      Attempts to query and request SPNs from a different domain than the one the user belongs to, leveraging domain trusts.
-      The -target-domain flag specifies the domain you want to attack, while the initial target parameter contains your current valid credentials.
-      This is a key technique for lateral movement and privilege escalation across a multi-domain forest.
+      利用域信任关系，从用户所属域之外的其他域查询并请求 SPN。
+      -target-domain 标志指定要攻击的域，而初始目标参数包含你当前的有效凭据。
+      这是跨多域林进行横向移动和权限提升的关键技术。
     command: "impacket-GetUserSPNs {{current_domain}}/{{username}}:{{password}} -target-domain {{target_domain}} -dc-ip {{target_dc_ip}} -request"
 
-  - title: impacket-GetUserSPNs - authenticate with AES Key
+  - title: impacket-GetUserSPNs - 使用 AES 密钥认证
     desc: |
-      Uses a raw AES-128 or AES-256 hex key for Kerberos authentication instead of a password or NTLM hash.
-      This provides a more modern and sometimes necessary way to authenticate in environments where NTLM is disabled or restricted.
-      The AES key is typically extracted from the LSASS process or a local secrets database on a compromised host.
+      使用原始的 AES-128 或 AES-256 十六进制密钥进行 Kerberos 认证，而非密码或 NTLM 哈希。
+      在 NTLM 被禁用或受限的环境中，这提供了更现代且有时必需的认证方式。
+      AES 密钥通常从失陷主机的 LSASS 进程或本地密钥数据库中提取。
     command: "impacket-GetUserSPNs {{domain}}/{{username}} -aesKey {{hex_key}} -dc-ip {{dc_ip}} -request"

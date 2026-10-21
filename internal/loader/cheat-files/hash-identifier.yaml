@@ -2,34 +2,26 @@ tool: hash-identifier
 tags: [security, pentest, hash, identification, cryptography, enumeration, forensics]
 
 actions:
-  - title: hash-identifier - interactive mode
+  - title: hash-identifier - 交互模式
     desc: |
-      Launch the tool in its primary interactive mode to identify hashes manually. 
-      This is the standard way to use the tool, allowing you to paste hashes one by one and receive immediate feedback on the likely algorithm. 
-      It is highly useful during the enumeration phase of a pentest when you encounter unknown strings in databases or configuration files.
+      以其主要交互模式启动工具，手动识别哈希。这是使用该工具的标准方式，允许你逐个粘贴哈希并立即获得可能算法的反馈。当你在渗透测试枚举阶段遇到数据库或配置文件中的未知字符串时非常有用。
     command: "hash-identifier"
 
   # === AUTOMATION AND INPUT REDIRECTION ===
 
-  - title: hash-identifier - identify single hash via pipe
+  - title: hash-identifier - 通过管道识别单个哈希
     desc: |
-      Identify a single hash by piping the string directly into the tool from the command line. 
-      This method is efficient for quick checks without manually entering the interactive environment. 
-      The tool will process the piped string as if it were typed at the "HASH:" prompt and display the results immediately.
+      通过从命令行将字符串直接管道输入工具来识别单个哈希。这种方法适合快速检查，无需手动进入交互环境。工具会像在 HASH: 提示符下输入一样处理管道字符串，并立即显示结果。
     command: "echo {{hash_string}} | hash-identifier"
 
-  - title: hash-identifier - identify hash from a file
+  - title: hash-identifier - 从文件识别哈希
     desc: |
-      Read a hash from a specific file and redirect it into the hash-identifier tool. 
-      This approach is useful when you have extracted a hash into a temporary file and want to avoid shell history logging for sensitive data. 
-      Ensure the file contains the raw hash string to get an accurate identification of the potential cryptographic signatures.
+      从特定文件读取哈希并将其重定向到 hash-identifier 工具。当你已将哈希提取到临时文件并希望避免敏感数据被 shell 历史记录时，这种方法非常有用。请确保文件包含原始哈希字符串，以获得潜在加密签名的准确识别。
     command: "hash-identifier < {{file_path}}"
 
   # === CRACKING PREPARATION ===
 
-  - title: hash-identifier - credential analysis for cracking
+  - title: hash-identifier - 为破解做凭据分析
     desc: |
-      Use the tool to determine which format to use for password recovery tools like Hashcat or John the Ripper. 
-      Correctly identifying the hash type (e.g., MD5 vs. NTLM vs. SHA-1) is critical because using the wrong mode in cracking tools will result in zero matches. 
-      This tool provides a "Possible Hashs" list and a "Least Possible Hashs" list to help you prioritize your cracking strategy.
+      使用该工具确定密码恢复工具（如 Hashcat 或 John the Ripper）应使用的格式。正确识别哈希类型（如 MD5 与 NTLM 与 SHA-1）至关重要，因为在破解工具中使用错误模式将导致零匹配。该工具提供“可能的哈希”列表和“最不可能的哈希”列表，帮助你确定破解策略的优先级。
     command: "hash-identifier"

@@ -3,34 +3,40 @@ tags: [security, pentest, active-directory, enumeration, bloodhound, automation,
 
 actions:
 # === PROJECT MANAGEMENT ===
- - title: bloodhound-automation.py - start a new project
+ - title: bloodhound-automation.py - 启动新项目
    desc: |
-     Deploy a new BloodHound Community Edition instance using Docker. This command automatically sets up Neo4j and the web interface with pre-configured credentials and random passwords. It is the primary way to initialize an environment for a specific penetration testing engagement. Ensure Docker is running on your host before executing this command.
+     使用 Docker 部署新的 BloodHound Community Edition 实例。该命令自动设置 Neo4j 与 Web 界面，并带预配置凭据与随机密码。
+     这是为特定渗透测试任务初始化环境的主要方式。执行此命令前请确保主机上已运行 Docker。
    command: "bloodhound-automation.py start -bp {{binary_port|10001}} -np {{neo4j_port|10501}} -wp {{web_port|8001}} {{project_name}}"
 
- - title: bloodhound-automation.py - list existing projects
+ - title: bloodhound-automation.py - 列出现有项目
    desc: |
-     Display all currently managed BloodHound projects on the local system. This provides a quick overview of active and inactive environments and their directory structures. It is useful for verifying project names before performing data imports or deletions. Use this regularly to manage resources on shared assessment servers.
+     显示本地系统上当前所有受管理的 BloodHound 项目。这提供活跃与非活跃环境及其目录结构的快速概览。
+     它在执行数据导入或删除之前验证项目名称很有用。在共享评估服务器上定期使用它来管理资源。
    command: "bloodhound-automation.py list"
 
- - title: bloodhound-automation.py - stop a running project
+ - title: bloodhound-automation.py - 停止运行中的项目
    desc: |
-     Shut down the Docker containers associated with a specific project name. Use this command when an analysis session is over to free up system memory and CPU resources. The project data is preserved in the project folder and can be resumed later using the start command. This does not delete any ingested Active Directory data.
+     关闭与特定项目名关联的 Docker 容器。分析会话结束后使用此命令释放系统内存与 CPU 资源。
+     项目数据保留在项目文件夹中，之后可使用 start 命令恢复。这不会删除任何已导入的 Active Directory 数据。
    command: "bloodhound-automation.py stop {{project_name}}"
 
 # === DATA OPERATIONS ===
- - title: bloodhound-automation.py - ingest SharpHound data
+ - title: bloodhound-automation.py - 导入 SharpHound 数据
    desc: |
-     Import collected Active Directory data into a running BloodHound project instance. This action automates the JWT token retrieval and handles the sequential upload of JSON files contained within the ZIP archive. It is the standard method for feeding SharpHound or BloodHound.py output into the database. Monitor the terminal output to ensure all JSON files are processed successfully.
+     将收集到的 Active Directory 数据导入运行中的 BloodHound 项目实例。该操作自动获取 JWT 令牌，并处理 ZIP 归档中 JSON 文件的顺序上传。
+     这是将 SharpHound 或 BloodHound.py 输出送入数据库的标准方法。监控终端输出以确保所有 JSON 文件处理成功。
    command: "bloodhound-automation.py data -z {{zip_file_path}} {{project_name}}"
 
- - title: bloodhound-automation.py - clear database content
+ - title: bloodhound-automation.py - 清空数据库内容
    desc: |
-     Wipe all graph data from the Neo4j database for a specific project. This command is useful when you need to perform a clean re-import of data without destroying the underlying Docker configuration. It saves time compared to deleting and recreating the entire project. Note that this action is permanent and cannot be undone.
+     清空特定项目 Neo4j 数据库中的所有图数据。当你需要干净地重新导入数据而又不破坏底层 Docker 配置时，此命令很有用。
+     相比删除并重建整个项目，它节省时间。注意该操作是永久性的且无法撤销。
    command: "bloodhound-automation.py clear {{project_name}}"
 
 # === CLEANUP ===
- - title: bloodhound-automation.py - delete a project
+ - title: bloodhound-automation.py - 删除项目
    desc: |
-     Completely remove a project including its Docker containers, volumes, and local directories. This should be performed at the end of an engagement to ensure client data is securely removed from the assessment machine. It is a destructive operation that purges all logs, credentials, and database files. Always verify you have the correct project name to avoid accidental data loss.
+     彻底删除项目，包括其 Docker 容器、卷与本地目录。应在任务结束时执行，以确保客户端数据从评估机器上被安全移除。
+     这是一项破坏性操作，会清除所有日志、凭据与数据库文件。务必确认项目名正确，以免意外丢失数据。
    command: "bloodhound-automation.py delete {{project_name}}"

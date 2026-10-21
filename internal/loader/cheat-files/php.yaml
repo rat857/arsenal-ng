@@ -4,122 +4,122 @@ tags: [web, development, scripting, server, backend, pentest]
 actions:
 # === BASIC INFORMATION & CONFIGURATION ===
 
-  - title: php - check version
+  - title: php - 查看版本
     desc: |
-      Display the current PHP version and build information. Use this to verify that the
-      correct version of PHP is installed for your application's requirements. It also
-      provides information about the build date and the Zend Engine version.
+      显示当前 PHP 版本和构建信息。
+      用它来验证安装的 PHP 版本是否满足应用程序的要求。
+      它还会提供构建日期和 Zend Engine 版本等信息。
     command: "php -v"
 
-  - title: php - show information (phpinfo)
+  - title: php - 显示信息（phpinfo）
     desc: |
-      Output comprehensive information about the current PHP configuration, similar to phpinfo().
-      This includes details about loaded extensions, environment variables, and server settings.
-      Be cautious when running this on a production system as it may leak sensitive configuration data.
+      输出当前 PHP 配置的全面信息，类似于 phpinfo()。
+      这包括已加载的扩展、环境变量和服务器设置等详细信息。
+      在生产系统上运行时请谨慎，因为它可能泄露敏感的配置数据。
     command: "php -i"
 
-  - title: php - list modules
+  - title: php - 列出模块
     desc: |
-      List all compiled-in and dynamically loaded PHP modules. This is useful for checking if a 
-      required extension like 'mysqli', 'gd', or 'curl' is active. If a module is missing, 
-      you may need to install it via your system's package manager or enable it in php.ini.
+      列出所有内置编译和动态加载的 PHP 模块。
+      这可用于检查 mysqli、gd 或 curl 等所需扩展是否已启用。
+      如果缺少某个模块，你可能需要通过系统包管理器安装它，或在 php.ini 中启用。
     command: "php -m"
 
-  - title: php - show configuration files
+  - title: php - 显示配置文件
     desc: |
-      Display the paths to the loaded configuration file (php.ini) and any additional .ini directories.
-      Use this when you need to know exactly which file to edit to change server settings. 
-      It is essential for troubleshooting configuration overrides or missing settings.
+      显示已加载的配置文件（php.ini）以及任何附加 .ini 目录的路径。
+      当你需要知道应编辑哪个文件来更改服务器设置时使用。
+      它对于排查配置覆盖或缺失设置的问题至关重要。
     command: "php --ini"
 
 # === EXECUTION & SYNTAX ===
 
-  - title: php - execute file
+  - title: php - 执行文件
     desc: |
-      Parse and execute a specific PHP script file from the command line. This is the 
-      standard way to run CLI-based PHP applications or maintenance scripts. You can pass 
-      arguments to the script by adding them after the filename.
+      从命令行解析并执行特定的 PHP 脚本文件。
+      这是运行基于 CLI 的 PHP 应用程序或维护脚本的标准方式。
+      你可以在文件名后附加参数来向脚本传递参数。
     command: "php -f {{file|index.php}}"
 
-  - title: php - run code directly
+  - title: php - 直接运行代码
     desc: |
-      Execute a string of PHP code directly from the terminal without using script tags.
-      This is highly effective for quick debugging or testing small logic snippets. 
-      Ensure you wrap the code in quotes to prevent the shell from interpreting special characters.
+      无需脚本标签，直接从终端执行一段 PHP 代码字符串。
+      这对于快速调试或测试小的逻辑片段非常有效。
+      确保用引号包裹代码，防止 shell 解释特殊字符。
     command: "php -r {{code|'echo \"Hello World\\n\";'}}"
 
-  - title: php - syntax check (lint)
+  - title: php - 语法检查（lint）
     desc: |
-      Perform a syntax check on the specified PHP file without executing the code. 
-      This 'lint' mode is a critical step in CI/CD pipelines to catch parse errors before deployment.
-      It will report any syntax mistakes and return a non-zero exit code if errors are found.
+      对指定的 PHP 文件执行语法检查而不执行代码。
+      此 lint 模式是 CI/CD 流水线中在部署前捕获解析错误的关键步骤。
+      它会报告任何语法错误，并在发现错误时返回非零退出码。
     command: "php -l {{file|index.php}}"
 
-  - title: php - interactive shell
+  - title: php - 交互式 shell
     desc: |
-      Start an interactive PHP shell (REPL) for real-time code execution and testing. 
-      This mode requires the 'readline' extension to be enabled in your PHP installation. 
-      It allows you to type PHP code and see the results immediately, which is great for learning or prototyping.
+      启动交互式 PHP shell（REPL）以进行实时的代码执行和测试。
+      此模式需要你的 PHP 安装启用 readline 扩展。
+      你可以输入 PHP 代码并立即看到结果，非常适合学习或原型开发。
     command: "php -a"
 
 # === BUILT-IN WEB SERVER ===
 
-  - title: php - start development server
+  - title: php - 启动开发服务器
     desc: |
-      Launch a built-in web server for local development purposes on a specific address and port.
-      This server is not intended for production environments as it is single-threaded and lacks advanced security.
-      It is a convenient way to test web applications without installing a full web server like Apache or Nginx.
+      在特定地址和端口上启动内置 Web 服务器，用于本地开发。
+      该服务器不适用于生产环境，因为它是单线程的且缺乏高级安全特性。
+      这是一种无需安装 Apache 或 Nginx 等完整 Web 服务器即可测试 Web 应用的便捷方式。
     command: "php -S {{host|localhost}}:{{port|8000}}"
 
-  - title: php - start server with document root
+  - title: php - 使用文档根目录启动服务器
     desc: |
-      Start the built-in development web server using a specific directory as the root.
-      This is particularly useful for modern frameworks where the entry point is in a 'public' or 'web' folder.
-      Routing will be handled automatically for static files, while other requests are sent to index.php.
+      使用特定目录作为根目录启动内置开发 Web 服务器。
+      这对于入口点位于 public 或 web 文件夹中的现代框架特别有用。
+      静态文件的路由会自动处理，而其他请求会发送到 index.php。
     command: "php -S {{host|localhost}}:{{port|8000}} -t {{docroot|./public}}"
 
 # === REFLECTION & INSPECTION ===
 
-  - title: php - show function info
+  - title: php - 显示函数信息
     desc: |
-      Display detailed reflection information about a specific built-in or user-defined function.
-      The output includes parameter names, types, and whether the function is internal or user-defined.
-      This is helpful for developers to understand the signature of functions without consulting external documentation.
+      显示关于特定内置或用户自定义函数的详细反射信息。
+      输出包括参数名称、类型以及该函数是内部还是用户自定义。
+      这有助于开发者在无需查阅外部文档的情况下理解函数的签名。
     command: "php --rf {{function_name|strlen}}"
 
-  - title: php - show class info
+  - title: php - 显示类信息
     desc: |
-      Show reflection data for a specific PHP class, including its methods, properties, and constants.
-      It provides visibility into the class structure, including inheritance and implemented interfaces.
-      Use this to inspect library classes or verify the structure of your own objects during development.
+      显示特定 PHP 类的反射数据，包括其方法、属性和常量。
+      它提供了类结构的可见性，包括继承和已实现的接口。
+      可用于在开发期间检查库类或验证自己对象的结构。
     command: "php --rc {{class_name|DateTime}}"
 
-  - title: php - show extension info
+  - title: php - 显示扩展信息
     desc: |
-      Display information about a specific PHP extension and its defined functions/classes.
-      This helps in understanding what features a particular module (like 'json' or 'mbstring') provides.
-      It is useful for verifying versioning and capabilities of installed extensions.
+      显示关于特定 PHP 扩展及其定义的函数和类的信息。
+      这有助于理解某个模块（如 json 或 mbstring）提供的功能。
+      它可用于验证已安装扩展的版本和能力。
     command: "php --re {{extension_name|json}}"
 
 # === ADVANCED PROCESSING ===
 
-  - title: php - process input line by line
+  - title: php - 逐行处理输入
     desc: |
-      Execute PHP code for every line of input received from the standard input (stdin).
-      The current line's content is available within the code for processing or filtering.
-      This makes PHP a powerful tool for text processing and log analysis in a shell environment.
+      对来自标准输入（stdin）的每一行输入执行 PHP 代码。
+      当前行的内容可在代码中使用，以便进行处理或过滤。
+      这使得 PHP 成为 shell 环境中进行文本处理和日志分析的强大工具。
     command: "echo {{input|'data'}} | php -R {{code|'echo \"Line: $argn\\n\";'}}"
 
-  - title: php - execute with custom INI settings
+  - title: php - 使用自定义 INI 设置执行
     desc: |
-      Run a PHP script while overriding specific configuration directives from the command line.
-      This allows you to temporarily change settings like 'memory_limit' or 'display_errors' for a single execution.
-      You can use multiple -d flags to define several different configuration entries.
+      运行 PHP 脚本，同时从命令行覆盖特定的配置指令。
+      这使你可以为单次执行临时更改诸如 memory_limit 或 display_errors 之类的设置。
+      你可以使用多个 -d 标志来定义多个不同的配置项。
     command: "php -d {{key|memory_limit}}={{value|512M}} -f {{file|script.php}}"
 
-  - title: php - strip comments and whitespace
+  - title: php - 去除注释和空白
     desc: |
-      Output the source of a PHP file after removing all comments and unnecessary whitespace.
-      This can be used to create a "minified" version of a script or to analyze the core logic without distractions.
-      The resulting code is still functional but much harder for humans to read.
+      输出删除所有注释和不必要空白后的 PHP 文件源码。
+      可用于创建脚本的压缩版本，或在不受干扰的情况下分析核心逻辑。
+      生成的代码仍然可用，但对人类来说更难阅读。
     command: "php -w {{file|index.php}}"

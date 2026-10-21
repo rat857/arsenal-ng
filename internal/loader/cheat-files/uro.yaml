@@ -3,60 +3,71 @@ tags: [web, security, pentest, reconnaissance, discovery, url-normalization]
 
 actions:
   # === BASIC USAGE ===
-  - title: uro - process URLs via stdin
+  - title: uro - 通过 stdin 处理 URL
     desc: |
-      Pipe a list of URLs directly into uro to remove duplicates and noise. It is the most common way to integrate uro into a reconnaissance pipeline after tools like waybackurls, gau, or katana. This command will output a cleaned, unique list of URLs to the terminal.
+      将 URL 列表直接管道传入 uro，以去除重复项和噪声。这是在 waybackurls、gau 或 katana 等工具之后将 uro 集成到侦察流水线中最常见的方式。
+      此命令会将清理后、去重的 URL 列表输出到终端。
     command: "cat {{input_file|urls.txt}} | uro"
 
-  - title: uro - input and output files
+  - title: uro - 输入和输出文件
     desc: |
-      Specify an input file and an output file directly using flags. This is useful when dealing with very large datasets that you want to save for later analysis. Note that uro will not overwrite the output file if it already exists, ensuring data safety.
+      使用参数直接指定输入文件和输出文件。当你处理想要保存以供后续分析的超大数据集时很有用。
+      注意如果输出文件已存在，uro 不会覆盖它，从而确保数据安全。
     command: "uro -i {{input_file}} -o {{output_file|cleaned_urls.txt}}"
 
   # === EXTENSION FILTERING ===
-  - title: uro - whitelist specific extensions
+  - title: uro - 白名单特定扩展名
     desc: |
-      Filter the URL list to only include the extensions you specifically want to see. This ignores all other extensions except the ones provided in the whitelist. Extensionless pages (like /api/v1/user) will still be included by default unless additional filters are used.
+      过滤 URL 列表，仅包含你特别想查看的扩展名。这会忽略白名单中未提供的所有其他扩展名。
+      默认情况下无扩展名的页面（如 /api/v1/user）仍会包含在内，除非使用额外的过滤器。
     command: "uro -i {{input_file}} -w {{extensions|php asp html}}"
 
-  - title: uro - blacklist specific extensions
+  - title: uro - 黑名单特定扩展名
     desc: |
-      Explicitly exclude certain file extensions from the output list. By default, uro has a built-in list of "useless" extensions it removes, but providing this flag will override that default list with your own. Use this to hide noise like images, fonts, or CSS files during manual review.
+      从输出列表中显式排除特定文件扩展名。默认情况下 uro 有一个内置的“无用”扩展名删除列表，但提供此参数会用你自己的列表覆盖该默认列表。
+      用它来在手动审查期间隐藏图片、字体或 CSS 文件等噪声。
     command: "uro -i {{input_file}} -b {{extensions|jpg png js pdf}}"
 
   # === GRANULAR FILTERS ===
-  - title: uro - filter for parameters only
+  - title: uro - 仅过滤带参数的 URL
     desc: |
-      Filter the output to only show URLs that contain query parameters. This is highly effective for preparing targets for tools like SQLMap, Dalfox, or Airix. It removes static pages and focuses purely on potentially interactive and vulnerable endpoints.
+      过滤输出，仅显示包含查询参数的 URL。这对于为 SQLMap、Dalfox 或 Airix 等工具准备目标非常有效。
+      它会移除静态页面，纯粹聚焦于潜在可交互和易受攻击的端点。
     command: "uro -i {{input_file}} -f hasparams"
 
-  - title: uro - filter for extensions only
+  - title: uro - 仅过滤带扩展名的 URL
     desc: |
-      Only output URLs that have a file extension in the path. This is useful when you want to ignore directory-style endpoints and focus on specific files like scripts or configuration files. It helps in mapping out the technology stack of the target.
+      仅输出路径中具有文件扩展名的 URL。当你想忽略目录式端点并专注于脚本或配置文件等特定文件时很有用。
+      它有助于测绘目标的技术栈。
     command: "uro -i {{input_file}} -f hasext"
 
-  - title: uro - filter for vulnerability-prone parameters
+  - title: uro - 过滤易受攻击的参数
     desc: |
-      Filter the list to only include URLs with parameters that are historically known to be vulnerable. Uro uses a predefined list of parameter names commonly associated with XSS, SQLi, LFI, and SSRF. This allows a researcher to prioritize the most "interesting" targets first.
+      过滤列表，仅包含历史上已知易受攻击的参数的 URL。Uro 使用预定义的参数名称列表，这些名称通常与 XSS、SQLi、LFI 和 SSRF 相关。
+      这使研究人员能够优先处理最“有趣”的目标。
     command: "uro -i {{input_file}} -f vuln"
 
   # === ADVANCED CONFIGURATION ===
-  - title: uro - combine multiple filters
+  - title: uro - 组合多个过滤器
     desc: |
-      Apply multiple filters simultaneously for granular control over the data. For example, you can filter for URLs that must have both an extension and parameters. This reduces the final list to a highly specific subset of URLs for targeted exploitation.
+      同时应用多个过滤器，对数据进行细粒度控制。例如你可以过滤必须同时具有扩展名和参数的 URL。
+      这会将最终列表缩减为高度特定的 URL 子集，用于针对性利用。
     command: "uro -i {{input_file}} --filters {{filter1|hasext}} {{filter2|hasparams}}"
 
-  - title: uro - keep human-written content
+  - title: uro - 保留人工编写的内容
     desc: |
-      Prevent uro from removing URLs that appear to be human-written content like blog posts or articles. Normally, uro tries to deduplicate these to save time during scanning. Use this if your scope includes CMS platforms where the path structure might contain valuable keywords or unique templates.
+      防止 uro 移除看似人工编写内容的 URL，如博客文章或文章。通常 uro 会尝试对这些内容去重以节省扫描时间。
+      如果你的范围包括 CMS 平台，且路径结构中可能包含有价值的关键字或独特模板，请使用此参数。
     command: "uro -i {{input_file}} -f keepcontent"
 
-  - title: uro - disable all extension filtering
+  - title: uro - 禁用所有扩展名过滤
     desc: |
-      Tell uro not to remove any page based on its extension, including the ones it usually considers useless. This is useful when you want a completely comprehensive list and don't want to miss things like .jpg or .css files. Use this during the initial broad discovery phase.
+      告诉 uro 不要基于扩展名移除任何页面，包括它通常认为无用的页面。当你想要一个完全全面的列表且不想错过 .jpg 或 .css 等文件时很有用。
+      在初始广泛发现阶段使用。
     command: "uro -i {{input_file}} -f allexts"
 
-  - title: uro - preserve trailing slashes
+  - title: uro - 保留末尾斜杠
     desc: |
-      Ensure that trailing slashes are not removed from the end of the URLs. By default, uro normalizes URLs by removing these slashes. Use this if the target web server treats `domain.com/page` and `domain.com/page/` as different resources.
+      确保不会从 URL 末尾移除斜杠。默认情况下 uro 通过移除这些斜杠来规范化 URL。
+      如果目标 Web 服务器将 domain.com/page 和 domain.com/page/ 视为不同资源，请使用此参数。
     command: "uro -i {{input_file}} -f keepslash"

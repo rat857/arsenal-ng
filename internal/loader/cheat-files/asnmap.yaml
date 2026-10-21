@@ -4,76 +4,76 @@ tags: [network, reconnaissance, enumeration, pentest, osint, security, cloud]
 actions:
 # === BASIC RECONNAISSANCE ===
 
- - title: asnmap - domain lookup
+ - title: asnmap - 域名查询
    desc: |
-     Resolve a domain name to its associated Autonomous System Number (ASN) and IP ranges. 
-     This is highly effective for mapping the network perimeter of a specific organization. 
-     It helps security researchers identify the hosting infrastructure and whether the target is using a CDN or private data center.
+     将域名解析为其关联的自治系统号（ASN）与 IP 段。
+     这对于绘制特定组织的网络边界非常有效。
+     它帮助安全研究人员识别托管基础设施，以及目标是否使用 CDN 或私有数据中心。
    command: "asnmap -d {{domain}}"
 
- - title: asnmap - ip address lookup
+ - title: asnmap - IP 地址查询
    desc: |
-     Identify the ASN information and network ownership for a specific IP address. 
-     Use this when you have an IP and need to determine which service provider or organization it belongs to. 
-     The tool supports both IPv4 and IPv6 addresses for comprehensive coverage.
+     识别特定 IP 地址的 ASN 信息与网络归属。
+     当你有一个 IP 并需要确定它属于哪个服务提供商或组织时使用。
+     该工具同时支持 IPv4 与 IPv6 地址，覆盖全面。
    command: "asnmap -i {{ip_address}}"
 
- - title: asnmap - lookup by asn number
+ - title: asnmap - 按 ASN 号查询
    desc: |
-     Retrieve all IP CIDR blocks associated with a specific ASN number. 
-     This is essential for discovering the full IP space assigned to an entity to define a scope for further scanning. 
-     Ensure the ASN is prefixed with "AS" for proper identification by the tool.
+     检索与特定 ASN 号关联的所有 IP CIDR 网段。
+     这对于发现分配给某实体的完整 IP 空间、以定义进一步扫描的范围至关重要。
+     请确保 ASN 以 "AS" 为前缀，以便工具正确识别。
    command: "asnmap -a {{asn_number|AS13335}}"
 
- - title: asnmap - lookup by organization name
+ - title: asnmap - 按组织名称查询
    desc: |
-     Search for network assets and ASN details using the name of an organization or company. 
-     This feature is powerful for broad reconnaissance when you do not yet have specific domains or IPs. 
-     Note that common names might return multiple results, so it is best used with specific corporate names.
+     使用组织或公司名称搜索网络资产与 ASN 详情。
+     当你还没有具体的域名或 IP 时，此功能对于广泛侦察非常强大。
+     注意常见名称可能返回多个结果，因此最好与具体的公司名称一起使用。
    command: "asnmap -org {{org_name|GOOGLE}}"
 
 # === INPUT AND OUTPUT OPERATIONS ===
 
- - title: asnmap - bulk lookup from file
+ - title: asnmap - 从文件批量查询
    desc: |
-     Process multiple targets simultaneously by providing an input file containing a list of domains, IPs, or ASNs. 
-     This is the most efficient way to handle large-scale reconnaissance tasks during the initial phase of an engagement. 
-     The input file should contain one target per line to ensure accurate parsing.
+     通过提供包含域名、IP 或 ASN 列表的输入文件，同时处理多个目标。
+     这是参与前期阶段处理大规模侦察任务的最高效方式。
+     输入文件应每行一个目标，以确保准确解析。
    command: "asnmap -f {{input_file|targets.txt}}"
 
- - title: asnmap - formatted json output
+ - title: asnmap - 格式化 JSON 输出
    desc: |
-     Generate results in JSON format which is ideal for integration with other automation scripts or tools like jq. 
-     The JSON output provides detailed metadata including timestamps, AS names, and country codes. 
-     Using the silent flag alongside JSON helps in keeping the output clean for piping to other processes.
+     以 JSON 格式生成结果，非常适合与其他自动化脚本或 jq 等工具集成。
+     JSON 输出提供详细的元数据，包括时间戳、AS 名称与国家代码。
+     将静默标志与 JSON 一起使用有助于保持输出干净，便于管道到其他进程。
    command: "asnmap -d {{domain}} -j -silent"
 
- - title: asnmap - csv export
+ - title: asnmap - CSV 导出
    desc: |
-     Export the reconnaissance results into a CSV file for structured analysis. 
-     This is useful for creating reports or performing data analysis in spreadsheet software like Excel. 
-     It provides a clear tabular view of the relationship between inputs, ASNs, and their respective ranges.
+     将侦察结果导出到 CSV 文件以进行结构化分析。
+     这对于创建报告或在 Excel 等电子表格软件中进行数据分析很有用。
+     它提供输入、ASN 及其各自网段之间关系的清晰表格视图。
    command: "asnmap -d {{domain}} -c -o {{output_file|results.csv}}"
 
 # === ADVANCED CONFIGURATION ===
 
- - title: asnmap - include ipv6 ranges
+ - title: asnmap - 包含 IPv6 网段
    desc: |
-     Explicitly request the tool to display IPv6 CIDR ranges in the command-line output. 
-     As modern infrastructures increasingly use IPv6, this ensures you do not miss any part of the target's network footprint. 
-     This flag is particularly important when auditing cloud environments or large ISP networks.
+     显式请求工具在命令行输出中显示 IPv6 CIDR 网段。
+     随着现代基础设施越来越多地使用 IPv6，这可确保你不会遗漏目标网络足迹的任何部分。
+     在审计云环境或大型 ISP 网络时，此标志尤为重要。
    command: "asnmap -d {{domain}} -v6"
 
- - title: asnmap - custom resolvers
+ - title: asnmap - 自定义解析器
    desc: |
-     Specify a list of custom DNS resolvers to use for the lookups. 
-     Using reliable or private resolvers can help bypass potential rate limits or DNS poisoning in certain environments. 
-     Provide multiple resolvers separated by commas for redundancy during the lookup process.
+     指定用于查询的自定义 DNS 解析器列表。
+     使用可靠或私有解析器有助于绕过某些环境中的潜在限速或 DNS 污染。
+     提供多个以逗号分隔的解析器，以便在查询过程中实现冗余。
    command: "asnmap -d {{domain}} -r {{resolvers|8.8.8.8,1.1.1.1}}"
 
- - title: asnmap - update tool
+ - title: asnmap - 更新工具
    desc: |
-     Update the asnmap utility to the latest version directly from the official repository. 
-     Staying updated ensures that you have the latest features and the most stable lookup mechanisms. 
-     It is recommended to run this periodically to maintain tool efficacy.
+     直接从官方仓库将 asnmap 工具更新到最新版本。
+     保持更新可确保你获得最新特性与最稳定的查询机制。
+     建议定期运行此命令以维持工具效能。
    command: "asnmap -up"

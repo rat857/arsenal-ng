@@ -4,74 +4,58 @@ tags: [password-cracking, zip, security, forensics, pentest, brute-force]
 # === PASSWORD RECOVERY ACTIONS ===
 
 actions:
- - title: fcrackzip - dictionary attack
+ - title: fcrackzip - 字典攻击
    desc: |
-     Performs a password recovery attempt using a specified wordlist. This is generally the most efficient method if the password is a common word or part of a known leak. 
-     The -u flag is highly recommended as it uses unzip to weed out false positives, ensuring the found password actually decrypts the file.
-     This method is significantly faster than brute-force for complex but common passwords.
+     使用指定字典执行密码恢复尝试。
+     如果密码是常见单词或已知泄露的一部分，这通常是最有效的方法，强烈建议使用 -u 标志，它会用 unzip 过滤误报以确保找到的密码确实能解密文件。
    command: "fcrackzip -D -p {{wordlist|/usr/share/wordlists/rockyou.txt}} -u {{zip_file}}"
 
- - title: fcrackzip - brute force lowercase alphabetic
+ - title: fcrackzip - 小写字母暴力破解
    desc: |
-     Attempts to crack the zip file using a brute-force approach with lowercase characters (a-z). 
-     Use this when dictionary attacks fail and you suspect a simple alphabetic password. 
-     The -l flag defines the length range (min-max) to search; keeping this range narrow significantly reduces completion time.
-     The -b flag explicitly enables the brute-force algorithm.
+     使用小写字符（a-z）的暴力破解方法尝试破解 zip 文件。
+     当字典攻击失败且你怀疑是简单的字母密码时使用，-l 标志定义搜索的长度范围（最小-最大），缩小范围可显著减少完成时间。
    command: "fcrackzip -b -c a -l {{min_length|1}}-{{max_length|6}} -u {{zip_file}}"
 
- - title: fcrackzip - brute force numeric (PIN)
+ - title: fcrackzip - 数字暴力破解（PIN）
    desc: |
-     Specifically targets numeric passwords by using only the digit charset (0-9). 
-     This is much faster than a full alphanumeric search and is ideal for recovering PINs or date-based passwords. 
-     If you know the exact length of the PIN, set the min and max length to the same value to optimize performance.
-     This is often the first brute-force attempt performed after dictionary attacks.
+     仅使用数字字符集（0-9）专门针对数字密码。
+     这比完整的字母数字搜索快得多，非常适合恢复 PIN 或基于日期的密码，若知道 PIN 的确切长度，将最小和最大长度设为相同值可优化性能。
    command: "fcrackzip -b -c 1 -l {{min_length|4}}-{{max_length|6}} -u {{zip_file}}"
 
- - title: fcrackzip - brute force alphanumeric
+ - title: fcrackzip - 字母数字暴力破解
    desc: |
-     Searches for passwords containing both lowercase letters and numbers. 
-     This increases complexity and search time significantly compared to single-charset attacks. 
-     The -v (verbose) flag is added here to monitor the progress and see the current passwords being tested.
-     Note that as the length increases, the time required grows exponentially.
+     搜索同时包含小写字母和数字的密码。
+     与单字符集攻击相比，这会显著增加复杂度和搜索时间，这里加入 -v（详细）标志以监控进度并查看当前正在测试的密码。
    command: "fcrackzip -b -c a1 -l {{min_length|1}}-{{max_length|6}} -u -v {{zip_file}}"
 
- - title: fcrackzip - custom charset brute force
+ - title: fcrackzip - 自定义字符集暴力破解
    desc: |
-     Allows the user to specify a custom set of characters for the brute-force attack. 
-     This is useful if you have partial knowledge of the password composition, such as the inclusion of specific symbols or uppercase letters. 
-     Use the -c flag followed by the literal characters you want to include in the search space.
-     Be careful with shell-special characters in the charset; you may need to escape them or wrap the charset in quotes.
+     允许用户为暴力破解攻击指定自定义字符集。
+     当你部分了解密码构成（如包含特定符号或大写字母）时非常有用，使用 -c 标志后跟要纳入搜索空间的字面字符。
    command: "fcrackzip -b -c {{charset|aA1!}} -l {{length|5}} -u {{zip_file}}"
 
- - title: fcrackzip - resume or start from specific string
+ - title: fcrackzip - 从特定字符串恢复或开始
    desc: |
-     Starts the brute-force sequence from a specific initial string. 
-     This can be used to manually resume a session that was interrupted or to skip ahead in a predictable sequence. 
-     It is particularly useful for distributed cracking where you want different machines to start at different points in the keyspace.
-     The length parameter (-l) must be compatible with the initial password provided.
+     从特定的初始字符串开始暴力破解序列。
+     可用于手动恢复被中断的会话，或在可预测的序列中跳过前面部分，对希望不同机器从密钥空间不同位置开始的分布式破解尤为有用。
    command: "fcrackzip -b -p {{start_string|aaaa}} -l {{length|4}} -u {{zip_file}}"
 
 # === UTILITY AND PERFORMANCE ===
 
- - title: fcrackzip - perform benchmark
+ - title: fcrackzip - 执行基准测试
    desc: |
-     Executes a small internal benchmark to test the cracking speed on your current hardware. 
-     This helps in estimating how long a large-scale brute-force attack might take given the current CPU constraints. 
-     It does not attempt to crack a specific file but rather tests the raw performance of the internal algorithms.
-     Use this to compare performance across different systems or virtual machine configurations.
+     执行一个小型内部基准测试，测试当前硬件上的破解速度。
+     有助于估算在给定当前 CPU 条件下大规模暴力破解攻击可能耗时多久，它不尝试破解特定文件，而是测试内部算法的原始性能。
    command: "fcrackzip -B"
 
- - title: fcrackzip - validation check
+ - title: fcrackzip - 校验检查
    desc: |
-     Performs a sanity-check on the cracking algorithm to ensure it is functioning correctly on the current architecture. 
-     This is a diagnostic tool used to verify that the software was compiled correctly and yields expected results.
-     It is rarely used in daily operations but is vital for troubleshooting unexpected behavior or false negatives.
+     对破解算法执行健全性检查，确保其在当前架构上正常工作。
+     这是一个诊断工具，用于验证软件编译正确并产生预期结果，日常操作中很少使用，但对排查意外行为或漏报至关重要。
    command: "fcrackzip -V"
 
- - title: fcrackzip - specific method selection
+ - title: fcrackzip - 选择特定方法
    desc: |
-     Forces the use of a specific cracking method (e.g., zip2). 
-     Different ZIP compression tools use different encryption standards; while fcrackzip defaults to method 2 (zip2), some older or specific files might require method 0 or 1.
-     Using the wrong method will result in failed recovery even if the password is correct.
-     Check the help output to see which methods are compiled into your specific version of the tool.
+     强制使用特定的破解方法（如 zip2）。
+     不同的 ZIP 压缩工具使用不同的加密标准，虽然 fcrackzip 默认使用方法 2（zip2），但某些旧文件或特定文件可能需要方法 0 或 1。
    command: "fcrackzip -m {{method_number|2}} -b -l {{length|4}} {{zip_file}}"

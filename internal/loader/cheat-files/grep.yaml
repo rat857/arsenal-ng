@@ -3,98 +3,61 @@ tags: [linux, search, text-processing, command-line, utility, sysadmin, pentest]
 
 actions:
 # === BASIC SEARCHING ===
- - title: grep - basic string search
+ - title: grep - 基础字符串搜索
    desc: |
-     Basic search for a specific string within a single file. This is the most common 
-     starting point for finding specific keywords or data within logs or configuration files. 
-     It outputs every line that contains the specified pattern to the terminal. 
-     Note that by default, the search is case-sensitive.
+     在单个文件中搜索特定字符串。这是查找日志或配置文件中特定关键字或数据的最常见起点。它会将包含指定模式的每一行输出到终端。请注意，默认情况下搜索区分大小写。
    command: "grep \"{{pattern}}\" {{file}}"
 
- - title: grep - case-insensitive search
+ - title: grep - 不区分大小写搜索
    desc: |
-     Search for a pattern while ignoring the case of the characters. This is extremely 
-     useful when searching for user-provided input or logs where casing might be inconsistent. 
-     Use this when you are unsure if the target string uses uppercase or lowercase letters. 
-     It ensures that matches like 'Admin', 'admin', and 'ADMIN' are all captured.
+     忽略字符大小写搜索模式。当搜索用户提供的输入或大小写可能不一致的日志时非常有用。当你不确定目标字符串使用大写还是小写字母时使用。它确保 Admin、admin 和 ADMIN 等匹配项都能被捕获。
    command: "grep -i \"{{pattern}}\" {{file}}"
 
- - title: grep - match whole words only
+ - title: grep - 仅匹配完整单词
    desc: |
-     Search for lines containing the pattern as a complete word. This prevents partial 
-     matches, such as finding 'art' inside the word 'start' or 'artist'. Use this 
-     flag when you are looking for specific variable names or identifiers in code. 
-     It is highly effective for reducing false positives in large datasets.
+     搜索将模式作为完整单词包含的行。这可以防止部分匹配，例如在 start 或 artist 中找到 art。当你在代码中查找特定变量名或标识符时使用此参数。它对减少大型数据集中的误报非常有效。
    command: "grep -w \"{{pattern}}\" {{file}}"
 
 # === RECURSION AND DIRECTORIES ===
- - title: grep - recursive directory search
+ - title: grep - 递归目录搜索
    desc: |
-     Search for a pattern within all files in a directory and its subdirectories. This 
-     is the standard way to look for a specific configuration setting or function call 
-     across an entire project. It provides the file path along with the matching line 
-     to help you locate the source. Use -r for symbolic link following or -R to ignore them.
+     在目录及其子目录中的所有文件内搜索模式。这是在整个项目中查找特定配置设置或函数调用的标准方式。它提供文件路径以及匹配行，帮助你定位来源。使用 -r 跟随符号链接，或使用 -R 忽略它们。
    command: "grep -r \"{{pattern}}\" {{directory|/etc/}}"
 
- - title: grep - list filenames only
+ - title: grep - 仅列出文件名
    desc: |
-     Display only the names of files that contain the matching pattern. Use this when 
-     you need a list of files for further processing or scripts rather than seeing the 
-     actual content. It suppresses the standard output of matching lines, making it 
-     cleaner for identifying which files are affected by a search term. 
-     This is often used in combination with the recursive flag.
+     仅显示包含匹配模式的文件名。当你需要一份文件列表用于进一步处理或脚本，而非查看实际内容时使用。它抑制匹配行的标准输出，使识别哪些文件受搜索词影响更加清晰。通常与递归参数结合使用。
    command: "grep -l \"{{pattern}}\" {{directory|.}}/*"
 
 # === FILTERING AND COUNTING ===
- - title: grep - invert match
+ - title: grep - 反向匹配
    desc: |
-     Display all lines that do not contain the specified pattern. This is a powerful 
-     way to filter out noise, such as removing successful "200 OK" entries from an 
-     access log to focus on errors. Be careful with very broad patterns as they might 
-     accidentally hide important information. It is essential for log analysis and cleanup.
+     显示所有不包含指定模式的行。这是过滤噪音的强大方式，例如从访问日志中移除成功的 200 OK 条目以聚焦错误。使用过于宽泛的模式时要小心，因为它们可能意外隐藏重要信息。它对日志分析和清理至关重要。
    command: "grep -v \"{{pattern}}\" {{file}}"
 
- - title: grep - count matches
+ - title: grep - 统计匹配数
    desc: |
-     Return the total number of lines that match the search pattern. Use this for 
-     statistical analysis or to quickly check the frequency of an event in a log file. 
-     It is more efficient than piping the output to 'wc -l' because it processes the 
-     count internally. Note that it counts matching lines, not total occurrences per line.
+     返回与搜索模式匹配的行总数。用于统计分析，或快速检查日志文件中某个事件的出现频率。它比将输出管道到 wc -l 更高效，因为它在内部处理计数。请注意它统计匹配的行数，而非每行的总出现次数。
    command: "grep -c \"{{pattern}}\" {{file}}"
 
- - title: grep - show line numbers
+ - title: grep - 显示行号
    desc: |
-     Prefix each matching line with its line number from the source file. This is 
-     incredibly helpful for developers who need to jump directly to a specific 
-     location in a source code editor. It provides immediate context regarding 
-     where the match sits within the file structure. Combine this with recursion 
-     to map out patterns across multiple files.
+     在每个匹配行前加上其在源文件中的行号。对于需要直接跳转到源码编辑器特定位置的开发者非常有帮助。它提供匹配项在文件结构中位置的即时上下文。结合递归可在多个文件中映射模式。
    command: "grep -n \"{{pattern}}\" {{file}}"
 
 # === CONTEXTUAL SEARCHING ===
- - title: grep - show context around matches
+ - title: grep - 显示匹配上下文
    desc: |
-     Display a specified number of lines before and after the matching line. This 
-     is essential when the meaning of a match depends on the surrounding text, 
-     such as an error message followed by a stack trace. You can also use -A 
-     for after or -B for before context specifically. It helps in understanding 
-     the state of a system before or after a specific event occurred.
+     显示匹配行前后指定数量的行。当匹配的含义依赖于周围文本时（如错误消息后跟着堆栈跟踪），这是必不可少的。你也可以分别使用 -A 显示后续上下文或 -B 显示前置上下文。它有助于理解特定事件发生前后系统的状态。
    command: "grep -C {{lines|3}} \"{{pattern}}\" {{file}}"
 
 # === ADVANCED PATTERNS ===
- - title: grep - extended regular expressions
+ - title: grep - 扩展正则表达式
    desc: |
-     Enable extended regular expression (ERE) syntax for more complex search patterns. 
-     This allows the use of meta-characters like '|' for OR operations and '+' for 
-     quantifiers without escaping them. Use this when simple string matching is 
-     insufficient for your search criteria. It is equivalent to the 'egrep' command 
-     found on many Unix systems.
+     启用扩展正则表达式（ERE）语法以支持更复杂的搜索模式。这允许使用 | 表示 OR 运算和 + 表示量词等元字符而无需转义。当简单字符串匹配不足以满足搜索条件时使用。它等价于许多 Unix 系统上的 egrep 命令。
    command: "grep -E \"{{regex}}\" {{file}}"
 
- - title: grep - search using a pattern file
+ - title: grep - 使用模式文件搜索
    desc: |
-     Read search patterns from a specified file, one per line. This is useful 
-     when you have a long list of indicators of compromise (IOCs) or keywords 
-     to check against a log. It avoids extremely long and unwieldy command lines. 
-     Ensure the pattern file is formatted correctly to avoid unintended matches.
+     从指定文件读取搜索模式，每行一个。当你有一长串失陷指标（IOC）或关键字需要对照日志检查时非常有用。它避免了极其冗长且难以处理的命令行。请确保模式文件格式正确，以避免意外的匹配。
    command: "grep -f {{pattern_file}} {{target_file}}"

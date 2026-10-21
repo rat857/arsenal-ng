@@ -3,68 +3,68 @@ tags: [network, reconnaissance, scanning, security, pentest, enumeration, ssl-tl
 
 actions:
 # === BASIC USAGE ===
- - title: cero - basic domain certificate scraping
+ - title: cero - 基础域名证书抓取
    desc: |
-     Scrape TLS certificate information from a single domain to discover associated hostnames.
-     This command retrieves Subject Alternative Names (SANs) and Common Names (CN) from the target's certificate.
-     It is a highly efficient way to find subdomains that might not be listed in public DNS records.
+     从单个域名抓取 TLS 证书信息，以发现关联的主机名。
+     该命令从目标证书中检索主题备用名称（SAN）与通用名称（CN）。
+     这是查找可能未列在公共 DNS 记录中的子域的高效方式。
    command: "cero {{target}}"
 
- - title: cero - output valid domain names only
+ - title: cero - 仅输出有效域名
    desc: |
-     Filter the output to display only valid domain names, stripping out IPs and wildcards.
-     This is particularly useful when you want to pipe the output directly into other tools like httpx or subfinder.
-     Using the -d flag ensures your reconnaissance pipeline remains clean of non-routable or junk strings.
+     过滤输出，仅显示有效域名，剔除 IP 与通配符。
+     当你希望将输出直接管道到 httpx 或 subfinder 等其他工具时特别有用。
+     使用 -d 标志可确保侦察管道中没有不可路由或垃圾字符串。
    command: "cero -d {{target}}"
 
- - title: cero - verbose output with detailed results
+ - title: cero - 详细结果输出
    desc: |
-     Enable verbose mode to see which address produced which set of domain results.
-     In this mode, cero outputs results in the format 'addr -- [result list]' and sends errors to stderr.
-     This is helpful for debugging connection issues or verifying exactly which IP provided a specific certificate.
+     启用详细模式，查看哪个地址产生了哪组域名结果。
+     在此模式下，cero 以 'addr -- [result list]' 格式输出结果，并将错误发送到 stderr。
+     这对于调试连接问题或验证具体是哪个 IP 提供了特定证书很有帮助。
    command: "cero -v {{target}}"
 
 # === NETWORK & RANGE SCANNING ===
- - title: cero - scan network CIDR range
+ - title: cero - 扫描网络 CIDR 网段
    desc: |
-     Perform certificate scraping across an entire IPv4 or IPv6 CIDR block.
-     Cero will attempt to connect to every IP in the range and extract hostname information from any TLS services found.
-     This is an excellent technique for mapping out the infrastructure of an organization based on their IP space.
+     跨整个 IPv4 或 IPv6 CIDR 网段执行证书抓取。
+     Cero 会尝试连接网段中的每个 IP，并从发现的任何 TLS 服务中提取主机名信息。
+     这是基于组织 IP 空间绘制其基础设施地图的绝佳技术。
    command: "cero {{cidr_range}}"
 
- - title: cero - scan with custom TLS ports
+ - title: cero - 使用自定义 TLS 端口扫描
    desc: |
-     Specify a custom list of ports to check for TLS certificates beyond the default port 443.
-     You can provide a comma-separated list of ports to scan multiple common SSL/TLS services like 8443, 9443, or 10443.
-     This is essential for finding administrative panels or hidden web services running on non-standard ports.
+     指定默认端口 443 之外要检查 TLS 证书的自定义端口列表。
+     你可以提供逗号分隔的端口列表，以扫描 8443、9443 或 10443 等多个常见 SSL/TLS 服务。
+     这对于查找运行在非标准端口上的管理面板或隐藏 Web 服务至关重要。
    command: "cero -p {{ports|443,8443,10443}} {{target}}"
 
- - title: cero - scan IPv6 target with specific port
+ - title: cero - 扫描指定端口的 IPv6 目标
    desc: |
-     Target a specific IPv6 address and port for certificate information.
-     While cero can often handle bare IPv6 addresses, using square brackets is the safest way to prevent ambiguity when adding a port.
-     This command is useful for targeted reconnaissance on modern network stacks.
+     针对特定 IPv6 地址与端口获取证书信息。
+     虽然 cero 常能处理裸 IPv6 地址，但添加端口时使用方括号是最安全的方式，可避免歧义。
+     该命令对于现代网络栈上的定向侦察很有用。
    command: "cero [{{ipv6_address}}]:{{port|443}}"
 
 # === PERFORMANCE & BULK OPERATIONS ===
- - title: cero - bulk scanning with high concurrency
+ - title: cero - 高并发批量扫描
    desc: |
-     Process a large list of targets from a file or another tool's output using multiple threads.
-     The concurrency level determines how many TLS connections are attempted simultaneously, with a default of 100.
-     Increasing this value can significantly speed up mass scanning but may require more system resources and bandwidth.
+     使用多线程处理来自文件或另一工具输出的大量目标列表。
+     并发级别决定同时尝试的 TLS 连接数，默认为 100。
+     增大此值可显著加快大规模扫描，但可能需要更多系统资源与带宽。
    command: "cat {{input_file}} | cero -c {{concurrency|1000}}"
 
- - title: cero - adjust TLS connection timeout
+ - title: cero - 调整 TLS 连接超时
    desc: |
-     Set a custom timeout for TLS handshake attempts in seconds.
-     The default timeout is 4 seconds; increasing it may help capture results from slow or high-latency servers.
-     Decreasing the timeout can make mass scans faster but might result in missing certificates from slower endpoints.
+     以秒为单位为 TLS 握手尝试设置自定义超时。
+     默认超时为 4 秒；增大它有助于捕获缓慢或高延迟服务器的结果。
+     减小超时可使大规模扫描更快，但可能漏掉较慢端点的证书。
    command: "cero -t {{timeout_seconds|10}} {{target}}"
 
 # === PIPELINE INTEGRATION ===
- - title: cero - full mass-scraping pipeline
+ - title: cero - 完整批量抓取管道
    desc: |
-     Execute a comprehensive scan across a range of ports and a network block with high concurrency.
-     This example demonstrates how to combine multiple flags for an intensive reconnaissance phase.
-     Results can be redirected to a file, while errors are suppressed by redirecting stderr to /dev/null.
+     跨一段端口与网络块以高并发执行全面扫描。
+     该示例演示如何组合多个标志进行密集侦察阶段。
+     结果可重定向到文件，同时通过将 stderr 重定向到 /dev/null 抑制错误。
    command: "cero -p {{ports|443,8443}} -c {{concurrency|500}} -d {{target_range}} 2>/dev/null > {{output_file|results.txt}}"

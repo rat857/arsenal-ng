@@ -53,11 +53,11 @@ func (m App) renderFooter() string {
 	// Variable count (if any)
 	varInfo := ""
 	if count := m.globals.Count(); count > 0 {
-		varInfo = varCountStyle.Render(fmt.Sprintf("│ active variable count: %d ", count))
+		varInfo = varCountStyle.Render(fmt.Sprintf("│ 已设置变量数: %d ", count))
 	}
 
 	// Help text
-	help := statusBarStyle.Render("│ ↑/↓: nav │ set key=value │ unset key │ variables │ tools │ help │ esc: quit")
+	help := statusBarStyle.Render("│ ↑/↓: 导航 │ set key=value │ unset key │ variables │ tools │ help │ esc: 退出")
 
 	return status + varInfo + help
 }

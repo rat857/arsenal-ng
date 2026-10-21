@@ -3,71 +3,84 @@ tags: [recon, reconnaissance, web, discovery, enumeration, urls, pentest]
 
 actions:
   # === BASIC USAGE ===
-  - title: urlfinder - basic domain enumeration
+  - title: urlfinder - 基础域名枚举
     desc: |
-      Perform a basic discovery of URLs associated with a specific target domain. This is the most common starting point for reconnaissance to build a list of endpoints for further security testing. It queries various sources to find archived or indexed links that may still be active or contain sensitive data.
+      对特定目标域名执行基础 URL 发现。这是侦察中最常见的起点，用于构建端点列表供进一步安全测试。
+      它查询各种来源以查找可能仍然活跃或包含敏感数据的已归档或已索引链接。
     command: "urlfinder -d {{domain}}"
 
-  - title: urlfinder - list-based enumeration
+  - title: urlfinder - 基于列表的枚举
     desc: |
-      Enumerate URLs for multiple domains stored in a text file simultaneously. This is highly efficient when performing reconnaissance on a large attack surface with multiple root domains or subdomains. Ensure the input file contains one domain per line to avoid parsing errors.
+      同时枚举存储在文本文件中的多个域名的 URL。在对具有多个根域名或子域名的大型攻击面执行侦察时非常高效。
+      确保输入文件每行一个域名，以避免解析错误。
     command: "urlfinder -list {{input_file|domains.txt}}"
 
   # === SOURCE MANAGEMENT ===
-  - title: urlfinder - exhaustive discovery using all sources
+  - title: urlfinder - 使用所有数据源的穷尽发现
     desc: |
-      Use every available data source to find URLs, which significantly increases the thoroughness of the discovery. While this is the most comprehensive mode, it may be slower than the default configuration. It is recommended for deep reconnaissance phases where identifying every possible endpoint is critical.
+      使用每个可用数据源查找 URL，显著提高发现的彻底性。虽然这是最全面的模式，但可能比默认配置慢。
+      建议在深度侦察阶段使用，此时识别每个可能的端点至关重要。
     command: "urlfinder -d {{domain}} -all"
 
-  - title: urlfinder - filter by specific sources
+  - title: urlfinder - 按特定数据源过滤
     desc: |
-      Limit the URL discovery process to specific providers such as AlienVault or CommonCrawl. This helps in reducing execution time by ignoring slower sources or focusing on providers known to have better coverage for the target. You can view the list of all available source names by using the -ls flag.
+      将 URL 发现过程限制在 AlienVault 或 CommonCrawl 等特定提供方。通过忽略较慢的数据源或专注于已知对目标覆盖更好的提供方，有助于减少执行时间。
+      你可以使用 -ls 参数查看所有可用数据源名称的列表。
     command: "urlfinder -d {{domain}} -s {{sources|alienvault,commoncrawl}}"
 
-  - title: urlfinder - exclude specific sources
+  - title: urlfinder - 排除特定数据源
     desc: |
-      Exclude specific providers from the discovery process. This is useful if a particular source is providing redundant data or is experiencing high latency that slows down the tool. It allows for a more streamlined search without losing the benefits of other default sources.
+      在发现过程中排除特定提供方。如果某个数据源提供冗余数据或出现高延迟拖慢工具，这会很有用。
+      它允许更精简的搜索，同时不失去其他默认数据源的好处。
     command: "urlfinder -d {{domain}} -es {{exclude_sources|waybackarchive}}"
 
   # === FILTERING AND SCOPE ===
-  - title: urlfinder - pattern-based matching
+  - title: urlfinder - 基于模式的匹配
     desc: |
-      Filter the results to include only URLs that match specific keywords or patterns. For example, you might want to isolate URLs related to administrative interfaces or shopping carts. Multiple patterns can be provided as a comma-separated list or via a file.
+      过滤结果，仅包含匹配特定关键字或模式的 URL。例如你可能想隔离与管理接口或购物车相关的 URL。
+      可以提供逗号分隔的列表或通过文件提供多个模式。
     command: "urlfinder -d {{domain}} -m {{match_pattern|admin,login,api}}"
 
-  - title: urlfinder - exclude specific patterns
+  - title: urlfinder - 排除特定模式
     desc: |
-      Filter out URLs that match specific unwanted patterns or file extensions. This is helpful for removing noise such as CSS files, images, or legal policies from your results. Using this flag helps keep the output focused on functional application endpoints.
+      过滤掉匹配特定不需要模式或文件扩展名的 URL。这有助于从结果中移除 CSS 文件、图片或法律政策等噪声。
+      使用此参数有助于使输出聚焦于功能性应用端点。
     command: "urlfinder -d {{domain}} -f {{filter_pattern|png,jpg,css,privacy}}"
 
-  - title: urlfinder - field-based scoping
+  - title: urlfinder - 基于字段的作用域限定
     desc: |
-      Define the scope of discovery based on the domain name (dn), root domain (rdn), or fully qualified domain name (fqdn). By default, the tool uses "rdn" to catch subdomains, but changing it to "fqdn" makes the search much more restrictive. This prevents the tool from returning URLs belonging to external third-party services that might be linked.
+      基于域名（dn）、根域名（rdn）或完全限定域名（fqdn）定义发现范围。默认情况下工具使用 rdn 以覆盖子域名，但改为 fqdn 会使搜索更加受限。
+      这可以防止工具返回属于可能被链接的外部第三方服务的 URL。
     command: "urlfinder -d {{domain}} -fs {{scope_field|fqdn}}"
 
   # === OUTPUT MANAGEMENT ===
-  - title: urlfinder - save results to file
+  - title: urlfinder - 将结果保存到文件
     desc: |
-      Write the discovered URLs to a specific output file for documentation and further analysis. Saving to a file is essential for maintaining an audit trail during a professional penetration test. This prevents the loss of data if the terminal session is closed or if the output is too large for the buffer.
+      将发现的 URL 写入特定输出文件，供记录和进一步分析。保存到文件对于在专业渗透测试期间维护审计轨迹至关重要。
+      这可以防止终端会话关闭或输出超出缓冲区时数据丢失。
     command: "urlfinder -d {{domain}} -o {{output_file|results.txt}}"
 
-  - title: urlfinder - structured JSONL output
+  - title: urlfinder - 结构化 JSONL 输出
     desc: |
-      Generate output in JSON Lines format, which includes detailed metadata like the discovery source for each URL. This structured format is ideal for programmatic processing and integration into automated vulnerability scanning pipelines. Each line in the output file represents a complete, valid JSON object.
+      以 JSON Lines 格式生成输出，其中包含每个 URL 的发现来源等详细元数据。这种结构化格式非常适合程序化处理和集成到自动化漏洞扫描流水线。
+      输出文件中的每一行都是一个完整的有效 JSON 对象。
     command: "urlfinder -d {{domain}} -j -o {{output_file|results.jsonl}}"
 
   # === OPTIMIZATION AND AUTOMATION ===
-  - title: urlfinder - silent mode for automation
+  - title: urlfinder - 自动化静默模式
     desc: |
-      Run the tool in silent mode, which suppresses all banners and progress information, outputting only the found URLs. This is particularly useful when piping the output directly into other command-line tools like 'httpx' or 'nuclei'. It ensures the resulting data stream is clean and ready for immediate consumption by other scripts.
+      以静默模式运行工具，抑制所有横幅和进度信息，仅输出找到的 URL。这在将输出直接管道传递给 httpx 或 nuclei 等命令行工具时特别有用。
+      它确保生成的数据流干净，可立即供其他脚本使用。
     command: "urlfinder -d {{domain}} -silent"
 
-  - title: urlfinder - set global rate limits
+  - title: urlfinder - 设置全局限速
     desc: |
-      Control the speed of the discovery by setting a maximum number of HTTP requests allowed per second. This is important to avoid triggering Web Application Firewalls (WAF) or hitting API rate limits on the data providers. Use a conservative value if you notice connection timeouts or being blocked by sources.
+      通过设置每秒允许的最大 HTTP 请求数来控制发现速度。这对于避免触发 Web 应用防火墙（WAF）或达到数据提供方的 API 限速非常重要。
+      如果你注意到连接超时或被数据源封禁，请使用保守的值。
     command: "urlfinder -d {{domain}} -rl {{rate_limit|10}}"
 
-  - title: urlfinder - set enumeration timeout
+  - title: urlfinder - 设置枚举超时
     desc: |
-      Specify the maximum amount of time in minutes that the enumeration process is allowed to run. This prevents the tool from hanging on extremely large domains or slow sources indefinitely. It is a vital setting for automated workflows where time slots are strictly allocated.
+      指定枚举过程允许运行的最长时间（分钟）。这可以防止工具在超大域名或慢速数据源上无限挂起。
+      对于时间分配严格的自动化工作流，这是一项关键设置。
     command: "urlfinder -d {{domain}} -max-time {{minutes|5}}"

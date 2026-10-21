@@ -3,127 +3,97 @@ tags: [sql-injection, exploitation, security, pentest, enumeration, database, sc
 
 actions:
   # === TARGETING & BASIC USAGE ===
-  - title: ghauri - basic url scan
+  - title: ghauri - 基础 URL 扫描
     desc: |
-      Perform a basic SQL injection scan on a specific target URL containing a GET parameter.
-      This is the most common entry point when you identify a potentially vulnerable web page with query strings.
-      The tool will automatically attempt to identify the injection point and determine the backend DBMS type.
-      Using the --batch flag is recommended to skip interactive prompts and use the default behavior for all questions.
+      对包含 GET 参数的特定目标 URL 执行基础 SQL 注入扫描。
+      当你识别出带查询字符串且可能存在漏洞的网页时，这是最常见的入口。工具会自动尝试识别注入点并判断后端 DBMS 类型。
     command: "ghauri -u {{url}} --batch"
 
-  - title: ghauri - scan with post data
+  - title: ghauri - 使用 POST 数据扫描
     desc: |
-      Test for SQL injection vulnerabilities within the body of an HTTP POST request.
-      This is essential for testing login forms, search bars, or any interface where data is submitted via POST instead of GET.
-      The data string should be formatted as key-value pairs, such as 'id=1&name=test'.
-      This command allows ghauri to analyze parameters that are not visible in the browser's address bar.
+      在 HTTP POST 请求体中测试 SQL 注入漏洞。
+      对于测试登录表单、搜索栏或任何通过 POST 而非 GET 提交数据的界面至关重要。数据字符串应按键值对格式书写，如 id=1&name=test。
     command: "ghauri -u {{url}} --data {{post_data}} --batch"
 
-  - title: ghauri - load request from file
+  - title: ghauri - 从文件加载请求
     desc: |
-      Load a complete HTTP request from a raw text file, which is highly useful for complex requests.
-      This method is commonly used with requests captured from proxy tools like Burp Suite or OWASP ZAP.
-      It ensures that all headers, cookies, and the exact structure of the request are preserved exactly as they were sent.
-      This is often the most reliable way to test authenticated sessions or mobile application APIs.
+      从原始文本文件加载完整 HTTP 请求，对复杂请求非常有用。
+      通常与从 Burp Suite 或 OWASP ZAP 等代理工具捕获的请求配合使用，能确保所有请求头、Cookie 和请求结构保持原样。
     command: "ghauri -r {{request_file}} --batch"
 
   # === REQUEST CONFIGURATION ===
-  - title: ghauri - custom headers and cookies
+  - title: ghauri - 自定义请求头和 Cookie
     desc: |
-      Specify custom HTTP headers or session cookies to bypass authentication or provide necessary context.
-      This is necessary when the target application requires a valid login session or specific headers like X-Forwarded-For to work.
-      You can provide the entire cookie string exactly as it appears in the browser's developer tools.
-      Providing these details allows the tool to reach protected areas of the application that would otherwise be inaccessible.
+      指定自定义 HTTP 请求头或会话 Cookie，以绕过认证或提供必要上下文。
+      当目标应用需要有效登录会话或 X-Forwarded-For 等特定请求头时，这一步必不可少。
     command: "ghauri -u {{url}} --cookie {{cookie_string}} --header {{header_string}}"
 
-  - title: ghauri - proxy and delay
+  - title: ghauri - 代理与延迟
     desc: |
-      Route all traffic through a specified proxy and set a delay between individual HTTP requests.
-      Using a proxy like Tor or a local Burp Suite instance helps in masking the source IP or inspecting the tool's traffic.
-      The delay parameter is crucial for avoiding rate-limiting, account lockouts, or triggering Web Application Firewalls (WAF).
-      Adding a delay makes the scanning process stealthier and less likely to overwhelm a fragile backend server.
+      通过指定代理转发所有流量，并在各 HTTP 请求之间设置延迟。
+      使用 Tor 或本地 Burp Suite 等代理有助于隐藏来源 IP 或检查工具流量。延迟参数对于避免限流、账户锁定或触发 WAF 至关重要。
     command: "ghauri -u {{url}} --proxy {{proxy_url|http://127.0.0.1:8080}} --delay {{delay_seconds|1}}"
 
-  - title: ghauri - user agent randomization
+  - title: ghauri - User-Agent 随机化
     desc: |
-      Use a randomly selected HTTP User-Agent header for each request or specify a custom one.
-      This helps in bypassing basic security filters that block requests from known automated tools.
-      You can also use the --mobile flag to imitate a smartphone browser if the site serves different content to mobile users.
-      Changing the User-Agent makes the tool's traffic appear more like legitimate human browsing behavior.
+      为每个请求随机选择 HTTP User-Agent 请求头，或指定自定义值。
+      这有助于绕过拦截已知自动化工具的简单安全过滤。当站点向移动用户提供不同内容时，也可使用 --mobile 参数模拟手机浏览器。
     command: "ghauri -u {{url}} --random-agent"
 
   # === DETECTION & OPTIMIZATION ===
-  - title: ghauri - adjustment of test level and threads
+  - title: ghauri - 调整测试级别与线程
     desc: |
-      Increase the depth of testing and the speed of the data extraction process.
-      The level parameter (1-3) determines how many payloads are tested; higher levels include more aggressive and diverse checks.
-      The threads option allows for concurrent HTTP requests, which significantly reduces the time needed for data dumping.
-      Be careful with high thread counts, as they can put significant load on the target and might lead to IP blacklisting.
+      提高测试深度与数据提取速度。
+      level 参数（1-3）决定测试的载荷数量，级别越高包含越激进和多样化的检查。threads 选项允许并发 HTTP 请求，显著缩短数据导出时间。
     command: "ghauri -u {{url}} --level {{level|1}} --threads {{threads|1}}"
 
-  - title: ghauri - specific injection technique
+  - title: ghauri - 指定注入技术
     desc: |
-      Force the tool to use a specific SQL injection technique rather than the default "BEST" selection.
-      Available techniques include Boolean-based (B), Error-based (E), Time-based (T), and Union-based (U).
-      This is useful when you already know which technique works and want to save time during the exploitation phase.
-      Selecting a specific technique can also help in bypassing certain WAF rules that only monitor for specific injection patterns.
+      强制工具使用特定 SQL 注入技术，而非默认的 BEST 选择。
+      可用技术包括基于布尔（B）、基于报错（E）、基于时间（T）和基于联合查询（U）。当你已知哪种技术有效时，可节省利用阶段的时间。
     command: "ghauri -u {{url}} --technique {{tech|BEUT}}"
 
   # === ENUMERATION ===
-  - title: ghauri - enumerate databases
+  - title: ghauri - 枚举数据库
     desc: |
-      Retrieve the list of all databases available on the target database management system.
-      This is a vital step in the reconnaissance phase to identify where sensitive information might be stored.
-      The command will automatically use the most efficient technique found during the detection phase to fetch the names.
-      Once the database names are retrieved, you can focus your efforts on the most interesting ones.
+      获取目标数据库管理系统中所有数据库的列表。
+      这是侦察阶段的关键步骤，用于识别敏感信息可能存放的位置。命令会自动使用检测阶段发现的最有效技术来获取数据库名称。
     command: "ghauri -u {{url}} --dbs --batch"
 
-  - title: ghauri - enumerate tables in a database
+  - title: ghauri - 枚举数据库中的表
     desc: |
-      List all tables within a specific database to understand the data structure.
-      You must use the -D flag to specify the database name you want to explore.
-      Identifying tables like 'users', 'passwords', or 'orders' is key to prioritizing the next steps of your assessment.
-      This action helps map out the backend schema and find where the most valuable data resides.
+      列出特定数据库中的所有表，以了解数据结构。
+      必须使用 -D 参数指定要探查的数据库名称。识别 users、passwords 或 orders 等表是确定后续步骤优先级的关键。
     command: "ghauri -u {{url}} -D {{db_name}} --tables --batch"
 
-  - title: ghauri - enumerate columns in a table
+  - title: ghauri - 枚举表中的列
     desc: |
-      Identify all column names and their associated data types within a specific table.
-      Both the database name (-D) and the table name (-T) must be provided for this command to work.
-      This allows you to find sensitive fields such as 'email', 'password_hash', or 'ssn'.
-      Understanding the column structure is a mandatory prerequisite for dumping the actual records from the table.
+      识别特定表中所有列名及其数据类型。
+      此命令需要同时提供数据库名（-D）和表名（-T）。这能帮助你找到 email、password_hash 或 ssn 等敏感字段。
     command: "ghauri -u {{url}} -D {{db_name}} -T {{table_name}} --columns --batch"
 
   # === EXPLOITATION & DATA EXTRACTION ===
-  - title: ghauri - dump table data
+  - title: ghauri - 导出表数据
     desc: |
-      Extract and display the actual entries from a specific database table.
-      This is the final stage of the exploitation where you actually retrieve the data you were looking for.
-      You can use --start and --stop flags to limit the number of rows retrieved if the table is exceptionally large.
-      The tool will format the output clearly, and the data is typically saved to a local session file for future analysis.
+      提取并显示特定数据库表中的实际记录。
+      这是利用的最终阶段，用于真正获取你寻找的数据。如果表非常大，可使用 --start 和 --stop 参数限制检索的行数。
     command: "ghauri -u {{url}} -D {{db_name}} -T {{table_name}} --dump --batch"
 
-  - title: ghauri - get banner and current user
+  - title: ghauri - 获取横幅与当前用户
     desc: |
-      Retrieve the DBMS version banner, the current database name, and the current user identity.
-      The banner provides critical information about the database software, which might have specific known vulnerabilities.
-      Checking the current user helps determine if the application is running with high privileges (like 'sa' or 'root').
-      This information is essential for determining the full impact of the SQL injection vulnerability.
+      获取 DBMS 版本横幅、当前数据库名称和当前用户身份。
+      横幅提供数据库软件的关键信息，这些软件可能存在已知漏洞。检查当前用户有助于判断应用是否以高权限（如 sa 或 root）运行。
     command: "ghauri -u {{url}} --banner --current-user --current-db --batch"
 
-  - title: ghauri - interactive sql shell
+  - title: ghauri - 交互式 SQL Shell
     desc: |
-      Launch an interactive SQL shell to execute custom SQL queries directly against the target database.
-      This feature provides maximum flexibility for advanced testers who need to perform manual queries or custom functions.
-      The availability of this shell depends on the success of the initial injection and the techniques supported by the server.
-      It is an excellent way to verify complex logic or perform tasks that aren't covered by the automated enumeration flags.
+      启动交互式 SQL Shell，直接对目标数据库执行自定义 SQL 查询。
+      为需要执行手动查询或自定义函数的高级测试者提供最大灵活性。该 Shell 的可用性取决于初始注入是否成功以及服务器支持的技术。
     command: "ghauri -u {{url}} --sql-shell"
 
   # === MAINTENANCE ===
-  - title: ghauri - flush session and fresh scan
+  - title: ghauri - 清空会话并重新扫描
     desc: |
-      Clear the session files for the current target and force a fresh scan of the vulnerability.
-      Use this when the target's environment has changed or if you suspect the previous results were inaccurate.
-      Flushing the session ensures that ghauri does not use cached results from previous runs.
-      This is also helpful if the tool is stuck or behaving unexpectedly due to corrupted session data.
+      清除当前目标的会话文件，并强制重新扫描漏洞。
+      当目标环境发生变化或怀疑之前的结果不准确时使用。清空会话可确保 ghauri 不使用之前运行缓存的任何结果。
     command: "ghauri -u {{url}} --flush-session --fresh-queries"

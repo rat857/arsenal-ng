@@ -3,136 +3,100 @@ tags: [vcs, version-control, development, collaboration, devops, workflow]
 
 actions:
   # === CONFIGURATION ===
-  - title: git - set global user identity
+  - title: git - 设置全局用户身份
     desc: |
-      Sets the global username and email address for all git repositories on the local system. 
-      This identity is used to sign your commits and is crucial for tracking who made specific changes. 
-      Ensure this matches your GitHub/GitLab profile to correctly attribute contributions.
+      为本地系统上所有 git 仓库设置全局用户名和邮箱地址。此身份用于签署你的提交，对于追踪是谁做出的具体更改至关重要。请确保与你的 GitHub/GitLab 个人资料一致，以正确归属贡献。
     command: "git config --global user.name {{name|Your Name}} && git config --global user.email {{email|user@example.com}}"
 
   # === INITIALIZATION & CLONING ===
-  - title: git - initialize a new repository
+  - title: git - 初始化新仓库
     desc: |
-      Initializes a brand new Git repository in the current working directory. 
-      This creates a hidden .git directory where all project history and metadata are stored. 
-      Use this command once at the start of a new project to enable version control.
+      在当前工作目录中初始化一个全新的 Git 仓库。这会创建一个隐藏的 .git 目录，用于存储所有项目历史与元数据。在新项目开始时使用此命令即可启用版本控制。
     command: "git init"
 
-  - title: git - clone a repository
+  - title: git - 克隆仓库
     desc: |
-      Creates a local copy of a remote repository from a URL. 
-      It automatically sets up a remote connection called 'origin' pointing back to the source. 
-      You can optionally specify a target directory name or a specific branch to clone.
+      从 URL 创建远程仓库的本地副本。它会自动设置一个名为 origin 的远程连接，指回源仓库。你还可以指定目标目录名或要克隆的特定分支。
     command: "git clone -b {{branch_name|main}} {{repository_url}} {{clone_directory|repo-dir}}"
 
   # === BASIC WORKFLOW ===
-  - title: git - check repository status
+  - title: git - 查看仓库状态
     desc: |
-      Displays the state of the working directory and the staging area. 
-      It lets you see which changes have been staged, which haven't, and which files aren't being tracked by Git. 
-      This is the most common command used to verify what will be included in the next commit.
+      显示工作目录和暂存区的状态。你可以看到哪些更改已暂存、哪些未暂存，以及哪些文件未被 Git 跟踪。这是验证下一次提交将包含什么内容时最常用的命令。
     command: "git status"
 
-  - title: git - stage changes
+  - title: git - 暂存更改
     desc: |
-      Adds file contents to the staging area (index) to prepare them for the next commit. 
-      You can add specific files or use a period to add all modified and new files in the current directory. 
-      Staging allows you to craft precise commits by selecting only relevant changes.
+      将文件内容添加到暂存区（索引），为下一次提交做准备。你可以添加特定文件，或使用句点添加当前目录中所有已修改和新文件。暂存允许你通过仅选择相关更改来构造精确的提交。
     command: "git add {{changed_files|.}}"
 
-  - title: git - commit staged changes
+  - title: git - 提交已暂存的更改
     desc: |
-      Saves the staged snapshot to the project history with a descriptive message. 
-      Commits should ideally be small and focused on a single logical change. 
-      Use the --no-verify flag if you need to bypass pre-commit hooks, though this is generally discouraged.
+      将已暂存的快照连同描述性信息保存到项目历史中。提交最好保持小而集中，只针对单个逻辑更改。如需绕过 pre-commit 钩子，可使用 --no-verify 参数，但通常不鼓励这样做。
     command: "git commit -m {{message|Commit description}}"
 
   # === REMOTE MANAGEMENT ===
-  - title: git - manage remote repositories
+  - title: git - 管理远程仓库
     desc: |
-      Lists, adds, or removes connections to remote repositories. 
-      The 'verbose' flag shows the URLs associated with each remote nickname (like origin). 
-      This is essential when collaborating with others or deploying code to different servers.
+      列出、添加或移除与远程仓库的连接。verbose 参数会显示每个远程别名（如 origin）对应的 URL。在与他人协作或将代码部署到不同服务器时必不可少。
     command: "git remote {{action|--verbose}}"
 
-  - title: git - add a new remote
+  - title: git - 添加新的远程仓库
     desc: |
-      Registers a new remote repository URL under a specific shortname. 
-      Standard practice is to name the primary remote 'origin'. 
-      This allows you to push and pull code to and from hosted services like GitHub or Bitbucket.
+      在特定短名称下注册新的远程仓库 URL。标准做法是将主远程命名为 origin。这允许你向 GitHub 或 Bitbucket 等托管服务推送和拉取代码。
     command: "git remote add {{remote_name|origin}} {{remote_url}}"
 
   # === PUSH & PULL ===
-  - title: git - push changes to remote
+  - title: git - 推送更改到远程仓库
     desc: |
-      Uploads local repository content to a remote repository. 
-      The -u flag sets the upstream tracking, making future pushes and pulls simpler for that branch. 
-      Be cautious with the -f (force) flag, as it can overwrite history on the remote server and disrupt teammates.
+      将本地仓库内容上传到远程仓库。-u 参数设置上游跟踪，使该分支未来的推送和拉取更加简单。使用 -f（强制）参数时要谨慎，因为它会覆盖远程服务器上的历史并干扰队友。
     command: "git push -u {{remote_name|origin}} {{branch_name|main}}"
 
-  - title: git - pull latest changes
+  - title: git - 拉取最新更改
     desc: |
-      Fetches changes from a remote server and immediately merges them into the current local branch. 
-      The --ff-only flag ensures that the pull only succeeds if it can be resolved as a fast-forward. 
-      This prevents the creation of unnecessary merge commits and keeps the history linear.
+      从远程服务器获取更改并立即将其合并到当前本地分支。--ff-only 参数确保仅当能以快进方式解决时才拉取成功。这可以防止产生不必要的合并提交，保持历史线性。
     command: "git pull --ff-only {{remote_name|origin}} {{branch_name|main}}"
 
   # === BRANCHING & MERGING ===
-  - title: git - create and switch branch
+  - title: git - 创建并切换分支
     desc: |
-      Creates a new branch and immediately switches the working directory to it. 
-      Branching is used to develop features or fix bugs in isolation from the main codebase. 
-      The new branch will start from the current HEAD position.
+      创建一个新分支并立即将工作目录切换到该分支。分支用于与主代码库隔离地开发功能或修复缺陷。新分支将从当前的 HEAD 位置开始。
     command: "git checkout -b {{new_branch_name|feature-task}}"
 
-  - title: git - merge branches
+  - title: git - 合并分支
     desc: |
-      Integrates changes from a specified branch into the current active branch. 
-      Git will attempt to automatically combine changes, but manual conflict resolution may be required. 
-      Use 'git merge --abort' if the process becomes too complex and you need to return to the pre-merge state.
+      将指定分支的更改集成到当前活动分支中。Git 会尝试自动合并更改，但可能需要手动解决冲突。如果过程过于复杂，可使用 git merge --abort 返回到合并前的状态。
     command: "git merge {{source_branch|feature-branch}}"
 
   # === LOGGING & HISTORY ===
-  - title: git - view commit history
+  - title: git - 查看提交历史
     desc: |
-      Displays a list of commits in the current branch's history. 
-      The formatted version provides a visual graph, showing how branches have diverged and merged over time. 
-      This is vital for auditing changes and understanding the project's evolution.
+      显示当前分支历史中的提交列表。格式化版本提供可视化图形，展示分支随时间分叉与合并的情况。对于审计更改和理解项目演变至关重要。
     command: "git log --all --decorate --oneline --graph"
 
-  - title: git - show unstaged differences
+  - title: git - 显示未暂存的差异
     desc: |
-      Shows the line-by-line differences between the working directory and the staging area. 
-      It helps you review exactly what code was modified before you decide to 'git add' it. 
-      If a filename is provided, it only shows changes for that specific file.
+      逐行显示工作目录与暂存区之间的差异。它帮助你在决定 git add 之前审查具体修改了哪些代码。如果提供了文件名，则只显示该文件的更改。
     command: "git diff {{file_path}}"
 
   # === CLEANUP & MAINTENANCE ===
-  - title: git - clean untracked files
+  - title: git - 清理未跟踪的文件
     desc: |
-      Removes untracked files and directories from the working tree. 
-      The -d flag removes directories, and -f forces the deletion (required by default for safety). 
-      This is useful for clearing out build artifacts or temporary files not ignored by .gitignore.
+      从工作树中删除未跟踪的文件和目录。-d 参数删除目录，-f 强制删除（出于安全考虑默认需要）。对于清除未被 .gitignore 忽略的构建产物或临时文件非常有用。
     command: "git clean -dxf"
 
-  - title: git - update submodules
+  - title: git - 更新子模块
     desc: |
-      Initializes and updates nested git repositories (submodules). 
-      The --recursive flag ensures that if submodules have their own submodules, they are also updated. 
-      This is necessary when cloning projects that rely on other repositories as dependencies.
+      初始化并更新嵌套的 git 仓库（子模块）。--recursive 参数确保如果子模块还有自己的子模块，也会一并更新。克隆依赖其他仓库作为依赖项的项目时这是必需的。
     command: "git submodule update --init --recursive"
 
   # === ADVANCED OPERATIONS ===
-  - title: git - interactive rebase
+  - title: git - 交互式变基
     desc: |
-      Rewrites commit history by reapplying commits on top of another base. 
-      It is commonly used to "squash" multiple small commits into a single clean commit before merging. 
-      Note that rebasing shared public history is dangerous and should generally be avoided.
+      通过将提交重新应用到另一个基底之上来重写提交历史。常用于在合并前将多个小提交“压缩”为单个干净的提交。请注意，变基已共享的公共历史是危险的，通常应避免。
     command: "git rebase {{base_branch|main}} -i"
 
-  - title: git - checkout PR from remote
+  - title: git - 从远程检出 Pull Request
     desc: |
-      Fetches a specific Pull Request (PR) from a remote (usually origin) and creates a local branch for it. 
-      This allows you to test and review code from contributors locally. 
-      Replace the PR number with the ID found on the hosting platform (GitHub/GitLab).
+      从远程（通常是 origin）获取特定 Pull Request（PR），并为其创建本地分支。这允许你在本地测试和审查贡献者的代码。请将 PR 编号替换为托管平台（GitHub/GitLab）上显示的 ID。
     command: "git fetch origin pull/{{pr_number}}/head:pr/{{pr_number}} && git checkout pr/{{pr_number}}"

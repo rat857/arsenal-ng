@@ -37,66 +37,65 @@ func (m App) viewHelp() string {
 	b.WriteString("\n\n")
 
 	// Title
-	b.WriteString(sectionStyle.Render("📖 HELP"))
+	b.WriteString(sectionStyle.Render("📖 帮助"))
 	b.WriteString("\n\n")
 
 	// Navigation section
-	b.WriteString(sectionStyle.Render("  NAVIGATION"))
+	b.WriteString(sectionStyle.Render("  导航"))
 	b.WriteString("\n")
 	b.WriteString(lineStyle.Render(separator))
 	b.WriteString("\n")
-	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("↑ / ↓        "), helpDescStyle.Render("Move up/down in the list")))
-	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("PgUp / PgDown"), helpDescStyle.Render("Jump one page up/down")))
-	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("Enter        "), helpDescStyle.Render("Select the highlighted command")))
-	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("ESC          "), helpDescStyle.Render("Exit arsenal or go back")))
-	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("help         "), helpDescStyle.Render("Show this help screen")))
+	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("↑ / ↓        "), helpDescStyle.Render("在列表中上/下移动")))
+	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("PgUp / PgDown"), helpDescStyle.Render("上/下翻一页")))
+	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("Enter        "), helpDescStyle.Render("选中高亮的命令")))
+	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("ESC          "), helpDescStyle.Render("退出 arsenal 或返回")))
+	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("help         "), helpDescStyle.Render("显示本帮助界面")))
 	b.WriteString("\n")
 
 	// Arguments section
-	b.WriteString(sectionStyle.Render("  ARGUMENT INPUT"))
+	b.WriteString(sectionStyle.Render("  参数输入"))
 	b.WriteString("\n")
 	b.WriteString(lineStyle.Render(separator))
 	b.WriteString("\n")
-	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("Tab          "), helpDescStyle.Render("Move to next argument field")))
-	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("Shift+Tab    "), helpDescStyle.Render("Move to previous argument field")))
-	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("Enter        "), helpDescStyle.Render("Execute command with filled arguments")))
+	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("Tab          "), helpDescStyle.Render("跳到下一个参数字段")))
+	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("Shift+Tab    "), helpDescStyle.Render("跳到上一个参数字段")))
+	b.WriteString(fmt.Sprintf("  %s  %s\n", keyStyle.Render("Enter        "), helpDescStyle.Render("用填好的参数执行命令")))
 	b.WriteString("\n")
 
 	// Global Variables section
-	b.WriteString(sectionStyle.Render("  🚀 GLOBAL VARIABLES"))
+	b.WriteString(sectionStyle.Render("  🚀 全局变量"))
 	b.WriteString("\n")
 	b.WriteString(lineStyle.Render(separator))
 	b.WriteString("\n")
-	b.WriteString(helpDescStyle.Render("  Set variables once, use them everywhere!\n"))
+	b.WriteString(helpDescStyle.Render("  变量设置一次，处处可用！\n"))
 	b.WriteString("\n")
 	// Align arrows by padding commands to fixed width
 	cmdWidth := 20
-	b.WriteString(fmt.Sprintf("  %s%s %s %s\n", cmdStyle.Render("set key=value"), strings.Repeat(" ", cmdWidth-len("set key=value")), arrowStyle.Render("→"), helpDescStyle.Render("Sets a variable")))
-	b.WriteString(fmt.Sprintf("  %s%s %s %s\n", cmdStyle.Render("unset key"), strings.Repeat(" ", cmdWidth-len("unset key")), arrowStyle.Render("→"), helpDescStyle.Render("Removes a variable")))
-	b.WriteString(fmt.Sprintf("  %s%s %s %s\n", cmdStyle.Render("variables"), strings.Repeat(" ", cmdWidth-len("variables")), arrowStyle.Render("→"), helpDescStyle.Render("Lists all your variables")))
-	b.WriteString(fmt.Sprintf("  %s%s %s %s\n", cmdStyle.Render("tools"), strings.Repeat(" ", cmdWidth-len("tools")), arrowStyle.Render("→"), helpDescStyle.Render("Lists all available tools")))
+	b.WriteString(fmt.Sprintf("  %s%s %s %s\n", cmdStyle.Render("set key=value"), strings.Repeat(" ", cmdWidth-len("set key=value")), arrowStyle.Render("→"), helpDescStyle.Render("设置一个变量")))
+	b.WriteString(fmt.Sprintf("  %s%s %s %s\n", cmdStyle.Render("unset key"), strings.Repeat(" ", cmdWidth-len("unset key")), arrowStyle.Render("→"), helpDescStyle.Render("删除一个变量")))
+	b.WriteString(fmt.Sprintf("  %s%s %s %s\n", cmdStyle.Render("variables"), strings.Repeat(" ", cmdWidth-len("variables")), arrowStyle.Render("→"), helpDescStyle.Render("列出你的所有变量")))
+	b.WriteString(fmt.Sprintf("  %s%s %s %s\n", cmdStyle.Render("tools"), strings.Repeat(" ", cmdWidth-len("tools")), arrowStyle.Render("→"), helpDescStyle.Render("列出所有可用工具")))
 	b.WriteString("\n")
 
 	// Example workflow
-	b.WriteString(sectionStyle.Render("  📋 EXAMPLE WORKFLOW"))
+	b.WriteString(sectionStyle.Render("  📋 使用示例"))
 	b.WriteString("\n")
 	b.WriteString(lineStyle.Render(separator))
 	b.WriteString("\n")
-	b.WriteString(fmt.Sprintf("  %s %s\n", exampleStyle.Render("1."), helpDescStyle.Render("Type: ")+cmdStyle.Render("set key=value")+" "+keyStyle.Render("[Enter]")))
-	b.WriteString(fmt.Sprintf("  %s %s\n", exampleStyle.Render("2."), helpDescStyle.Render("Example: ")+cmdStyle.Render("set ip=10.10.10.10")+" "+keyStyle.Render("[Enter]")))
-	b.WriteString(fmt.Sprintf("  %s %s\n", exampleStyle.Render("3."), helpDescStyle.Render("Select any command with ")+varStyle.Render("{{ip}}")+" "+helpDescStyle.Render("or ")+varStyle.Render("{{domain}}")))
-	b.WriteString(fmt.Sprintf("  %s %s\n", exampleStyle.Render("4."), successStyle.Render("Arguments will be auto-filled! ✓")))
+	b.WriteString(fmt.Sprintf("  %s %s\n", exampleStyle.Render("1."), helpDescStyle.Render("输入：")+cmdStyle.Render("set key=value")+" "+keyStyle.Render("[Enter]")))
+	b.WriteString(fmt.Sprintf("  %s %s\n", exampleStyle.Render("2."), helpDescStyle.Render("例如：")+cmdStyle.Render("set ip=10.10.10.10")+" "+keyStyle.Render("[Enter]")))
+	b.WriteString(fmt.Sprintf("  %s %s\n", exampleStyle.Render("3."), helpDescStyle.Render("选择任意包含 ")+varStyle.Render("{{ip}}")+" "+helpDescStyle.Render("或 ")+varStyle.Render("{{domain}}")))
+	b.WriteString(fmt.Sprintf("  %s %s\n", exampleStyle.Render("4."), successStyle.Render("参数会自动填充！✓")))
 	b.WriteString("\n")
 
 	// Before/After example
 	b.WriteString(fmt.Sprintf("  %s nmap -sV %s %s %s\n",
-		helpStyle.Render("Before:"), varStyle.Render("{{ip}}"), arrowStyle.Render("→"), helpStyle.Render("You type IP every time")))
+		helpStyle.Render("之前："), varStyle.Render("{{ip}}"), arrowStyle.Render("→"), helpStyle.Render("每次都要手动输入 IP")))
 	b.WriteString(fmt.Sprintf("  %s nmap -sV %s  %s %s\n",
-		successStyle.Render("After: "), exampleStyle.Render("10.10.10.10"), arrowStyle.Render("→"), successStyle.Render("Auto-filled! ✓")))
+		successStyle.Render("之后："), exampleStyle.Render("10.10.10.10"), arrowStyle.Render("→"), successStyle.Render("自动填充！✓")))
 
 	b.WriteString("\n\n")
-	b.WriteString(helpStyle.Render("  Press ESC or Enter to go back"))
+	b.WriteString(helpStyle.Render("  按 ESC 或 Enter 返回"))
 
 	return b.String()
 }
-

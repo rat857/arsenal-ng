@@ -3,82 +3,71 @@ tags: [dns, enumeration, reconnaissance, networking, security, pentest, subdomai
 
 actions:
 # === BASIC RESOLUTION ===
- - title: dnsx - basic A record resolution
+ - title: dnsx - 基本 A 记录解析
    desc: |
-     Resolve a list of subdomains to their corresponding IPv4 addresses. 
-     This is the most common starting point for reconnaissance to identify live hosts. 
-     The output provides a clean list of resolved IP addresses for the provided input.
+     将子域名列表解析为对应的 IPv4 地址。
+     这是侦察中识别存活主机的最常见起点，输出会为提供的输入生成一份干净的已解析 IP 地址列表。
    command: "dnsx -l {{list|subdomains.txt}}"
 
- - title: dnsx - query multiple record types
+ - title: dnsx - 查询多种记录类型
    desc: |
-     Perform queries for multiple DNS record types including A, AAAA, CNAME, NS, TXT, and MX. 
-     This comprehensive scan helps in understanding the full DNS profile of a target domain. 
-     It is particularly useful for identifying mail servers, name servers, and third-party service verification strings.
+     对 A、AAAA、CNAME、NS、TXT 和 MX 等多种 DNS 记录类型执行查询。
+     这种全面扫描有助于理解目标域名的完整 DNS 画像，对识别邮件服务器、域名服务器和第三方服务验证字符串尤为有用。
    command: "dnsx -l {{list}} -a -aaaa -cname -ns -txt -mx"
 
- - title: dnsx - reverse DNS lookup (PTR)
+ - title: dnsx - 反向 DNS 查询（PTR）
    desc: |
-     Resolve a list of IP addresses back to their associated hostnames using PTR records. 
-     This is essential during internal assessments or when scanning cloud IP ranges to identify ownership. 
-     Reverse lookups help map out the infrastructure from an IP-centric perspective.
+     使用 PTR 记录将 IP 地址列表解析回其关联的主机名。
+     在内部评估或扫描云 IP 范围以识别所有权时至关重要，反向查询有助于从以 IP 为中心的角度映射基础设施。
    command: "dnsx -l {{ip_list|ips.txt}} -ptr"
 
 # === BRUTEFORCING & ENUMERATION ===
- - title: dnsx - subdomain bruteforcing
+ - title: dnsx - 子域名暴力破解
    desc: |
-     Bruteforce subdomains for a specific domain using a provided wordlist. 
-     This technique discovers hidden subdomains that are not indexed by public search engines or certificate transparency logs. 
-     dnsx handles high-concurrency bruteforcing efficiently using the retryabledns library.
+     使用提供的字典对特定域名的子域名进行暴力破解。
+     此技术可发现未被公共搜索引擎或证书透明度日志索引的隐藏子域名，dnsx 使用 retryabledns 库高效处理高并发暴力破解。
    command: "dnsx -d {{domain}} -w {{wordlist|subdomains-top1000.txt}}"
 
- - title: dnsx - zone transfer (AXFR)
+ - title: dnsx - 区域传送（AXFR）
    desc: |
-     Attempt a DNS zone transfer for the specified list of domains. 
-     If successful, AXFR allows an attacker or auditor to see every DNS record hosted on a name server. 
-     Note that most modern servers are configured to block unauthorized zone transfers.
+     对指定的域名列表尝试 DNS 区域传送。
+     若成功，AXFR 允许攻击者或审计员查看域名服务器上托管的每条 DNS 记录，注意大多数现代服务器都配置为阻止未授权的区域传送。
    command: "dnsx -l {{list}} -axfr"
 
 # === FILTERING & PROBING ===
- - title: dnsx - filter by status code
+ - title: dnsx - 按状态码过滤
    desc: |
-     Filter the DNS resolution results by specific response codes such as NOERROR or SERVFAIL. 
-     This helps in reducing noise by focusing only on successfully resolved domains or identifying specific server errors. 
-     Multiple status codes can be provided as a comma-separated list.
+     按 NOERROR 或 SERVFAIL 等特定响应码过滤 DNS 解析结果。
+     有助于只关注成功解析的域名或识别特定服务器错误，以减少噪声，多个状态码可用逗号分隔提供。
    command: "dnsx -l {{list}} -rcode noerror,servfail"
 
- - title: dnsx - cdn and asn enumeration
+ - title: dnsx - CDN 与 ASN 枚举
    desc: |
-     Retrieve the CDN name and ASN information for each resolved domain. 
-     This provides critical context about the hosting environment, such as whether a site is behind Cloudflare or Akamai. 
-     It is highly valuable for scoping and identifying target infrastructure ownership.
+     检索每个已解析域名的 CDN 名称和 ASN 信息。
+     可提供关于托管环境的关键背景，例如站点是否位于 Cloudflare 或 Akamai 之后，对确定范围和识别目标基础设施所有权非常有价值。
    command: "dnsx -l {{list}} -cdn -asn"
 
- - title: dnsx - wildcard domain detection
+ - title: dnsx - 通配符域名检测
    desc: |
-     Analyze a domain for wildcard DNS records to prevent false positives during enumeration. 
-     Wildcards resolve any non-existent subdomain to a specific IP, which can clutter results. 
-     This command uses a threshold to accurately identify and filter out these misleading records.
+     分析域名是否存在通配符 DNS 记录，以防止枚举过程中的误报。
+     通配符会将任何不存在的子域名解析到特定 IP，从而扰乱结果，此命令使用阈值准确识别并过滤这些误导性记录。
    command: "dnsx -wd {{domain}} -wt 5"
 
 # === ADVANCED & OPTIMIZATION ===
- - title: dnsx - dns tracing
+ - title: dnsx - DNS 跟踪
    desc: |
-     Perform a full DNS trace from the root servers down to the authoritative name server. 
-     This is used to visualize the resolution path and diagnose issues like DNS hijacking or misconfigured delegations. 
-     It provides a step-by-step breakdown of how the final IP address is determined.
+     从根服务器一路执行完整的 DNS 跟踪直到权威域名服务器。
+     用于可视化解析路径，并诊断 DNS 劫持或委派配置错误等问题，可逐步展示最终 IP 地址是如何确定的。
    command: "dnsx -l {{list}} -trace"
 
- - title: dnsx - custom resolvers and rate limiting
+ - title: dnsx - 自定义解析器与速率限制
    desc: |
-     Use a custom list of DNS resolvers and apply rate limiting to the queries. 
-     Custom resolvers (like 1.1.1.1 or 8.8.8.8) can bypass local DNS restrictions and improve speed. 
-     Rate limiting is crucial to avoid being blocked by protective DNS firewalls or overloading the network.
+     使用自定义的 DNS 解析器列表，并对查询应用速率限制。
+     自定义解析器（如 1.1.1.1 或 8.8.8.8）可绕过本地 DNS 限制并提高速度，速率限制对避免被防护性 DNS 防火墙封禁或网络过载至关重要。
    command: "dnsx -l {{list}} -r {{resolvers|resolvers.txt}} -rl {{rate|100}} -t {{threads|50}}"
 
- - title: dnsx - structured JSON output
+ - title: dnsx - 结构化 JSON 输出
    desc: |
-     Export all DNS resolution data in a structured JSONL format. 
-     JSON output includes all metadata such as timestamps, status codes, and record values in a machine-readable way. 
-     This is the preferred method for integrating dnsx into automated security pipelines and data processing scripts.
+     以结构化的 JSONL 格式导出所有 DNS 解析数据。
+     JSON 输出以机器可读的方式包含时间戳、状态码和记录值等所有元数据，是将 dnsx 集成到自动化安全管道和数据处理脚本的首选方法。
    command: "dnsx -l {{list}} -json -o {{output|results.json}}"

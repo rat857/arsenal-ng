@@ -3,94 +3,72 @@ tags: [password-cracking, wordlist, security, pentest, brute-force, reconnaissan
 
 actions:
   # === BASIC GENERATION ===
-  - title: crunch - basic wordlist generation
+  - title: crunch - 基本字典生成
     desc: |
-      Generates a wordlist based on a specific length range using the default lowercase alphabet.
-      The first number is the minimum length and the second is the maximum length.
-      This is useful for creating simple brute-force lists when no specific character set is known.
-      Be cautious as the file size grows exponentially with the length.
+      使用默认小写字母表按指定长度范围生成字典。
+      第一个数字为最小长度，第二个数字为最大长度，适合在不知道具体字符集时创建简单的暴力破解列表。
     command: "crunch {{min|1}} {{max|3}}"
 
-  - title: crunch - custom character set
+  - title: crunch - 自定义字符集
     desc: |
-      Create a wordlist using a specific set of characters provided in the command line.
-      Crunch will use only the characters you specify to generate all possible combinations within the min/max range.
-      The characters should be entered as a single string immediately after the max length.
-      This is ideal when you know the target password only contains certain letters or numbers.
+      使用命令行中指定的字符集创建字典。
+      Crunch 将仅用你指定的字符生成最小/最大长度范围内的所有可能组合，字符应以单个字符串形式跟在最大长度之后。
     command: "crunch {{min|4}} {{max|4}} {{characters|0123456789ABCDEF}}"
 
-  - title: crunch - output to file
+  - title: crunch - 输出到文件
     desc: |
-      Saves the generated wordlist to a specified text file instead of printing to the terminal.
-      Using the -o flag is the standard way to prepare wordlists for tools like Hashcat or John the Ripper.
-      Crunch will provide an estimate of the file size and the number of lines before starting.
-      Ensure you have enough disk space as complex wordlists can easily reach several gigabytes.
+      将生成的字典保存到指定文本文件，而不是打印到终端。
+      使用 -o 标志是为 Hashcat 或 John the Ripper 等工具准备字典的标准方式。
     command: "crunch {{min|4}} {{max|6}} -o {{output_file|wordlist.txt}}"
 
   # === ADVANCED CHARACTER SETS ===
-  - title: crunch - using predefined charset files
+  - title: crunch - 使用预定义字符集文件
     desc: |
-      Utilizes the standard charset.lst file included with crunch to select specific character groups.
-      Common groups include 'mixalpha-numeric', 'numeric', or 'unicode-upper'.
-      The path to charset.lst is usually /usr/share/crunch/charset.lst on Kali Linux.
-      This method is more efficient than manually typing out long character strings.
+      使用 crunch 自带的标准 charset.lst 文件选择特定字符组。
+      常见组包括 mixalpha-numeric、numeric 或 unicode-upper，在 Kali Linux 上路径通常为 /usr/share/crunch/charset.lst。
     command: "crunch {{min|8}} {{max|8}} -f {{charset_file|/usr/share/crunch/charset.lst}} {{charset_name|mixalpha-numeric}}"
 
   # === PATTERN BASED GENERATION ===
-  - title: crunch - pattern matching (masks)
+  - title: crunch - 模式匹配（掩码）
     desc: |
-      Generates words matching a specific pattern using the -t flag.
-      Placeholders include @ (lowercase), , (uppercase), % (numbers), and ^ (symbols).
-      This is extremely powerful for targeted attacks where part of the password (like a year or a name) is known.
-      Any other characters in the pattern will be treated as literal constants.
+      使用 -t 标志生成符合特定模式的单词。
+      占位符包括 @（小写字母）、,（大写字母）、%（数字）和 ^（符号），模式中的其他字符视为字面常量。
     command: "crunch {{length|6}} {{length|6}} -t {{pattern|@@202%}} -o {{output_file|pattern_list.txt}}"
 
-  - title: crunch - literal character escape in patterns
+  - title: crunch - 模式中的字面字符转义
     desc: |
-      Allows you to use the placeholder characters (@, , % ^) as literals in a pattern.
-      The -l flag tells crunch which character in the -t pattern should be treated as a literal instead of a placeholder.
-      This is necessary if the target password actually contains a symbol like '%' or '@'.
-      Specify the exact character from the pattern that should not be interpreted as a mask.
+      允许在模式中将占位符字符（@、,、%、^）当作字面量使用。
+      -l 标志告诉 crunch 应把 -t 模式中的哪个字符视为字面量而非占位符。
     command: "crunch {{length|5}} {{length|5}} -t {{pattern|pass%}}"
 
   # === PERMUTATIONS AND COMBINATIONS ===
-  - title: crunch - permutation of specific words
+  - title: crunch - 特定单词排列组合
     desc: |
-      Generates a wordlist by shuffling the order of specific words or characters provided.
-      The -p flag ignores the min/max length parameters and instead focuses on permutations.
-      This is useful for "social engineering" wordlists where you combine known keywords like pet names or birthdays.
-      Crunch will generate every possible order for the strings you provide.
+      通过打乱所提供单词或字符的顺序来生成字典。
+      -p 标志忽略最小/最大长度参数，专注于排列组合，适合结合宠物名或生日等已知关键词生成社工字典。
     command: "crunch 1 1 -p {{word1}} {{word2}} {{word3}}"
 
   # === FILE AND RESOURCE MANAGEMENT ===
-  - title: crunch - split wordlist by size
+  - title: crunch - 按大小拆分字典
     desc: |
-      Automatically splits the generated wordlist into multiple files based on size.
-      The -b flag accepts parameters like 'kb', 'mb', or 'gb' to define the maximum size of each segment.
-      The output filename must be set to 'START' or another placeholder to enable auto-numbering.
-      This is helpful when dealing with file system limitations or when transferring lists between machines.
+      按大小自动将生成的字典拆分为多个文件。
+      -b 标志接受 kb、mb 或 gb 等参数来定义每段的最大大小，输出文件名需设置为 START 或占位符以启用自动编号。
     command: "crunch {{min|4}} {{max|8}} -b {{size|20mb}} -o START"
 
-  - title: crunch - split wordlist by line count
+  - title: crunch - 按行数拆分字典
     desc: |
-      Divides the output into multiple files containing a specific number of lines each.
-      Use the -c flag followed by the number of lines per file.
-      Similar to the -b flag, the output filename should be specified as 'START'.
-      This is useful for parallelizing brute-force attacks across multiple instances of a tool.
+      将输出拆分为多个文件，每个文件包含指定数量的行。
+      使用 -c 标志后跟每文件行数，与 -b 标志类似，输出文件名应指定为 START。
     command: "crunch {{min|5}} {{max|5}} -c {{line_count|1000}} -o START"
 
-  - title: crunch - compressed wordlist generation
+  - title: crunch - 生成压缩字典
     desc: |
-      Compresses the output wordlist on the fly using gzip, bzip2, or lzma.
-      The -z flag followed by the compression type (e.g., gzip) significantly reduces disk space usage.
-      Many modern cracking tools can read compressed wordlists directly without manual extraction.
-      This is highly recommended for massive wordlists that would otherwise exceed storage limits.
+      使用 gzip、bzip2 或 lzma 即时压缩输出字典。
+      -z 标志后跟压缩类型（如 gzip）可显著减少磁盘占用，许多现代破解工具可直接读取压缩字典。
     command: "crunch {{min|1}} {{max|10}} -o {{file|list.txt}} -z {{compression|gzip}}"
 
-  - title: crunch - resume interrupted generation
+  - title: crunch - 恢复中断的生成
     desc: |
-      Resumes a wordlist generation process from a specific starting string.
-      The -s flag allows you to specify the exact word where crunch should begin.
-      This is a lifesaver if your system crashed or you needed to stop a long-running generation task.
-      Make sure the min/max and character set parameters match the original command.
+      从特定的起始字符串恢复字典生成过程。
+      -s 标志允许你指定 crunch 应开始的确切单词，适合系统崩溃或需要停止长时间生成任务的情况。
     command: "crunch {{min|5}} {{max|5}} -s {{start_string|abc12}}"

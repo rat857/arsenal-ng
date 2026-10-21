@@ -4,103 +4,90 @@ tags: [security, supply-chain, audit, malware, pentest, enumeration, dependencie
 actions:
 # === INTELLIGENCE FEED & DASHBOARD ===
 
- - title: depx - intelligence dashboard
+ - title: depx - 情报仪表盘
    desc: |
-     Display the intelligence dashboard for recently disclosed malicious packages. 
-     This view provides a high-level summary of threats detected within a specific time window, defaulting to the last 3 days. 
-     It is the primary way to stay updated on emerging supply-chain attacks across various ecosystems like npm, PyPI, and Go.
+     显示近期披露的恶意软件包情报仪表盘。
+     该视图提供特定时间窗口内检测到的威胁的概览摘要，默认窗口为最近 3 天，是跟踪 npm、PyPI、Go 等生态供应链攻击的主要方式。
    command: "depx --since {{time_window|3d}}"
 
- - title: depx - ecosystem filtered feed
+ - title: depx - 按生态过滤的订阅流
    desc: |
-     View a filtered list of malicious packages for a specific ecosystem. 
-     This is useful when you only care about threats relevant to your specific tech stack, such as npm or Python. 
-     The --list flag simplifies the output to a single header line per result for easier skimming.
+     查看特定生态系统的恶意软件包过滤列表。
+     当你只关心与自身技术栈相关的威胁（如 npm 或 Python）时非常有用，--list 标志将输出简化为每条结果一行便于浏览。
    command: "depx feed -e {{ecosystem|npm}} --list"
 
 # === LOCAL AUDITING ===
 
- - title: depx - sweep home directory
+ - title: depx - 扫描主目录
    desc: |
-     Perform a broad audit of the current user's home directory for malicious dependencies. 
-     The tool automatically searches for lockfiles and project trees (npm, PyPI, Go, Cargo, etc.) and compares them against a local index. 
-     This is a highly efficient way to check all local development projects and global installs for supply-chain risks.
+     对当前用户的主目录执行广泛审计，检查恶意依赖。
+     工具会自动搜索锁文件和项目树（npm、PyPI、Go、Cargo 等），并与本地索引进行比对。
    command: "depx audit"
 
- - title: depx - audit specific project
+ - title: depx - 审计特定项目
    desc: |
-     Scan a specific project directory or a single SBOM/lockfile for known malicious packages. 
-     You can point this command at a folder containing a package-lock.json or a standalone CycloneDX/SPDX file. 
-     It is the standard method for verifying the safety of a specific application's dependency tree before deployment.
+     扫描特定项目目录或单个 SBOM/锁文件中的已知恶意软件包。
+     可指向包含 package-lock.json 的文件夹，或独立的 CycloneDX/SPDX 文件。
    command: "depx audit {{target_path}}"
 
- - title: depx - audit with exclusions
+ - title: depx - 带排除项审计
    desc: |
-     Scan a project while ignoring specific packages known to be safe or internal. 
-     The exclusion file should contain "ecosystem:package" entries to prevent false positives from halting your workflow. 
-     Use this when your organization uses internal tools that might share names with flagged packages or when a specific finding has been manually triaged.
+     扫描项目时忽略已知安全或内部的特定软件包。
+     排除文件应包含 ecosystem:package 格式的条目，以避免误报中断你的工作流。
    command: "depx audit {{target_path}} --exclude-pkg {{ignore_file|.depxignore}}"
 
 # === CI/CD & PIPELINE INTEGRATION ===
 
- - title: depx - CI gate audit
+ - title: depx - CI 门禁审计
    desc: |
-     Run a dependency audit that fails the build if any malicious package is discovered. 
-     The --require-clean flag ensures the process exits with a non-zero code upon finding a threat, making it perfect for CI/CD pipelines. 
-     Pairing this with JSON output allows for automated processing of the security findings by other tools in your pipeline.
+     运行依赖审计，一旦发现任何恶意软件包即让构建失败。
+     --require-clean 标志确保发现威胁时以非零代码退出，非常适合 CI/CD 管道，配合 JSON 输出可实现自动处理。
    command: "depx audit {{project_path}} --require-clean -j"
 
- - title: depx - export audit reports
+ - title: depx - 导出审计报告
    desc: |
-     Generate detailed security reports in multiple formats including JSON, CSV, and SARIF. 
-     SARIF exports are particularly useful for integrating findings into GitHub Code Scanning or other vulnerability management platforms. 
-     You can also generate an audited SBOM (Software Bill of Materials) for compliance and documentation purposes.
+     生成 JSON、CSV 和 SARIF 等多种格式的详细安全报告。
+     SARIF 导出在将发现接入 GitHub Code Scanning 或其他漏洞管理平台时尤为有用。
    command: "depx audit {{target}} --output {{output_name|report}} --output-format {{format|json,csv}} --sarif-export {{sarif_path|results.sarif}}"
 
 # === GITHUB REPOSITORY AUDITING ===
 
- - title: depx - audit GitHub repository
+ - title: depx - 审计 GitHub 仓库
    desc: |
-     Scan a public or private GitHub repository using the GitHub Dependency Graph API. 
-     This allows you to check remote projects for malicious dependencies without cloning the code locally. 
-     Ensure the GITHUB_TOKEN environment variable is set to access private repositories or to avoid rate-limiting issues.
+     使用 GitHub Dependency Graph API 扫描公共或私有 GitHub 仓库。
+     无需在本地克隆代码即可检查远程项目的恶意依赖，访问私有仓库或避免速率限制需设置 GITHUB_TOKEN 环境变量。
    command: "depx github {{owner_repo|projectdiscovery/depx}}"
 
- - title: depx - audit GitHub organization
+ - title: depx - 审计 GitHub 组织
    desc: |
-     Perform a bulk audit of all repositories within a specific GitHub organization or user account. 
-     This is an essential command for security teams looking to monitor the supply-chain health of an entire organization's codebase. 
-     By default, it scans a limited number of repositories unless a higher limit is specified with the -n flag.
+     对特定 GitHub 组织或用户账户下的所有仓库执行批量审计。
+     这是安全团队监控整个组织代码库供应链健康状况的关键命令，默认只扫描有限数量的仓库。
    command: "depx github {{org_name}} -n {{limit|100}}"
 
 # === SEARCH & LOOKUP ===
 
- - title: depx - search malicious packages
+ - title: depx - 搜索恶意软件包
    desc: |
-     Search the local malicious package index for specific package names or keywords. 
-     This is helpful for checking if a package you are considering using has a known history of malicious activity. 
-     The search covers all supported ecosystems unless restricted by global flags.
+     在本地恶意软件包索引中搜索特定软件包名称或关键词。
+     有助于检查你考虑使用的软件包是否有已知的恶意活动历史。
    command: "depx search {{query}}"
 
- - title: depx - lookup specific package
+ - title: depx - 查询特定软件包
    desc: |
-     Check a specific package name and ecosystem to see if it is flagged as malicious. 
-     The input format should be "ecosystem:package_name" to ensure the lookup is precise. 
-     It provides immediate feedback on whether the package is currently considered clean or malicious in the database.
+     检查特定软件包名称和生态系统是否被标记为恶意。
+     输入格式应为 ecosystem:package_name 以确保查询精确，可立即反馈该软件包在数据库中当前是否被判定为干净或恶意。
    command: "depx {{ecosystem_package|npm:lodash}}"
 
- - title: depx - lookup advisory ID
+ - title: depx - 查询安全公告 ID
    desc: |
-     Retrieve detailed information about a specific security advisory using its ID (e.g., MAL ID). 
-     This is useful for investigating the specifics of a threat, such as the publication date and the nature of the malicious code. 
-     Use the --raw flag if you need the original OSV record for programmatic analysis.
+     通过其 ID（如 MAL ID）检索特定安全公告的详细信息。
+     可用于调查威胁的具体情况，如发布日期和恶意代码的性质，需要原始 OSV 记录时可用 --raw 标志。
    command: "depx id {{advisory_id}}"
 
 # === MAINTENANCE ===
 
- - title: depx - update tool and database
+ - title: depx - 更新工具与数据库
    desc: |
-     Update the depx binary and its local malicious package index to the latest available version. 
-     Regular updates are critical because new malicious packages are discovered and added to the database daily. 
-     Running this command ensures your audits are performed against the most current threat intelligence.
+     将 depx 二进制文件和本地恶意软件包索引更新到最新可用版本。
+     定期更新至关重要，因为每天都会发现新的恶意软件包并加入数据库，此命令可确保审计基于最新的威胁情报执行。
    command: "depx update"

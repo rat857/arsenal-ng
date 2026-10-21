@@ -3,110 +3,71 @@ tags: [active-directory, pentest, exploitation, dacl, security, impacket, privil
 
 actions:
   # === ENUMERATION & INSPECTION ===
-  - title: impacket-dacledit - read target dacl
+  - title: impacket-dacledit - 读取目标 DACL
     desc: |
-      Displays the Access Control List (ACL) of a specific target object in the domain. 
-      This is the primary reconnaissance step to identify which users or groups have permissions over an object. 
-      It helps in finding misconfigurations that can be exploited for privilege escalation. 
-      Use this to verify existing rights before attempting any modification or removal.
+      显示域中特定目标对象的访问控制列表（ACL）。这是识别哪些用户或组对对象具有权限的主要侦察步骤。它有助于发现可被利用进行权限提升的错误配置。在尝试任何修改或移除之前，用它来验证现有权限。
     command: "impacket-dacledit -action read -target {{target_name}} {{identity}}"
 
-  - title: impacket-dacledit - filter dacl by principal
+  - title: impacket-dacledit - 按主体过滤 DACL
     desc: |
-      Reads the DACL of a target object but filters the output to show only entries related to a specific principal.
-      This is extremely useful when you want to see exactly what permissions a specific compromised user has over a target.
-      It reduces noise in large environments where objects might have dozens of ACEs.
-      Specify the principal using its sAMAccountName with the -principal flag.
+      读取目标对象的 DACL，但过滤输出，仅显示与特定主体相关的条目。当你想查看特定已入侵用户对目标的确切权限时非常有用。它减少了对象可能拥有数十个 ACE 的大型环境中的噪音。使用 -principal 参数以 sAMAccountName 指定主体。
     command: "impacket-dacledit -action read -target {{target_name}} -principal {{principal_name}} {{identity}}"
 
   # === PERMISSION MODIFICATION ===
-  - title: impacket-dacledit - grant dcsync rights
+  - title: impacket-dacledit - 授予 DCSync 权限
     desc: |
-      Assigns the necessary extended rights to a principal to perform a DCSync attack.
-      This action grants 'DS-Replication-Get-Changes' and 'DS-Replication-Get-Changes-All' permissions.
-      It is one of the most powerful techniques for domain dominance as it allows the principal to dump hashes from the DC.
-      Exercise extreme caution as this creates a significant security risk and is easily detectable by modern EDR/SIEM.
+      为主体分配执行 DCSync 攻击所需的扩展权限。此操作授予 DS-Replication-Get-Changes 和 DS-Replication-Get-Changes-All 权限。这是域统治最强大的技术之一，因为它允许主体从 DC 转储哈希。请格外谨慎，因为这会带来重大安全风险，且容易被现代 EDR/SIEM 检测到。
     command: "impacket-dacledit -action write -rights DCSync -principal {{principal_name}} -target-dn {{domain_dn}} {{identity}}"
 
-  - title: impacket-dacledit - grant full control
+  - title: impacket-dacledit - 授予完全控制
     desc: |
-      Grants 'FullControl' (GenericAll) permissions over a target object to a specified principal.
-      This allows the principal to perform any action on the object, including changing its owner or modifying its DACL further.
-      It is commonly used when you need total control over a computer object or a user account for lateral movement.
-      Ensure you have sufficient privileges (like WriteDacl) to perform this write operation.
+      向指定主体授予对目标对象的 FullControl（GenericAll）权限。这允许主体对对象执行任何操作，包括更改其所有者或进一步修改其 DACL。当你需要对计算机对象或用户账户完全控制以进行横向移动时，通常使用此方法。请确保你拥有足够的权限（如 WriteDacl）来执行此写入操作。
     command: "impacket-dacledit -action write -rights FullControl -principal {{principal_name}} -target {{target_name}} {{identity}}"
 
-  - title: impacket-dacledit - grant reset password rights
+  - title: impacket-dacledit - 授予重置密码权限
     desc: |
-      Grants the permission to reset the password of a target user account.
-      This is a common path for account takeover where you don't need to know the original password.
-      Once granted, you can use other tools to perform the actual password reset.
-      This is particularly useful when targeting accounts that are members of high-privileged groups.
+      授予重置目标用户账户密码的权限。这是账户接管的常见路径，你无需知道原始密码。授予后，你可以使用其他工具执行实际的密码重置。当针对高权限组成员账户时特别有用。
     command: "impacket-dacledit -action write -rights ResetPassword -principal {{principal_name}} -target {{target_user}} {{identity}}"
 
-  - title: impacket-dacledit - grant write members rights
+  - title: impacket-dacledit - 授予写入成员权限
     desc: |
-      Allows a principal to modify the membership of a target group object.
-      By adding yourself or another controlled account to a sensitive group, you can inherit that group's privileges.
-      This is a standard technique for escalating privileges from a regular user to a group like 'Server Operators'.
-      The target must be a group object for this permission to be meaningful.
+      允许主体修改目标组对象的成员身份。通过将自己或另一个受控账户添加到敏感组，你可以继承该组的权限。这是将权限从普通用户提升到 Server Operators 等组的标准技术。要使此权限有意义，目标必须是组对象。
     command: "impacket-dacledit -action write -rights WriteMembers -principal {{principal_name}} -target {{group_name}} {{identity}}"
 
   # === ADVANCED OPERATIONS ===
-  - title: impacket-dacledit - grant rights with inheritance
+  - title: impacket-dacledit - 带继承的授予权限
     desc: |
-      Applies permissions to a target (like an OU or Container) and enables inheritance.
-      This ensures that all objects created within that container will inherit the specified rights.
-      It is an effective way to maintain persistence across multiple objects within an Organizational Unit.
-      Note that objects with 'adminCount=1' (protected groups) might not inherit these permissions depending on system settings.
+      对目标（如 OU 或容器）应用权限并启用继承。这确保在该容器内创建的所有对象都继承指定的权限。这是在组织单位内跨多个对象维持持久化的有效方式。请注意，根据系统设置，adminCount=1 的对象（受保护组）可能不会继承这些权限。
     command: "impacket-dacledit -action write -rights {{rights|FullControl}} -principal {{principal_name}} -target-dn {{ou_dn}} -inheritance {{identity}}"
 
-  - title: impacket-dacledit - grant custom right via guid
+  - title: impacket-dacledit - 通过 GUID 授予自定义权限
     desc: |
-      Allows granting a specific extended right using its unique GUID.
-      This is used for permissions not covered by the standard shortcuts (like DCSync or ResetPassword).
-      You must provide the exact GUID for the Active Directory right you wish to assign.
-      Use this for granular control or when targeting non-standard AD object classes.
+      允许使用其唯一 GUID 授予特定扩展权限。用于标准快捷方式（如 DCSync 或 ResetPassword）未涵盖的权限。你必须提供要分配的 Active Directory 权限的确切 GUID。用于细粒度控制或针对非标准 AD 对象类时使用。
     command: "impacket-dacledit -action write -rights Custom -rights-guid {{guid}} -principal {{principal_name}} -target {{target_name}} {{identity}}"
 
   # === MAINTENANCE & CLEANUP ===
-  - title: impacket-dacledit - backup dacl to file
+  - title: impacket-dacledit - 备份 DACL 到文件
     desc: |
-      Exports the current DACL of a target object to a local file for backup purposes.
-      This is a critical safety step before making any modifications to Active Directory permissions.
-      If an exploit fails or causes issues, the backup file can be used to restore the original state.
-      Always perform a backup in production environments to minimize the risk of permanent disruption.
+      将目标对象当前的 DACL 导出到本地文件以备备份。这是对 Active Directory 权限进行任何修改之前的关键安全步骤。如果利用失败或导致问题，可以使用备份文件恢复原始状态。在生产环境中始终执行备份，以最小化永久中断的风险。
     command: "impacket-dacledit -action backup -target {{target_name}} -file {{backup_filename|backup.json}} {{identity}}"
 
-  - title: impacket-dacledit - restore dacl from file
+  - title: impacket-dacledit - 从文件恢复 DACL
     desc: |
-      Restores the DACL of an object using a previously created backup file.
-      This action overwrites the existing DACL with the state captured in the backup.
-      It is the primary method for cleaning up after an engagement and returning the environment to its original state.
-      Requires the JSON file generated during the backup phase.
+      使用先前创建的备份文件恢复对象的 DACL。此操作用备份中捕获的状态覆盖现有 DACL。它是测试后清理并将环境恢复原状的主要方法。需要备份阶段生成的 JSON 文件。
     command: "impacket-dacledit -action restore -target {{target_name}} -file {{backup_filename}} {{identity}}"
 
-  - title: impacket-dacledit - remove specific ace
+  - title: impacket-dacledit - 移除特定 ACE
     desc: |
-      Removes a specific Access Control Entry (ACE) from a target object's DACL.
-      This is used to revoke rights previously granted or to remove legitimate access that interferes with an operation.
-      You must specify the principal whose rights are being removed.
-      Be careful not to remove essential administrative access which could lock out legitimate administrators.
+      从目标对象的 DACL 中移除特定的访问控制条目（ACE）。用于撤销先前授予的权限，或移除干扰操作的合法访问。你必须指定其权限被移除的主体。注意不要移除基本的管理访问，否则可能锁定合法管理员。
     command: "impacket-dacledit -action remove -rights {{rights_to_remove|FullControl}} -principal {{principal_name}} -target {{target_name}} {{identity}}"
 
   # === AUTHENTICATION VARIANTS ===
-  - title: impacket-dacledit - authenticate with NTLM hashes
+  - title: impacket-dacledit - 使用 NTLM 哈希认证
     desc: |
-      Performs DACL operations using NTLM hashes instead of a cleartext password.
-      This is the standard 'Pass-the-Hash' (PtH) method for authentication.
-      It is useful when you have extracted hashes but do not have the plaintext password.
-      Ensure the hash format is LMHASH:NTHASH (use empty LM hash if unknown).
+      使用 NTLM 哈希而非明文密码执行 DACL 操作。这是标准的 Pass-the-Hash（PtH）认证方法。当你提取了哈希但没有明文密码时非常有用。请确保哈希格式为 LMHASH:NTHASH（未知时使用空 LM 哈希）。
     command: "impacket-dacledit -hashes {{lmhash:nthash}} -target {{target_name}} -action read {{identity}}"
 
-  - title: impacket-dacledit - authenticate with Kerberos
+  - title: impacket-dacledit - 使用 Kerberos 认证
     desc: |
-      Uses Kerberos authentication for the connection to the Domain Controller.
-      The tool will attempt to use credentials from the ccache file specified in the KRB5CCNAME environment variable.
-      This is often required in environments where NTLM is disabled or for more stealthy operations.
-      You must provide the -dc-ip or -dc-host flag to ensure correct ticket routing.
+      使用 Kerberos 认证连接到域控制器。工具会尝试使用 KRB5CCNAME 环境变量指定的 ccache 文件中的凭据。在禁用 NTLM 的环境或需要更隐蔽操作时通常需要。你必须提供 -dc-ip 或 -dc-host 参数以确保正确的票据路由。
     command: "impacket-dacledit -k -no-pass -dc-ip {{dc_ip}} -target {{target_name}} -action read {{identity}}"

@@ -4,90 +4,70 @@ tags: [dns, enumeration, reconnaissance, pentest, network, information-gathering
 # === BASIC ENUMERATION ===
 
 actions:
- - title: dnsenum - basic dns enumeration
+ - title: dnsenum - 基本 DNS 枚举
    desc: |
-     Performs a standard DNS enumeration against the target domain. 
-     This command identifies host addresses (A), name servers (NS), and mail exchange (MX) records. 
-     It is the most common starting point for gathering technical information about a target's infrastructure. 
-     By default, it also attempts a zone transfer from all discovered name servers.
+     对目标域名执行标准的 DNS 枚举。
+     此命令识别主机地址（A）、域名服务器（NS）和邮件交换（MX）记录，是收集目标基础设施技术信息的最常见起点。
    command: "dnsenum {{domain}}"
 
- - title: dnsenum - skip reverse lookup
+ - title: dnsenum - 跳过反向查询
    desc: |
-     Runs a standard enumeration but skips the reverse lookup operations. 
-     This is useful when you want to speed up the scanning process or when reverse DNS is not relevant to your current goal. 
-     It reduces the number of queries sent to the DNS servers, making the scan slightly more stealthy. 
-     Use this if the target network range is extremely large and causing performance issues.
+     运行标准枚举但跳过反向查询操作。
+     当你想加快扫描速度，或反向 DNS 与当前目标无关时非常有用，可减少发送到 DNS 服务器的查询数量，使扫描略微更隐蔽。
    command: "dnsenum --noreverse {{domain}}"
 
 # === BRUTE FORCE & DICTIONARY ATTACKS ===
 
- - title: dnsenum - subdomain brute force
+ - title: dnsenum - 子域名暴力破解
    desc: |
-     Attempts to discover subdomains by testing entries from a provided dictionary file. 
-     If no file is specified, it typically defaults to the internal dns.txt list provided with the tool. 
-     This is essential for finding non-indexed or hidden subdomains like dev, staging, or internal portals. 
-     Ensure the wordlist is high-quality to maximize the chances of discovery without excessive noise.
+     通过测试提供的字典文件中的条目来发现子域名。
+     如果未指定文件，通常默认使用工具自带的内部 dns.txt 列表，对于发现 dev、staging 或内部门户等未被索引或隐藏的子域名至关重要。
    command: "dnsenum -f {{wordlist|/usr/share/dnsenum/dns.txt}} {{domain}}"
 
- - title: dnsenum - recursive brute force
+ - title: dnsenum - 递归暴力破解
    desc: |
-     Enables recursion on subdomains that are discovered and have their own NS records. 
-     This allows the tool to automatically pivot and perform brute-forcing on nested subdomains. 
-     It is highly effective for large organizations with complex, delegated DNS structures. 
-     Be aware that this can significantly increase the duration of the scan and the number of queries.
+     对被发现且拥有自身 NS 记录的子域名启用递归。
+     这允许工具自动转向并对嵌套子域名执行暴力破解，对拥有复杂委派 DNS 结构的大型组织非常有效。
    command: "dnsenum -f {{wordlist|/usr/share/dnsenum/dns.txt}} -r {{domain}}"
 
 # === NETWORK & WHOIS ANALYSIS ===
 
- - title: dnsenum - whois queries and reverse lookup
+ - title: dnsenum - Whois 查询与反向查询
    desc: |
-     Performs whois queries on Class C network ranges discovered during enumeration and runs reverse lookups. 
-     This helps in identifying the full scope of the target's IP space and other hosts residing on the same network. 
-     Warning: This operation can generate a massive amount of traffic and may take a long time to complete. 
-     Use this only when you have authorization to scan the entire network block associated with the domain.
+     对枚举期间发现的 C 类网络范围执行 Whois 查询，并运行反向查询。
+     这有助于识别目标 IP 空间的完整范围以及同一网络上的其他主机，注意此操作会产生大量流量并可能耗时较长。
    command: "dnsenum -w {{domain}}"
 
- - title: dnsenum - comprehensive enumeration shortcut
+ - title: dnsenum - 综合枚举快捷方式
    desc: |
-     Uses the --enum flag, which is a shortcut for a more aggressive and thorough scan. 
-     It automatically sets threads to 5, enables whois queries (-w), and sets scraping limits. 
-     This is the most efficient way to run a "full" scan with a single command. 
-     It is recommended for initial assessment phases where a broad overview of the target is required.
+     使用 --enum 标志，它是更激进、更彻底扫描的快捷方式。
+     自动将线程设为 5、启用 Whois 查询（-w）并设置抓取限制，是用一条命令运行完整扫描的最有效方式。
    command: "dnsenum --enum {{domain}}"
 
 # === ADVANCED CONFIGURATION ===
 
- - title: dnsenum - use specific dns server
+ - title: dnsenum - 使用指定 DNS 服务器
    desc: |
-     Forces the tool to use a specific DNS server for all A, NS, and MX queries. 
-     This is particularly useful if you want to query an internal DNS server directly or bypass a specific recursive resolver. 
-     It can also be used to test for inconsistencies between different DNS providers. 
-     Ensure the specified server is reachable and allows queries from your current IP.
+     强制工具对全部 A、NS 和 MX 查询使用特定的 DNS 服务器。
+     当你想直接查询内部 DNS 服务器或绕过特定递归解析器时尤为有用，也可用于测试不同 DNS 提供商之间的不一致。
    command: "dnsenum --dnsserver {{dns_server}} {{domain}}"
 
- - title: dnsenum - configure thread count and timeout
+ - title: dnsenum - 配置线程数和超时
    desc: |
-     Allows manual adjustment of the number of concurrent threads and the query timeout value. 
-     Increasing threads can speed up brute-forcing but may lead to rate-limiting or missed results on unstable connections. 
-     The timeout value (in seconds) should be adjusted based on the latency of the target DNS servers. 
-     Default values are usually sufficient, but optimization is key for large-scale assessments.
+     允许手动调整并发线程数和查询超时值。
+     增加线程可加快暴力破解，但可能导致速率限制或不稳定连接上的漏报，超时值（秒）应根据目标 DNS 服务器的延迟调整。
    command: "dnsenum --threads {{thread_count|5}} -t {{timeout_seconds|10}} {{domain}}"
 
 # === OUTPUT & DATA MANAGEMENT ===
 
- - title: dnsenum - save results to xml
+ - title: dnsenum - 保存结果为 XML
    desc: |
-     Exports the enumeration results into an XML format for integration with other security tools. 
-     The generated XML file can be imported into platforms like MagicTree for visualization and reporting. 
-     This is crucial for maintaining a structured record of findings during a professional penetration test. 
-     The output includes all discovered hosts, IP addresses, and DNS record types.
+     将枚举结果导出为 XML 格式，以便与其他安全工具集成。
+     生成的 XML 文件可导入 MagicTree 等平台进行可视化和报告，对在专业渗透测试中维护结构化的发现记录至关重要。
    command: "dnsenum -o {{output_file|results.xml}} {{domain}}"
 
- - title: dnsenum - write valid subdomains to file
+ - title: dnsenum - 将有效子域名写入文件
    desc: |
-     Specifically writes only the valid subdomains discovered during the scan to a flat text file. 
-     This is extremely useful for piping the results into other tools like HTTP probes (httpx) or vulnerability scanners. 
-     It helps in creating a clean "attack surface" list for the next stages of the assessment. 
-     Note that this focuses on the hostnames rather than the full DNS record details.
+     仅将扫描期间发现的有效子域名写入纯文本文件。
+     对将结果管道传递给 HTTP 探测工具（httpx）或漏洞扫描器极为有用，有助于为评估的后续阶段创建干净的攻击面列表。
    command: "dnsenum --subfile {{subdomain_file|subdomains.txt}} {{domain}}"

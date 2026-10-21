@@ -4,94 +4,82 @@ tags: [security, jwt, pentest, exploitation, authentication, scanner, enumeratio
 actions:
 # === RECONNAISSANCE AND INFORMATION GATHERING ===
 
- - title: jwt_tool - decode and review token
+ - title: jwt_tool - 解码并查看 Token
    desc: |
-     Decodes the provided JWT and displays its header and payload contents in a readable format. 
-     This is the primary starting point for any JWT assessment to understand the claims and algorithms being used. 
-     The tool automatically validates the token structure and highlights the internal values for manual inspection.
+     解码提供的 JWT，并以可读格式显示其 header 和 payload 内容。这是任何 JWT 评估的首要起点，用于了解所用声明和算法。
+     该工具会自动验证 Token 结构并高亮内部值以便人工检查。
    command: "jwt_tool {{jwt_token}}"
 
- - title: jwt_tool - analyze token via web request
+ - title: jwt_tool - 通过 Web 请求分析 Token
    desc: |
-     Sends a JWT to a target URL within a specific cookie to analyze how the application handles it. 
-     This is useful for verifying if the application accepts the token and observing the response behavior. 
-     You can include a canary value to identify successful authentication or specific reflections in the response.
+     将 JWT 放入特定 Cookie 中发送到目标 URL，分析应用如何处理它。用于验证应用是否接受该 Token 并观察响应行为。
+     可以加入金丝雀值来识别认证成功或响应中的特定回显。
    command: "jwt_tool -t {{url}} -rc \"jwt={{jwt_token}}\" -cv {{canary_value|Welcome}}"
 
 # === AUTOMATED SCANNING ===
 
- - title: jwt_tool - automated playbook scan
+ - title: jwt_tool - 自动化剧本扫描
    desc: |
-     Performs an automated "Playbook Scan" against a target URL to identify common JWT misconfigurations. 
-     This mode tests for multiple vulnerabilities including alg:none, key confusion, and weak secrets in a single run. 
-     It is highly recommended for initial security testing as it covers the most frequent attack vectors automatically.
+     对目标 URL 执行自动化 Playbook Scan，识别常见的 JWT 错误配置。该模式单次运行即可测试多种漏洞，包括 alg:none、密钥混淆和弱密钥。
+     强烈推荐用于初步安全测试，因为它会自动覆盖最常见的攻击向量。
    command: "jwt_tool -t {{url}} -rc \"jwt={{jwt_token}}\" -M pb"
 
- - title: jwt_tool - scan for forced errors
+ - title: jwt_tool - 强制错误扫描
    desc: |
-     Executes a scan designed to provoke error responses from the server by sending malformed JWTs. 
-     Analyzing these errors can reveal information about the backend library, versioning, or logic flaws in the implementation. 
-     This is particularly effective when the application does not provide verbose output under normal circumstances.
+     执行旨在通过发送畸形 JWT 触发服务器错误响应的扫描。分析这些错误可揭示后端库、版本或实现逻辑缺陷等信息。
+     当应用在正常情况下不提供详细输出时特别有效。
    command: "jwt_tool -t {{url}} -rc \"jwt={{jwt_token}}\" -M er"
 
 # === EXPLOITATION AND TAMPERING ===
 
- - title: jwt_tool - alg none signature bypass
+ - title: "jwt_tool - alg:none 签名绕过"
    desc: |
-     Attempts the alg:none attack (CVE-2015-2951) by modifying the header and stripping the signature. 
-     This exploit checks if the server incorrectly trusts tokens that claim to have no signature requirement. 
-     If successful, it allows an attacker to modify any claim in the payload without needing a secret key.
+     通过修改 header 并去除签名，尝试 alg:none 攻击（CVE-2015-2951）。该利用会检查服务器是否错误地信任声称无需签名的 Token。
+     若成功，攻击者无需密钥即可修改 payload 中的任何声明。
    command: "jwt_tool {{jwt_token}} -X a"
 
- - title: jwt_tool - RSA to HMAC key confusion
+ - title: jwt_tool - RSA 到 HMAC 密钥混淆
    desc: |
-     Performs the RS256 to HS256 key mismatch attack (CVE-2016-10555). 
-     It attempts to sign the token using HMAC-SHA256 with the provided public key as the shared secret. 
-     This is a critical vulnerability often found when libraries are configured to use a generic "key" for both asymmetric and symmetric validation.
+     执行 RS256 到 HS256 的密钥错配攻击（CVE-2016-10555）。尝试使用提供的公钥作为共享密钥，以 HMAC-SHA256 对 Token 签名。
+     当库被配置为对非对称和对称验证使用通用 key 时，常出现此严重漏洞。
    command: "jwt_tool {{jwt_token}} -X k -pk {{public_key_file|public.pem}}"
 
- - title: jwt_tool - inject JWKS exploit
+ - title: jwt_tool - 注入 JWKS 利用
    desc: |
-     Exploits key injection vulnerabilities (CVE-2018-0114) by embedding a new JWKS in the header. 
-     The tool generates a new key pair, signs the token with the private key, and includes the public key in the 'jwk' header claim. 
-     Use this when the application trusts the key information provided within the token itself instead of a server-side trust store.
+     通过在 header 中嵌入新的 JWKS 利用密钥注入漏洞（CVE-2018-0114）。该工具生成新的密钥对，用私钥签名 Token，并将公钥放入 jwk header 声明。
+     当应用信任 Token 内提供的密钥信息而非服务器端信任库时使用。
    command: "jwt_tool {{jwt_token}} -X i"
 
- - title: jwt_tool - modify payload claims
+ - title: jwt_tool - 修改 Payload 声明
    desc: |
-     Tampers with specific claims in the JWT payload while attempting to maintain a valid structure. 
-     You can specify the claim name and the new value to escalate privileges, such as changing a 'user' to 'admin'. 
-     This action is typically combined with an exploitation method like alg:none or a known secret key.
+     篡改 JWT payload 中的特定声明，同时尽量保持结构有效。你可以指定声明名和新值来提升权限，例如将 user 改为 admin。
+     此操作通常与 alg:none 或已知密钥等利用方法结合使用。
    command: "jwt_tool {{jwt_token}} -I -pc {{claim_name|role}} -pv {{new_value|admin}}"
 
 # === CRYPTOGRAPHY AND KEY ATTACKS ===
 
- - title: jwt_tool - dictionary attack on secret
+ - title: jwt_tool - 对密钥的字典攻击
    desc: |
-     Initiates a high-speed dictionary attack to crack the HMAC secret key of a JWT. 
-     It compares the signature of the provided token against signatures generated using words from a wordlist. 
-     This is essential for testing if the application uses weak, predictable, or default secret keys for HS256.
+     发起高速字典攻击以破解 JWT 的 HMAC 密钥。将提供的 Token 签名与使用字典单词生成的签名进行比对。
+     这对于测试应用是否在 HS256 中使用弱、可预测或默认的密钥至关重要。
    command: "jwt_tool {{jwt_token}} -C -d {{wordlist|/usr/share/wordlists/rockyou.txt}}"
 
- - title: jwt_tool - verify token with public key
+ - title: jwt_tool - 使用公钥验证 Token
    desc: |
-     Verifies the signature of a JWT using a local public key file. 
-     This helps confirm if a token was actually signed by the expected private key during a manual assessment. 
-     Ensure the public key is in the correct PEM or JWKS format as required by the tool.
+     使用本地公钥文件验证 JWT 的签名。在人工评估中，有助于确认 Token 是否确实由预期的私钥签名。
+     确保公钥采用工具要求的 PEM 或 JWKS 格式。
    command: "jwt_tool {{jwt_token}} -V -pk {{public_key_file|public.pem}}"
 
 # === ADVANCED INTERACTION ===
 
- - title: jwt_tool - scan using request file
+ - title: jwt_tool - 使用请求文件扫描
    desc: |
-     Reads a raw HTTP request from a file and injects the JWT into the appropriate locations automatically. 
-     This is the most reliable way to handle complex requests involving multiple headers, cookies, and POST data. 
-     It mimics the behavior of tools like SQLMap or Burp Suite by parsing the full context of the web communication.
+     从文件读取原始 HTTP 请求，并自动将 JWT 注入到合适的位置。这是处理包含多个 header、Cookie 和 POST 数据的复杂请求的最可靠方式。
+     它模仿 SQLMap 或 Burp Suite 等工具，解析 Web 通信的完整上下文。
    command: "jwt_tool -r {{request_file|request.txt}} -M pb"
 
- - title: jwt_tool - fuzz header claims
+ - title: jwt_tool - 模糊测试 Header 声明
    desc: |
-     Fuzzes the header claims of a JWT with custom payloads, such as SQL injection or path traversal strings. 
-     This is used to find vulnerabilities in the code that processes the JWT headers, like the 'kid' (Key ID) field. 
-     Input a file containing the fuzzing vectors to systematically test the target's processing logic.
+     使用 SQL 注入或路径遍历字符串等自定义 payload 对 JWT 的 header 声明进行模糊测试。用于在处理 JWT header 的代码中发现漏洞，如 kid（Key ID）字段。
+     输入一个包含模糊测试向量的文件，系统性地测试目标的处理逻辑。
    command: "jwt_tool -t {{url}} -rc \"jwt={{jwt_token}}\" -I -hc {{header_claim|kid}} -hv {{fuzz_list|sqli.txt}}"

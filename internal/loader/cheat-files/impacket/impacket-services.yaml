@@ -4,74 +4,79 @@ tags: [pentest, security, impacket, windows, services, enumeration, exploitation
 actions:
 # === ENUMERATION ===
 
- - title: impacket-services - list services
+ - title: impacket-services - 列出服务
    desc: |
-     Lists all available services on the remote Windows machine. This is a primary step in reconnaissance to understand the target's environment and installed software. 
-     Note that listing all services usually requires administrative privileges or specific permissions on the Service Control Manager.
+     列出远程 Windows 机器上所有可用服务。
+     这是了解目标环境和已安装软件的主要侦察步骤。
+     请注意，列出所有服务通常需要管理员权限或对服务控制管理器的特定权限。
    command: "impacket-services {{domain/username:password}}@{{target}} list"
 
- - title: impacket-services - get service status
+ - title: impacket-services - 获取服务状态
    desc: |
-     Queries the current running state of a specific service. This command is useful to verify if a target service is active before attempting to stop or modify it. 
-     You must provide the exact service name (e.g., 'Spooler') rather than the display name.
+     查询特定服务的当前运行状态。
+     此命令用于在尝试停止或修改服务之前验证目标服务是否处于活动状态。
+     你必须提供确切的服务名称（例如“Spooler”），而不是显示名称。
    command: "impacket-services {{domain/username:password}}@{{target}} status -name {{service_name}}"
 
- - title: impacket-services - query service configuration
+ - title: impacket-services - 查询服务配置
    desc: |
-     Retrieves the detailed configuration for a specific service, including its binary path and start type. 
-     This is critical for identifying privilege escalation opportunities, such as unquoted service paths or services running as SYSTEM that point to modifiable binaries. 
-     Always verify the 'BINARY_PATH_NAME' to understand what executable is being triggered.
+     检索特定服务的详细配置，包括其二进制路径和启动类型。
+     这对于识别权限提升机会至关重要，例如未加引号的服务路径或指向可修改二进制文件且以 SYSTEM 运行的服务。
+     务必验证“BINARY_PATH_NAME”以了解触发了哪个可执行文件。
    command: "impacket-services {{domain/username:password}}@{{target}} config -name {{service_name}}"
 
 # === SERVICE MANIPULATION ===
 
- - title: impacket-services - start a service
+ - title: impacket-services - 启动服务
    desc: |
-     Sends a start command to a stopped service on the target host. This can be used to trigger a malicious service you've created or to restart a legitimate service after modification. 
-     Be aware that some services may have dependencies that must be started first, otherwise the command might fail.
+     向目标主机上已停止的服务发送启动命令。
+     这可用于触发你创建的恶意服务，或在修改后重启合法服务。
+     请注意，某些服务可能存在必须先启动的依赖项，否则命令可能失败。
    command: "impacket-services {{domain/username:password}}@{{target}} start -name {{service_name}}"
 
- - title: impacket-services - stop a service
+ - title: impacket-services - 停止服务
    desc: |
-     Remotely stops a running service. This is often used to disable security agents, antivirus software, or logging services during a penetration test. 
-     Stopping critical system services might cause target instability or a blue screen (BSOD), so use this with caution.
+     远程停止正在运行的服务。
+     这通常用于在渗透测试期间禁用安全代理、杀毒软件或日志服务。
+     停止关键系统服务可能导致目标不稳定或蓝屏（BSOD），因此请谨慎使用。
    command: "impacket-services {{domain/username:password}}@{{target}} stop -name {{service_name}}"
 
 # === EXPLOITATION & PERSISTENCE ===
 
- - title: impacket-services - create new service
+ - title: impacket-services - 创建新服务
    desc: |
-     Creates a new service on the remote system with a specified binary path. This is a common method for lateral movement, allowing an attacker to execute commands or payloads with SYSTEM privileges. 
-     The binary path can point to a local file on the target or a file hosted on a network share. 
-     Requires administrative privileges.
+     在远程系统上创建具有指定二进制路径的新服务。
+     这是横向移动的常见方法，允许攻击者以 SYSTEM 权限执行命令或载荷。
+     二进制路径可以指向目标上的本地文件或网络共享上托管的文件。
+     需要管理员权限。
    command: "impacket-services {{domain/username:password}}@{{target}} create -name {{service_name}} -display {{display_name}} -path {{bin_path}}"
 
- - title: impacket-services - change service config
+ - title: impacket-services - 更改服务配置
    desc: |
-     Modifies the configuration of an existing service, most commonly used to overwrite the binary path. 
-     By changing a service that runs as SYSTEM to point to a malicious executable, you can achieve privilege escalation when the service restarts. 
-     It is a best practice to note down the original path to restore it after the engagement to avoid breaking the system.
+     修改现有服务的配置，最常用于覆盖二进制路径。
+     通过将以 SYSTEM 运行的服务改为指向恶意可执行文件，你可以在服务重启时实现权限提升。
+     最佳做法是记录原始路径，以便在评估结束后恢复，避免破坏系统。
    command: "impacket-services {{domain/username:password}}@{{target}} change -name {{service_name}} -path {{new_bin_path}}"
 
- - title: impacket-services - delete a service
+ - title: impacket-services - 删除服务
    desc: |
-     Permanently removes a service from the target machine's Service Control Manager. 
-     This action is typically performed as part of a cleanup process to remove any backdoors or temporary services created during the assessment. 
-     This operation is irreversible; the service must be manually recreated if deleted by mistake.
+     从目标机器的服务控制管理器中永久移除服务。
+     此操作通常作为清理过程的一部分执行，以移除评估期间创建的任何后门或临时服务。
+     此操作不可逆；如果误删，必须手动重新创建服务。
    command: "impacket-services {{domain/username:password}}@{{target}} delete -name {{service_name}}"
 
 # === ADVANCED AUTHENTICATION ===
 
- - title: impacket-services - pass-the-hash authentication
+ - title: impacket-services - 传递哈希身份验证
    desc: |
-     Authenticates to the target using NTLM hashes instead of a cleartext password. 
-     This is the standard approach for lateral movement when you have dumped hashes from memory but do not have the original password. 
-     The hash must be provided in the format LMHASH:NTHASH.
+     使用 NTLM 哈希而非明文密码对目标进行身份验证。
+     当你已从内存转储哈希但没有原始密码时，这是横向移动的标准方法。
+     哈希必须以 LMHASH:NTHASH 格式提供。
    command: "impacket-services {{domain/username}}@{{target}} -hashes {{lmhash:nthash|aad3b435b51404eeaad3b435b51404ee:584ee30706703640b643f1138459f20c}} list"
 
- - title: impacket-services - kerberos authentication
+ - title: impacket-services - Kerberos 身份验证
    desc: |
-     Uses Kerberos tickets for authentication, which is often more stealthy and avoids NTLM logging. 
-     You must have a valid Kerberos ticket (TGT) in your KRB5CCNAME environment variable and provide the -k flag. 
-     Ensure the target is specified as a FQDN (hostname) rather than an IP address for Kerberos to function correctly, and use -dc-ip to point to the Domain Controller.
+     使用 Kerberos 票据进行身份验证，通常更隐蔽且避免产生 NTLM 日志。
+     你必须在 KRB5CCNAME 环境变量中拥有有效的 Kerberos 票据（TGT）并提供 -k 标志。
+     确保目标指定为 FQDN（主机名）而非 IP 地址，以便 Kerberos 正常工作，并使用 -dc-ip 指向域控制器。
    command: "impacket-services -k -no-pass -dc-ip {{dc_ip}} {{domain/username}}@{{target_fqdn}} list"

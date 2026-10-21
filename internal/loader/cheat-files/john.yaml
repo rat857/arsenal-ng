@@ -4,128 +4,98 @@ tags: [password-cracking, security, pentest, brute-force, exploitation, authenti
 actions:
 # === BASIC CRACKING OPERATIONS ===
 
- - title: john - basic wordlist attack
+ - title: john - 基础字典攻击
    desc: |
-     Perform a dictionary attack using a specific wordlist against a target hash file.
-     This is the most common method of cracking where John compares hashes of words in the list to the target.
-     It is highly effective when using large, proven wordlists like rockyou.txt.
-     If no format is specified, John will attempt to auto-detect the hash type.
+     使用指定字典对目标哈希文件执行字典攻击。John 会把字典中单词的哈希与目标进行比对。
+     使用 rockyou.txt 等大型成熟字典时非常高效。若未指定格式，John 会尝试自动检测哈希类型。
    command: "john --wordlist={{wordlist|/usr/share/wordlists/rockyou.txt}} {{hash_file}}"
 
- - title: john - single crack mode
+ - title: john - 单一模式破解
    desc: |
-     Execute John's "Single Crack" mode which is often the first step in a professional engagement.
-     This mode uses information provided in the login name and GECOS fields to generate potential passwords.
-     It is extremely fast and effective for finding users who use variations of their own name as a password.
-     Note that this mode is most effective when the input file follows the standard /etc/passwd format.
+     执行 John 的 Single Crack 模式，这通常是专业测试的第一步。该模式利用登录名和 GECOS 字段中的信息生成候选密码。
+     对使用自己名字变体作为密码的用户非常快速有效。当输入文件遵循标准 /etc/passwd 格式时此模式效果最佳。
    command: "john --single {{hash_file}}"
 
- - title: john - incremental brute force mode
+ - title: john - 增量暴力破解模式
    desc: |
-     Enable the incremental mode to perform a pure brute-force attack.
-     This mode tries all possible character combinations until a match is found or the search space is exhausted.
-     It is computationally expensive and should generally be used as a last resort for short passwords.
-     You can specify a predefined character set (like Alnum or Digits) within the john.conf file.
+     启用增量模式执行纯暴力破解攻击。该模式会尝试所有可能的字符组合，直到找到匹配或穷尽搜索空间。
+     计算开销很大，一般只作为破解短密码的最后手段。可在 john.conf 中指定预定义字符集（如 Alnum 或 Digits）。
    command: "john --incremental {{hash_file}}"
 
- - title: john - show cracked passwords
+ - title: john - 显示已破解的密码
    desc: |
-     Display the passwords that have already been successfully cracked for a specific hash file.
-     John stores cracked results in its 'john.pot' file, and this command retrieves them for easy viewing.
-     You can add the --format flag if you want to filter results for a specific hash type.
-     This does not start a new cracking session; it only reports on previous successes.
+     显示针对特定哈希文件已成功破解的密码。John 会把破解结果存储在 'john.pot' 文件中，此命令可将其取出便于查看。
+     如需按特定哈希类型过滤结果，可添加 --format 标志。它不会启动新的破解会话，只报告之前的成功结果。
    command: "john --show {{hash_file}}"
 
 # === HASH PREPARATION (CONVERTERS) ===
 
- - title: john - unshadow linux passwords
+ - title: john - 合并 Linux 密码文件
    desc: |
-     Combine the /etc/passwd and /etc/shadow files into a format that John can process.
-     The /etc/shadow file contains the actual hashes and is only readable by the root user.
-     This tool creates a single file containing both the username information and the password hash.
-     Root or sudo privileges are typically required to read the original shadow file.
+     将 /etc/passwd 和 /etc/shadow 文件合并为 John 可处理的格式。/etc/shadow 包含真实哈希，只有 root 用户可读。
+     该工具会生成一个同时包含用户名信息和密码哈希的文件。读取原始 shadow 文件通常需要 root 或 sudo 权限。
    command: "unshadow /etc/passwd /etc/shadow > {{output|unshadowed.txt}}"
 
- - title: john - convert zip to crackable hash
+ - title: john - 将 ZIP 转换为可破解哈希
    desc: |
-     Extract the password hash from an encrypted ZIP archive into a John-compatible format.
-     The output must be redirected to a file, which is then passed to John for the actual cracking process.
-     This supports various ZIP encryption methods including PKZIP and WinZip AES.
-     Ensure you have the 'zip2john' utility installed as part of the John the Ripper jumbo suite.
+     从加密的 ZIP 压缩包中提取密码哈希为 John 兼容格式。输出必须重定向到文件，再交给 John 进行实际破解。
+     支持包括 PKZIP 和 WinZip AES 在内的多种 ZIP 加密方式。确保已安装 jumbo 套件中的 zip2john 工具。
    command: "zip2john {{zip_file}} > {{output|zip_hash.txt}}"
 
- - title: john - convert rar to crackable hash
+ - title: john - 将 RAR 转换为可破解哈希
    desc: |
-     Generate a crackable hash string from a password-protected RAR archive.
-     The resulting hash file contains the metadata John needs to attempt password guesses against the archive.
-     This works for both RAR 3.x and RAR 5.x formats.
-     Cracking RAR files is generally slower than ZIP files due to the more complex derivation functions used.
+     从受密码保护的 RAR 压缩包生成可破解的哈希字符串。生成的哈希文件包含 John 对压缩包尝试密码猜测所需的元数据。
+     支持 RAR 3.x 和 RAR 5.x 格式。由于 RAR 使用更复杂的派生函数，破解通常比 ZIP 慢。
    command: "rar2john {{rar_file}} > {{output|rar_hash.txt}}"
 
- - title: john - convert ssh private key to hash
+ - title: john - 将 SSH 私钥转换为哈希
    desc: |
-     Extract the passphrase hash from an SSH private key (like id_rsa).
-     This is useful for recovering forgotten passphrases or during penetration testing if a key is found.
-     The output hash can be cracked using John's standard wordlist or brute-force modes.
-     Modern keys use heavy iteration, so cracking speeds may be relatively slow.
+     从 SSH 私钥（如 id_rsa）中提取口令哈希。适用于找回遗忘的口令，或在渗透测试中发现密钥时使用。
+     输出的哈希可用 John 的标准字典或暴力破解模式进行破解。现代密钥使用大量迭代，破解速度可能较慢。
    command: "ssh2john {{private_key_file}} > {{output|ssh_hash.txt}}"
 
- - title: john - convert pdf to crackable hash
+ - title: john - 将 PDF 转换为可破解哈希
    desc: |
-     Extract the security data from a password-protected PDF document.
-     The script parses the PDF structure to find the encryption dictionary and formats it for John.
-     PDF cracking speed varies significantly depending on the PDF version (standard vs. extension).
-     Once the hash is generated, run John against the output file using a high-quality wordlist.
+     从受密码保护的 PDF 文档中提取安全数据。该脚本解析 PDF 结构以找到加密字典，并格式化为 John 可用的形式。
+     PDF 破解速度因版本（标准版与扩展版）差异很大。生成哈希后，使用高质量字典对输出文件运行 John。
    command: "pdf2john {{pdf_file}} > {{output|pdf_hash.txt}}"
 
 # === ADVANCED CRACKING & RULES ===
 
- - title: john - wordlist attack with rules
+ - title: john - 带规则的字典攻击
    desc: |
-     Apply word mangling rules to a wordlist attack to significantly increase the chances of success.
-     Rules will perform operations like appending numbers, changing case, or replacing letters with symbols (e.g., 'a' to '@').
-     The default ruleset is defined in john.conf and is designed to catch common user password habits.
-     This is much more powerful than a simple wordlist attack but takes longer to process.
+     在字典攻击中应用单词变形规则，显著提高成功率。规则会执行追加数字、改变大小写或将字母替换为符号（如 'a' 变 '@'）等操作。
+     默认规则集在 john.conf 中定义，旨在捕捉常见的用户密码习惯。这比简单字典攻击强大得多，但耗时更长。
    command: "john --wordlist={{wordlist}} --rules {{hash_file}}"
 
- - title: john - mask mode attack
+ - title: john - 掩码模式攻击
    desc: |
-     Use a mask to crack passwords that follow a specific known pattern or length.
-     For example, '?u?l?l?l?d?d' would search for an uppercase letter followed by three lowercase letters and two digits.
-     This is highly efficient when you have partial information about the target password policy.
-     It is much faster than full incremental brute force as it limits the search space to a specific structure.
+     使用掩码破解符合特定已知模式或长度的密码。例如 '?u?l?l?l?d?d' 会搜索一个大写字母加三个小写字母再加两位数字的组合。
+     当你有目标密码策略的部分信息时非常高效。它比完整增量暴力破解快得多，因为将搜索空间限制在特定结构内。
    command: "john --mask={{mask|?u?l?l?l?d?d}} {{hash_file}}"
 
- - title: john - force specific hash format
+ - title: john - 强制指定哈希格式
    desc: |
-     Manually specify the hash algorithm to be used during the cracking process.
-     Use this when John fails to auto-detect the hash or when a file contains multiple hash types.
-     You can see a full list of supported formats by running 'john --list=formats'.
-     Using the correct format explicitly can prevent false positives and improve performance.
+     手动指定破解过程中使用的哈希算法。当 John 无法自动检测哈希或文件包含多种哈希类型时使用。
+     运行 'john --list=formats' 可查看支持的完整格式列表。显式使用正确格式可以防止误报并提升性能。
    command: "john --format={{format|raw-md5}} --wordlist={{wordlist}} {{hash_file}}"
 
 # === SESSION & UTILITIES ===
 
- - title: john - session management and restore
+ - title: john - 会话管理与恢复
    desc: |
-     Name a cracking session so that it can be paused and resumed later.
-     This is vital for long-running cracking jobs that might span several days or need to survive a reboot.
-     John saves its progress in a .rec file named after the session.
-     To resume, simply use the --restore flag with the session name.
+     为破解会话命名，以便稍后暂停和恢复。这对可能持续数天或需要跨重启的长时间破解任务至关重要。
+     John 会把进度保存在以会话命名的 .rec 文件中。要恢复时，只需使用带会话名的 --restore 标志。
    command: "john --session={{name|work_task}} --wordlist={{wordlist}} {{hash_file}}"
 
- - title: john - restore a session
+ - title: john - 恢复会话
    desc: |
-     Resume a previously interrupted cracking session using its assigned name.
-     John will pick up exactly where it left off by reading the session's recovery file.
-     This is essential for maintaining progress during power outages or system maintenance.
-     Ensure the original wordlist and hash files are still in the same paths.
+     使用会话名恢复之前中断的破解会话。John 会读取该会话的恢复文件，从断点处继续。
+     这对于在断电或系统维护期间保持进度至关重要。确保原始字典和哈希文件仍在相同路径。
    command: "john --restore={{name|work_task}}"
 
- - title: john - unique wordlist utility
+ - title: john - 字典去重工具
    desc: |
-     A standalone utility to remove duplicate entries from a wordlist without changing the original order.
-     Cleaning wordlists is important for performance, as John shouldn't waste time hashing the same word twice.
-     The tool reads from standard input and writes the unique list to the specified output file.
-     It is often used when merging multiple wordlists found during reconnaissance.
+     一个独立工具，用于在不改变原始顺序的情况下去除字典中的重复条目。清理字典对性能很重要，因为 John 不应浪费时间对同一个单词重复哈希。
+     该工具从标准输入读取，并将去重后的列表写入指定输出文件。合并侦察阶段获得的多个字典时常用。
    command: "unique {{output_file}} < {{input_wordlist}}"

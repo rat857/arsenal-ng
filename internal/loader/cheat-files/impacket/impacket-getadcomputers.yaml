@@ -3,68 +3,60 @@ tags: [active-directory, pentest, enumeration, security, impacket, reconnaissanc
 
 actions:
   # === AUTHENTICATION METHODS ===
-  - title: impacket-GetADComputers - basic domain computer enumeration
+  - title: impacket-GetADComputers - 基础域计算机枚举
     desc: |
-      Performs a standard query against Active Directory to list all computer objects in the domain.
-      This is a fundamental step during internal reconnaissance to map out the network infrastructure.
-      It requires valid domain credentials and connects to the Domain Controller to pull LDAP data.
-      Be aware that large environments might return a significant number of results.
+      对 Active Directory 执行标准查询，列出域中的所有计算机对象。
+      这是内部侦察中梳理网络基础设施的基础步骤。
+      它需要有效的域凭据，并连接到域控制器拉取 LDAP 数据，大型环境可能返回大量结果。
     command: "impacket-GetADComputers {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-GetADComputers - authenticate using NTLM hashes
+  - title: impacket-GetADComputers - 使用 NTLM 哈希认证
     desc: |
-      Uses Pass-the-Hash (PtH) to authenticate and query computer information from the domain.
-      This is extremely useful when cleartext passwords are unavailable but NTLM hashes have been recovered.
-      The hash must be provided in the LMHASH:NTHASH format; if the LM hash is empty, use the format :NTHASH.
-      This method allows for stealthier movements as it bypasses traditional password entry.
+      使用 Pass-the-Hash（PtH）进行身份认证并从域中查询计算机信息。
+      当明文密码不可用但已恢复 NTLM 哈希时非常有用。
+      哈希必须为 LMHASH:NTHASH 格式；如果 LM 哈希为空，请使用 :NTHASH 格式，此方法可更隐蔽地移动。
     command: "impacket-GetADComputers -hashes {{hash}} {{domain}}/{{username}}"
 
-  - title: impacket-GetADComputers - use Kerberos authentication
+  - title: impacket-GetADComputers - 使用 Kerberos 身份认证
     desc: |
-      Authenticates using Kerberos tickets instead of a password or hash.
-      The tool will attempt to retrieve credentials from the ccache file pointed to by the KRB5CCNAME environment variable.
-      This is the preferred method in environments where Kerberos is strictly enforced or when performing Overpass-the-Hash.
-      Ensure the -no-pass flag is used if you do not want the tool to prompt for a password.
+      使用 Kerberos 票据而非密码或哈希进行身份认证。
+      工具会尝试从 KRB5CCNAME 环境变量指向的 ccache 文件获取凭据。
+      这是在严格强制 Kerberos 的环境中或执行 Overpass-the-Hash 时的首选方法；若不希望提示输入密码请加 -no-pass。
     command: "impacket-GetADComputers -k -no-pass {{domain}}/{{username}}"
 
-  - title: impacket-GetADComputers - Kerberos authentication with AES key
+  - title: impacket-GetADComputers - 使用 AES 密钥的 Kerberos 认证
     desc: |
-      Utilizes a specific AES hex key (128 or 256 bits) for Kerberos authentication.
-      This is useful in scenarios where you have extracted the AES keys for a user or computer account.
-      Using AES keys is more robust than NTLM hashes in environments that have disabled NTLM.
-      Ensure the target parameter matches the principal associated with the AES key.
+      使用特定的 AES 十六进制密钥（128 或 256 位）进行 Kerberos 身份认证。
+      适用于已提取到某用户或计算机账户 AES 密钥的场景。
+      在已禁用 NTLM 的环境中，AES 密钥比 NTLM 哈希更可靠；请确保目标参数与该 AES 密钥对应的主体匹配。
     command: "impacket-GetADComputers -aesKey {{hex_key}} {{domain}}/{{username}}"
 
   # === CONNECTION AND RESOLUTION ===
-  - title: impacket-GetADComputers - specify Domain Controller IP
+  - title: impacket-GetADComputers - 指定域控制器 IP
     desc: |
-      Directs the tool to connect to a specific Domain Controller by its IP address.
-      This is necessary when the local machine cannot resolve the domain's FQDN via DNS.
-      It is also useful for targeting a specific DC in a complex forest or multi-site environment.
-      Using the IP directly can sometimes bypass certain DNS-based security monitoring.
+      指定工具通过 IP 地址连接到特定的域控制器。
+      当本机无法通过 DNS 解析域的 FQDN 时，这是必需的。
+      也适用于在复杂林或多站点环境中定位特定 DC，直接使用 IP 有时可绕过基于 DNS 的安全监控。
     command: "impacket-GetADComputers -dc-ip {{dc_ip}} {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-GetADComputers - enumerate and resolve computer IPs
+  - title: impacket-GetADComputers - 枚举并解析计算机 IP
     desc: |
-      Queries computer objects and attempts to resolve their IP addresses using nslookup on the Domain Controller.
-      This helps link hostnames to actual network addresses, providing a clearer picture of the active network layout.
-      It is particularly useful for identifying which machines are currently online and reachable.
-      Resolution is performed server-side by the DC, reducing the amount of DNS traffic originating from your source IP.
+      查询计算机对象，并在域控制器上使用 nslookup 尝试解析其 IP 地址。
+      这有助于将主机名与实际网络地址对应起来，更清晰地掌握活跃网络布局。
+      解析由 DC 在服务端完成，可减少来自源 IP 的 DNS 流量。
     command: "impacket-GetADComputers -resolveIP {{domain}}/{{username}}:{{password}}"
 
   # === FILTERING AND DEBUGGING ===
-  - title: impacket-GetADComputers - filter computer objects by user
+  - title: impacket-GetADComputers - 按用户筛选计算机对象
     desc: |
-      Requests computer data that is specifically associated with a particular domain user.
-      This can help identify the primary workstations or servers a high-privilege user typically interacts with.
-      Note that this filter depends on how the 'managedBy' or similar attributes are populated in AD.
-      It is a targeted approach to finding high-value assets related to specific personas.
+      请求与特定域用户相关联的计算机数据。
+      这有助于识别高权限用户通常交互的主工作站或服务器。
+      注意此筛选取决于 AD 中“managedBy”等属性的填充情况，是针对特定身份定位高价值资产的方法。
     command: "impacket-GetADComputers -user {{target_user}} {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-GetADComputers - enable debug output and timestamps
+  - title: impacket-GetADComputers - 启用调试输出和时间戳
     desc: |
-      Runs the enumeration with verbose debug logging and timestamps for every output line.
-      Debug output is essential when troubleshooting connection issues, LDAP errors, or authentication failures.
-      Timestamps are helpful for documentation and correlating activities with server-side logs during an engagement.
-      Use this when the standard output does not provide enough information to understand why a query is failing.
+      以详细的调试日志运行枚举，并为每一行输出添加时间戳。
+      调试输出对于排查连接问题、LDAP 错误或认证失败至关重要。
+      时间戳有助于文档记录并在测试期间与服务端日志关联；当标准输出不足以说明查询失败原因时使用。
     command: "impacket-GetADComputers -debug -ts {{domain}}/{{username}}:{{password}}"

@@ -3,82 +3,71 @@ tags: [osint, reconnaissance, security, pentest, enumeration, subdomains, email-
 
 actions:
   # === BASIC RECONNAISSANCE ===
-  - title: theHarvester - basic domain search
+  - title: theHarvester - 基础域名搜索
     desc: |
-      Perform a broad search against a target domain using all available default sources. 
-      This is the primary way to collect emails, subdomains, and hostnames for initial reconnaissance. 
-      It queries multiple search engines and public databases simultaneously to build a target profile.
+      使用所有可用的默认数据源对目标域名执行广泛搜索。这是收集电子邮件、子域名和主机名以进行初步侦察的主要方式。
+      它同时查询多个搜索引擎和公共数据库以构建目标画像。
     command: "theHarvester -d {{domain}} -b all"
 
-  - title: theHarvester - limit search results
+  - title: theHarvester - 限制搜索结果
     desc: |
-      Restricts the number of results retrieved from the data sources to a specific integer. 
-      This is useful for reducing scan time or avoiding rate-limiting on search engines like Google or Bing. 
-      The default value is typically 500 if not specified by the user.
+      将从数据源获取的结果数量限制为特定整数。这对于减少扫描时间或避免 Google、Bing 等搜索引擎限速很有用。
+      如果用户未指定，默认值通常为 500。
     command: "theHarvester -d {{domain}} -l {{limit|500}} -b all"
 
-  - title: theHarvester - search using specific source
+  - title: theHarvester - 使用特定数据源搜索
     desc: |
-      Focus the search on a single specific data source such as google, bing, crtsh, or shodan. 
-      This is highly effective when you want to target a specific platform or use a specific API key you have configured. 
-      Refer to the help menu for a full list of supported modules like 'duckduckgo', 'virustotal', or 'github-code'.
+      将搜索聚焦于单个特定数据源，如 google、bing、crtsh 或 shodan。当你想针对特定平台或使用已配置的特定 API key 时，非常有效。
+      请参阅帮助菜单获取支持的模块完整列表，如 duckduckgo、virustotal 或 github-code。
     command: "theHarvester -d {{domain}} -b {{source|google}}"
 
   # === ADVANCED ENUMERATION ===
-  - title: theHarvester - DNS brute force
+  - title: theHarvester - DNS 暴力破解
     desc: |
-      Enables DNS brute-forcing to discover subdomains that might not be indexed by search engines. 
-      The tool uses an internal wordlist to guess common hostnames under the target domain. 
-      Note that this generates significant DNS traffic and can be detected by security monitoring systems.
+      启用 DNS 暴力破解，以发现搜索引擎可能未收录的子域名。工具使用内置字典猜测目标域名下的常见主机名。
+      注意这会产生大量 DNS 流量，可能被安全监控系统检测到。
     command: "theHarvester -d {{domain}} -c"
 
-  - title: theHarvester - virtual host discovery
+  - title: theHarvester - 虚拟主机发现
     desc: |
-      Verifies discovered hostnames via DNS resolution and searches for virtual hosts on the same IP. 
-      This helps identify if a single server is hosting multiple websites that weren't initially visible. 
-      It is a critical step for understanding the full infrastructure and potential side-loading attack vectors.
+      通过 DNS 解析验证已发现的主机名，并在同一 IP 上搜索虚拟主机。这有助于识别单台服务器是否托管了多个最初不可见的网站。
+      这是了解完整基础设施和潜在侧加载攻击面的关键步骤。
     command: "theHarvester -d {{domain}} -v -b all"
 
-  - title: theHarvester - DNS resolution with custom resolvers
+  - title: theHarvester - 使用自定义解析器进行 DNS 解析
     desc: |
-      Performs DNS resolution on all discovered subdomains using a specific list of DNS resolvers. 
-      This helps confirm which subdomains are currently active and reachable from the internet. 
-      Using custom resolvers can sometimes bypass local DNS filtering or provide more accurate results in different geographic regions.
+      使用特定的 DNS 解析器列表对所有发现的子域名执行 DNS 解析。这有助于确认哪些子域名当前活跃且可从互联网访问。
+      使用自定义解析器有时可以绕过本地 DNS 过滤，或在不同地理区域提供更准确的结果。
     command: "theHarvester -d {{domain}} -r {{resolver_list|/path/to/resolvers.txt}}"
 
   # === INFRASTRUCTURE & API ===
-  - title: theHarvester - Shodan integration
+  - title: theHarvester - Shodan 集成
     desc: |
-      Queries the Shodan database for any discovered hosts to find open ports and running services. 
-      This provides technical metadata such as server versions, technologies used, and potential vulnerabilities. 
-      A valid Shodan API key must be configured in the api-keys.yaml file for this feature to work.
+      查询 Shodan 数据库以查找任何已发现主机的开放端口和运行服务。这提供技术元数据，如服务器版本、所用技术和潜在漏洞。
+      此功能需要在 api-keys.yaml 文件中配置有效的 Shodan API key。
     command: "theHarvester -d {{domain}} -b all -s"
 
-  - title: theHarvester - API endpoint scanning
+  - title: theHarvester - API 端点扫描
     desc: |
-      Scans for common API endpoints related to the target domain using a wordlist. 
-      This is particularly useful for identifying shadow APIs or undocumented staging environments. 
-      You can provide a custom wordlist to tailor the search for specific technology stacks.
+      使用字典扫描与目标域名相关的常见 API 端点。这对于识别影子 API 或未文档化的暂存环境特别有用。
+      你可以提供自定义字典，为特定技术栈定制搜索。
     command: "theHarvester -d {{domain}} -a -w {{wordlist|/usr/share/wordlists/api_list.txt}}"
 
   # === OUTPUT & VISUALIZATION ===
-  - title: theHarvester - save results to file
+  - title: theHarvester - 将结果保存到文件
     desc: |
-      Exports the findings into both XML and JSON formats for further processing or documentation. 
-      This is essential for integrating theHarvester into automated pipelines or generating professional reports. 
-      The tool will automatically append the correct file extensions to the filename provided.
+      将发现结果导出为 XML 和 JSON 两种格式，供进一步处理或归档。这对于将 theHarvester 集成到自动化流水线或生成专业报告至关重要。
+      工具会自动为所提供的文件名追加正确的扩展名。
     command: "theHarvester -d {{domain}} -b all -f {{filename|results_output}}"
 
-  - title: theHarvester - take screenshots of resolved domains
+  - title: theHarvester - 对已解析域名截图
     desc: |
-      Automatically captures screenshots of all subdomains that resolve to an active web service. 
-      The screenshots are saved in the directory specified by the user for visual inspection. 
-      This is an excellent way to quickly identify login pages, "under construction" sites, or exposed management panels.
+      自动截取所有解析到活跃 Web 服务的子域名的屏幕截图。截图保存在用户指定的目录中供目视检查。
+      这是快速识别登录页面、在建站点或暴露的管理面板的绝佳方式。
     command: "theHarvester -d {{domain}} -b all --screenshot {{output_directory|screenshots}}"
 
-  - title: theHarvester - check for subdomain takeover
+  - title: theHarvester - 检查子域名接管
     desc: |
-      Checks the discovered subdomains for potential takeover vulnerabilities (e.g., pointing to unused cloud services). 
-      This identifies if a subdomain's CNAME points to a service like AWS S3 or GitHub Pages that is no longer claimed. 
-      Takeover vulnerabilities are high-impact as they allow attackers to host malicious content on the target's legitimate domain.
+      检查已发现的子域名是否存在潜在接管漏洞（例如指向未使用的云服务）。它识别子域名的 CNAME 是否指向 AWS S3 或 GitHub Pages 等已不再被认领的服务。
+      接管漏洞影响巨大，因为攻击者可以在目标合法域名上托管恶意内容。
     command: "theHarvester -d {{domain}} -t -b all"

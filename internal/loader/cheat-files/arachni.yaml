@@ -3,128 +3,128 @@ tags: [web, scanner, security, pentest, vulnerability, enumeration]
 
 actions:
 # === BASIC SCANS & OUTPUT ===
- - title: arachni - basic scan
+ - title: arachni - 基础扫描
    desc: |
-     Performs a standard scan against the target URL using default settings.
-     This command will audit forms, links, and cookies while loading all default security checks.
-     It is the quickest way to start a vulnerability assessment on a single web application.
-     Note that default scans might miss subdomains or specific complex input vectors.
+     使用默认设置对目标 URL 执行标准扫描。
+     该命令将审计表单、链接与 Cookie，同时加载所有默认安全检查。
+     这是对单个 Web 应用开始漏洞评估的最快方式。
+     注意默认扫描可能会遗漏子域或特定的复杂输入向量。
    command: "arachni {{url}}"
 
- - title: arachni - verbose scan with report saving
+ - title: arachni - 详细扫描并保存报告
    desc: |
-     Runs a scan with verbose output and saves the final result to an Arachni Framework Report (.afr) file.
-     The verbose output helps monitor the scanner's progress and identify any connection issues in real-time.
-     The generated .afr file is essential because it can be converted into HTML, JSON, or XML reports later.
-     Always use this when you need to document your findings for a professional pentest report.
+     以详细输出运行扫描，并将最终结果保存到 Arachni 框架报告（.afr）文件。
+     详细输出有助于实时监控扫描器进度并识别任何连接问题。
+     生成的 .afr 文件至关重要，因为之后可将其转换为 HTML、JSON 或 XML 报告。
+     当你需要为专业渗透测试报告记录发现时，请始终使用此方式。
    command: "arachni --output-verbose --report-save-path={{report_name|scan_results.afr}} {{url}}"
 
- - title: arachni - output only positive results
+ - title: arachni - 仅输出阳性结果
    desc: |
-     Filters the console output to only show successfully identified vulnerabilities and security issues.
-     This is highly useful for large-scale scans where you want to ignore noise and focus on actionable findings.
-     It does not affect the actual scan depth, only what is printed to the terminal screen during the process.
-     Use this when running the tool in a background terminal or CI/CD pipeline.
+     过滤控制台输出，仅显示成功识别的漏洞与安全问题。
+     这对于大规模扫描非常有用，你可以忽略噪音并专注于可操作的发现。
+     它不影响实际扫描深度，只影响扫描过程中打印到终端的内容。
+     在后台终端或 CI/CD 管道中运行工具时使用此方式。
    command: "arachni --output-only-positives {{url}}"
 
 # === SCOPE & DEPTH CONTROL ===
- - title: arachni - include subdomains in scan
+ - title: arachni - 扫描中包含子域
    desc: |
-     Instructs the scanner to follow and audit links that lead to subdomains of the target.
-     By default, Arachni restricts itself to the provided domain to prevent "scope creep" and accidental scanning of third parties.
-     Enabling this is crucial for full-surface reconnaissance of a corporate web infrastructure.
-     Be cautious as this can significantly increase scan time and resource consumption.
+     指示扫描器跟踪并审计指向目标子域的链接。
+     默认情况下 Arachni 将自身限制在所提供的域名内，以防止“范围蔓延”及意外扫描第三方。
+     启用此功能对于企业 Web 基础设施的全表面侦察至关重要。
+     请谨慎，因为这会显著增加扫描时间与资源消耗。
    command: "arachni --scope-include-subdomains {{url}}"
 
- - title: arachni - limit crawl depth and page count
+ - title: arachni - 限制爬取深度与页面数
    desc: |
-     Restricts the scanner to a maximum directory depth and a specific number of total pages.
-     This is an effective way to perform "smoke tests" or quick scans on very large websites without getting stuck in infinite loops.
-     The directory depth limit prevents the crawler from going too deep into nested folder structures.
-     The page limit ensures the scan terminates after reaching the defined threshold of unique URLs.
+     将扫描器限制在最大目录深度与特定的总页面数内。
+     这是对超大型网站执行“冒烟测试”或快速扫描而不陷入死循环的有效方法。
+     目录深度限制可防止爬虫深入嵌套的文件夹结构。
+     页面限制确保扫描在达到定义的唯一 URL 阈值后终止。
    command: "arachni --scope-directory-depth-limit {{depth|3}} --scope-page-limit {{page_limit|100}} {{url}}"
 
- - title: arachni - exclude specific URL patterns
+ - title: arachni - 排除特定 URL 模式
    desc: |
-     Uses regular expressions to exclude certain paths or actions from being crawled or audited.
-     This is critical for avoiding sensitive areas like logout buttons, "delete account" pages, or administrative panels.
-     Preventing the scanner from hitting logout links ensures that authenticated sessions remain active throughout the scan.
-     You can use this multiple times to exclude various sensitive patterns in the application.
+     使用正则表达式排除某些路径或操作，使其不被爬取或审计。
+     这对于避开注销按钮、“删除账户”页面或管理面板等敏感区域至关重要。
+     防止扫描器命中注销链接可确保已认证会话在整个扫描期间保持活跃。
+     你可以多次使用此选项以排除应用中的各种敏感模式。
    command: "arachni --scope-exclude-pattern {{regex_pattern}} {{url}}"
 
 # === TARGETED AUDITING ===
- - title: arachni - audit specific elements (links, forms, cookies)
+ - title: arachni - 审计特定元素（链接、表单、Cookie）
    desc: |
-     Explicitly tells the scanner which types of web elements to test for vulnerabilities.
-     By focusing only on specific vectors like cookies or headers, you can perform highly targeted security checks.
-     This is often used when a previous scan showed issues in a specific area and you want to verify fixes quickly.
-     Auditing headers and cookies extensively can significantly increase the number of requests sent to the server.
+     明确告诉扫描器测试哪些类型的 Web 元素是否存在漏洞。
+     通过仅聚焦于 Cookie 或请求头等特定向量，你可以执行高度定向的安全检查。
+     这常用于先前扫描显示某区域存在问题、而你想快速验证修复效果时。
+     广泛审计请求头与 Cookie 会显著增加发送到服务器的请求数量。
    command: "arachni --audit-links --audit-forms --audit-cookies --audit-headers {{url}}"
 
- - title: arachni - audit JSON and XML inputs
+ - title: arachni - 审计 JSON 与 XML 输入
    desc: |
-     Enables specialized auditing for modern web applications that pass data via JSON or XML payloads.
-     Standard scanners often miss vulnerabilities hidden within API calls or AJAX requests if these flags are not set.
-     It is highly recommended for auditing RESTful APIs and single-page applications (SPAs).
-     Ensure the target URL points to the API endpoint or the page making these requests.
+     为通过 JSON 或 XML 载荷传递数据的现代 Web 应用启用专门的审计。
+     若不设置这些标志，标准扫描器常会遗漏隐藏在 API 调用或 AJAX 请求中的漏洞。
+     强烈建议用于审计 RESTful API 与单页应用（SPA）。
+     请确保目标 URL 指向 API 端点或发起这些请求的页面。
    command: "arachni --audit-jsons --audit-xmls {{url}}"
 
 # === VULNERABILITY CHECK SELECTION ===
- - title: arachni - run specific vulnerability checks
+ - title: arachni - 运行特定的漏洞检查
    desc: |
-     Loads only the specified security checks, such as XSS or SQL injection, using wildcards.
-     This allows for faster, more focused scans when you are only interested in a specific class of vulnerabilities.
-     Using 'xss*' will load all Cross-Site Scripting related modules.
-     It is a great way to reduce server load by disabling checks that are not relevant to the target environment.
+     使用通配符仅加载指定的安全检查，例如 XSS 或 SQL 注入。
+     当你只对某一类漏洞感兴趣时，这可实现更快、更聚焦的扫描。
+     使用 'xss*' 将加载所有与跨站脚本相关的模块。
+     它是通过禁用与目标环境无关的检查来降低服务器负载的好方法。
    command: "arachni --checks={{check_pattern|xss*}} {{url}}"
 
- - title: arachni - exclude specific checks
+ - title: arachni - 排除特定检查
    desc: |
-     Loads all default checks except for those explicitly mentioned with a minus sign prefix.
-     This is useful if certain checks are causing the application to crash or triggering an Intrusion Detection System (IDS).
-     For example, you might want to exclude 'csrf' checks if they are generating too many false positives or logs.
-     It provides a balance between a comprehensive scan and a stable testing environment.
+     加载除明确以减号前缀列出的检查之外的所有默认检查。
+     当某些检查导致应用崩溃或触发入侵检测系统（IDS）时很有用。
+     例如，如果 'csrf' 检查产生过多误报或日志，你可能希望排除它。
+     它在全面扫描与稳定测试环境之间提供了平衡。
    command: "arachni --checks=*,-{{excluded_check|csrf}} {{url}}"
 
 # === AUTHENTICATION & HTTP CONFIGURATION ===
- - title: arachni - scan using HTTP Basic Authentication
+ - title: arachni - 使用 HTTP 基本认证扫描
    desc: |
-     Configures the scanner to authenticate against a web server using HTTP Basic Auth credentials.
-     This is necessary for scanning staging environments or protected administrative directories.
-     The scanner will include the 'Authorization' header in every request it sends.
-     Make sure the credentials provided have sufficient permissions to view the entire application.
+     配置扫描器使用 HTTP Basic Auth 凭据对 Web 服务器进行认证。
+     这对于扫描暂存环境或受保护的管理目录是必要的。
+     扫描器会在其发送的每个请求中包含 'Authorization' 请求头。
+     请确保提供的凭据具有查看整个应用的足够权限。
    command: "arachni --http-authentication-username {{username}} --http-authentication-password {{password}} {{url}}"
 
- - title: arachni - scan using session cookies
+ - title: arachni - 使用会话 Cookie 扫描
    desc: |
-     Provides a pre-authenticated cookie string to the scanner for session-based testing.
-     This is the most common way to scan protected areas of an application after logging in manually in a browser.
-     Ensure the session does not expire during the scan by setting a long timeout on the server or using a persistent session.
-     The format should match the standard 'Cookie' HTTP header (e.g., "session_id=123; user=admin").
+     向扫描器提供预认证的 Cookie 字符串，用于基于会话的测试。
+     这是在浏览器中手动登录后扫描应用受保护区域的最常用方式。
+     通过在服务器上设置较长的超时或使用持久会话，确保会话在扫描期间不会过期。
+     格式应与标准 'Cookie' HTTP 头一致（如 "session_id=123; user=admin"）。
    command: "arachni --http-cookie-string \"{{cookie_string}}\" {{url}}"
 
- - title: arachni - scan through a proxy
+ - title: arachni - 通过代理扫描
    desc: |
-     Routes all scanner traffic through a specified proxy server, such as Burp Suite or a SOCKS5 proxy.
-     This is useful for monitoring the scanner's requests or for bypassing network restrictions via a pivot host.
-     You can also specify the proxy type (e.g., socks5) if it is not a standard HTTP proxy.
-     Be aware that scanning through a proxy might slow down the overall scan speed.
+     将扫描器的所有流量路由到指定代理服务器，例如 Burp Suite 或 SOCKS5 代理。
+     这对于监控扫描器请求或通过跳板主机绕过网络限制很有用。
+     如果不是标准 HTTP 代理，你也可以指定代理类型（如 socks5）。
+     请注意通过代理扫描可能会降低整体扫描速度。
    command: "arachni --http-proxy {{proxy_address|127.0.0.1:8080}} {{url}}"
 
 # === ADVANCED BROWSER CLUSTER ===
- - title: arachni - scan with JavaScript/DOM support
+ - title: arachni - 带 JavaScript/DOM 支持扫描
    desc: |
-     Uses a browser cluster to analyze the DOM and execute JavaScript on the target pages.
-     This is essential for modern web applications (like React, Angular, or Vue) where content is rendered dynamically.
-     Without this, Arachni will only see the initial static HTML and might miss many inputs and links.
-     Increasing the pool size can speed up the scan but requires significantly more RAM and CPU.
+     使用浏览器集群分析 DOM 并在目标页面上执行 JavaScript。
+     这对于内容动态渲染的现代 Web 应用（如 React、Angular 或 Vue）至关重要。
+     否则 Arachni 只会看到初始的静态 HTML，可能遗漏许多输入与链接。
+     增大池大小可以加快扫描，但需要显著更多的 RAM 与 CPU。
    command: "arachni --browser-cluster-pool-size {{pool_size|6}} --scope-dom-depth-limit {{dom_depth|5}} {{url}}"
 
 # === REPORTING & SNAPSHOTS ===
- - title: arachni - set scan timeout and suspend
+ - title: arachni - 设置扫描超时与挂起
    desc: |
-     Stops the scan automatically after a specified duration and saves a snapshot of its current state.
-     The snapshot can be used later to resume the scan from exactly where it left off using 'arachni_restore'.
-     This is a vital feature for pentests with strict time windows or for handling unexpected system reboots.
-     The duration format is HOURS:MINUTES:SECONDS.
+     在指定时长后自动停止扫描，并保存当前状态的快照。
+     该快照之后可使用 'arachni_restore' 用于从断点处恢复扫描。
+     这是时间窗口严格或需处理意外系统重启的渗透测试的关键特性。
+     时长格式为 HOURS:MINUTES:SECONDS。
    command: "arachni --timeout {{duration|01:00:00}} --timeout-suspend --snapshot-save-path {{snapshot_path|scan.snapshot}} {{url}}"

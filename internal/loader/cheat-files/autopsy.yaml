@@ -4,48 +4,63 @@ tags: [forensics, digital-forensics, tsk, incident-response, security, analysis]
 # === STARTUP AND CONFIGURATION ===
 
 actions:
-  - title: autopsy - basic startup
+  - title: autopsy - 基础启动
     desc: |
-      Launch the Autopsy Forensic Browser with default configuration settings. This command initializes the local web server on port 9999 and restricts access to the localhost. It is the standard way to begin a digital forensics investigation on a local workstation.
+      使用默认配置启动 Autopsy 取证浏览器。该命令在 9999 端口初始化本地 Web 服务器并将访问限制在 localhost。
+      这是在本地工作站上开始数字取证调查的标准方式。
     command: "autopsy"
 
-  - title: autopsy - custom port
+  - title: autopsy - 自定义端口
     desc: |
-      Start the Autopsy web interface on a specific network port. This is useful when the default port 9999 is already occupied by another service or when following specific network policies. Ensure that the chosen port is not blocked by local firewall rules to allow browser access.
+      在特定网络端口上启动 Autopsy Web 界面。
+      当默认端口 9999 已被其他服务占用或需要遵循特定网络策略时很有用。
+      请确保所选端口未被本地防火墙规则阻止，以便浏览器可以访问。
     command: "autopsy -p {{port|8080}}"
 
-  - title: autopsy - evidence locker
+  - title: autopsy - 证据存放目录
     desc: |
-      Specify the directory used as the evidence locker for storing case metadata and configurations. This directory acts as the central repository for all forensic projects created within the tool. Using a dedicated, high-capacity drive for the evidence locker is recommended for large investigations.
+      指定用作证据存放目录（evidence locker）的目录，用于存储案件元数据与配置。
+      该目录充当工具内创建的所有取证项目的中央仓库。
+      对于大型调查，建议使用专用的高容量驱动器作为证据存放目录。
     command: "autopsy -d {{evidence_locker_path}}"
 
-  - title: autopsy - remote access
+  - title: autopsy - 远程访问
     desc: |
-      Start the server and permit a specific remote IP address to connect to the forensic browser interface. This allows an investigator to run the backend on a powerful server while accessing the GUI from a separate workstation. By default, Autopsy only allows connections from the local machine for security purposes.
+      启动服务器并允许特定的远程 IP 地址连接到取证浏览器界面。
+      这使调查人员可以在强大的服务器上运行后端，同时从独立的工作站访问 GUI。
+      出于安全考虑，默认情况下 Autopsy 只允许本地机器连接。
     command: "autopsy {{remote_ip}}"
 
 # === SECURITY AND SESSION MANAGEMENT ===
 
-  - title: autopsy - force cookie
+  - title: autopsy - 强制 Cookie
     desc: |
-      Enable the enforcement of cookies within the URL for session management. This security feature helps prevent certain types of session hijacking or unauthorized access to the forensic data via the web interface. It is highly recommended when running Autopsy in an environment where the network might be shared.
+      在 URL 中强制启用 Cookie 以进行会话管理。
+      该安全特性有助于防止通过 Web 接口进行的某些类型的会话劫持或对取证数据的未授权访问。
+      当在网络可能被共享的环境中运行 Autopsy 时，强烈建议使用。
     command: "autopsy -c"
 
-  - title: autopsy - disable cookies
+  - title: autopsy - 禁用 Cookie
     desc: |
-      Force the Autopsy server to operate without requiring cookies in the URL. This may be used in specific troubleshooting scenarios where the browser environment fails to handle the generated cookies correctly. Note that disabling cookies can decrease the security of the forensic session.
+      强制 Autopsy 服务器在 URL 中无需 Cookie 即可运行。
+      这可用于浏览器环境无法正确处理生成 Cookie 的特定排障场景。
+      注意禁用 Cookie 会降低取证会话的安全性。
     command: "autopsy -C"
 
 # === LIVE ANALYSIS ===
 
-  - title: autopsy - live analysis mode
+  - title: autopsy - 实时分析模式
     desc: |
-      Configure Autopsy to perform live analysis on a specific device and filesystem. You must provide the path to the device, the type of filesystem, and the mount point where the device is currently attached. This mode is essential for triaging a running system without creating a full forensic image first.
+      配置 Autopsy 对特定设备与文件系统执行实时分析。
+      你必须提供设备路径、文件系统类型以及设备当前挂载的挂载点。
+      该模式对于在未先创建完整取证镜像的情况下对运行中的系统进行分诊至关重要。
     command: "autopsy -i {{device|/dev/sdb1}} {{filesystem|ext4}} {{mount_point|/mnt/analysis}}"
 
 # === ADVANCED COMBO ===
 
-  - title: autopsy - secure remote session
+  - title: autopsy - 安全远程会话
     desc: |
-      Launch a secured remote session using a custom evidence locker and a specific port while forcing cookie authentication. This configuration is ideal for professional forensic environments where the server is hosted remotely. It combines storage management, accessibility, and session security in a single command.
+      使用自定义证据存放目录与特定端口启动安全的远程会话，同时强制 Cookie 认证。
+      此配置非常适合服务器托管在远程的专业取证环境。
+      它在单条命令中结合了存储管理、可访问性与会话安全。
     command: "autopsy -d {{evidence_locker_path}} -p {{port|9999}} -c {{remote_ip}}"

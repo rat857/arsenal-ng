@@ -3,104 +3,104 @@ tags: [recon, scanner, pentest, subdomain-enum, web-security, osint, automation]
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: bbot - standard subdomain enumeration
+  - title: bbot - 标准子域枚举
     desc: |
-      Performs a full subdomain enumeration using the predefined subdomain-enum preset.
-      This command combines multiple modules to identify as many subdomains as possible for the target.
-      It is the most common starting point for infrastructure reconnaissance and attack surface mapping.
+      使用预定义的 subdomain-enum 预设执行完整的子域枚举。
+      该命令组合多个模块，为目标识别尽可能多的子域。
+      它是基础设施侦察与攻击面测绘最常见的起点。
     command: "bbot -t {{target}} -p subdomain-enum"
 
-  - title: bbot - passive subdomain enumeration
+  - title: bbot - 被动子域枚举
     desc: |
-      Conducts subdomain discovery using only passive sources without interacting directly with the target.
-      It filters modules to ensure no packets are sent to the target infrastructure by requiring the passive flag.
-      Use this when stealth is a priority or when you want to avoid triggering security alerts.
+      仅使用被动来源进行子域发现，而不直接与目标交互。
+      它通过要求 passive 标志来过滤模块，确保不向目标基础设施发送数据包。
+      当隐蔽性优先或希望避免触发安全告警时使用。
     command: "bbot -t {{target}} -p subdomain-enum -rf passive"
 
-  - title: bbot - comprehensive kitchen sink scan
+  - title: bbot - 全面 kitchen-sink 扫描
     desc: |
-      Runs the "kitchen-sink" preset which includes subdomains, emails, cloud buckets, port scans, and nuclei.
-      This is a very intensive scan that covers almost every aspect of the target's external presence.
-      Be aware that this can generate significant traffic and may take a long time to complete.
+      运行 "kitchen-sink" 预设，包含子域、邮箱、云存储桶、端口扫描与 nuclei。
+      这是一次非常密集的扫描，几乎覆盖目标外部暴露的每个方面。
+      请注意这会产生大量流量，且可能需要很长时间才能完成。
     command: "bbot -t {{target}} -p kitchen-sink"
 
   # === WEB & SPIDER OPERATIONS ===
-  - title: bbot - web spidering and crawling
+  - title: bbot - Web 蜘蛛爬取
     desc: |
-      Crawls the target URL recursively to extract emails, secrets, and other sensitive data.
-      The spider distance and depth are configurable to control how far the crawler goes from the starting point.
-      This is essential for identifying hidden paths and sensitive information within web applications.
+      递归爬取目标 URL，提取邮箱、密钥与其他敏感数据。
+      蜘蛛的距离与深度均可配置，以控制爬虫从起点出发的远近。
+      这对于识别 Web 应用中的隐藏路径与敏感信息至关重要。
     command: "bbot -t {{url}} -p spider -c web.spider_distance={{distance|2}} web.spider_depth={{depth|2}}"
 
-  - title: bbot - subdomain enum with screenshots
+  - title: bbot - 带截图的子域枚举
     desc: |
-      Discovers subdomains and automatically takes screenshots of any active web services found.
-      It utilizes the gowitness module to capture the visual state of the web applications.
-      This helps researchers quickly identify interesting targets or forgotten login pages.
+      发现子域并自动对发现的任何活跃 Web 服务截图。
+      它利用 gowitness 模块捕获 Web 应用的视觉状态。
+      这帮助研究人员快速识别有趣的目标或被遗忘的登录页面。
     command: "bbot -t {{target}} -p subdomain-enum -m gowitness -n {{scan_name|screenshot_scan}} -o {{output_path|.}}"
 
-  - title: bbot - basic non-intrusive web scan
+  - title: bbot - 基础非侵入式 Web 扫描
     desc: |
-      Runs the web-basic preset which includes wappalyzer, robots.txt, and other safe modules.
-      This provides a quick overview of the web technology stack and public files without aggressive probing.
-      It is ideal for initial profiling of a target web server's configuration and software.
+      运行 web-basic 预设，包含 wappalyzer、robots.txt 与其他安全模块。
+      它在不做激进探测的情况下，快速概览 Web 技术栈与公开文件。
+      它非常适合对目标 Web 服务器的配置与软件进行初始画像。
     command: "bbot -t {{target}} -p subdomain-enum web-basic"
 
   # === SCOPE & TARGETING ===
-  - title: bbot - scan with strict scope
+  - title: bbot - 严格范围扫描
     desc: |
-      Restricts the scan scope strictly to the provided target without including child subdomains.
-      By default, BBOT includes subdomains; this flag prevents it from expanding outside the specific host.
-      Use this when you are only authorized to test a single host and must avoid collateral discovery.
+      将扫描范围严格限制在所提供的目标上，而不包含子域。
+      默认情况下 BBOT 会包含子域；此标志阻止它扩展到特定主机之外。
+      当你仅被授权测试单个主机、且必须避免附带发现时使用。
     command: "bbot -t {{target}} --strict-scope -p subdomain-enum"
 
-  - title: bbot - scan with whitelist and blacklist
+  - title: bbot - 白名单与黑名单扫描
     desc: |
-      Seeds a scan with a target but restricts active interactions to a specific whitelist.
-      The blacklist parameter ensures that certain sensitive or out-of-scope assets are never touched.
-      This provides granular control over the scan perimeter, which is critical for compliance and safety.
+      以某个目标作为种子发起扫描，但将主动交互限制在特定白名单内。
+      blacklist 参数确保某些敏感或超出范围的资产永远不会被触及。
+      这提供了对扫描边界的细粒度控制，对合规与安全至关重要。
     command: "bbot -t {{target}} --whitelist {{whitelist_cidr}} --blacklist {{blacklist_domain}} -p kitchen-sink"
 
-  - title: bbot - blacklist by regex pattern
+  - title: bbot - 按正则表达式黑名单
     desc: |
-      Prevents the scanner from interacting with any event or URL that matches a specific regular expression.
-      This is commonly used to avoid logout links (e.g., RE:signout) or specific sensitive directories.
-      The RE: prefix is required to tell BBOT to treat the string as a regular expression.
+      阻止扫描器与任何匹配特定正则表达式的事件或 URL 交互。
+      这常用于避开注销链接（如 RE:signout）或特定的敏感目录。
+      需要 RE: 前缀来告诉 BBOT 将该字符串视为正则表达式。
     command: "bbot -t {{target}} --blacklist \"RE:{{regex_pattern|signout}}\""
 
   # === ADVANCED MODULES & OUTPUT ===
-  - title: bbot - cloud resource enumeration
+  - title: bbot - 云资源枚举
     desc: |
-      Enables all modules related to cloud discovery, such as S3 buckets and Azure tenants.
-      The cloud-enum flag groups these specialized modules to find data leaks in public cloud infrastructure.
-      It is highly effective for finding misconfigured storage buckets belonging to an organization.
+      启用与云发现相关的所有模块，例如 S3 存储桶与 Azure 租户。
+      cloud-enum 标志将这些专门模块分组，用于查找公共云基础设施中的数据泄露。
+      它对于查找属于某组织的配置错误的存储桶非常有效。
     command: "bbot -t {{target}} -f cloud-enum"
 
-  - title: bbot - custom scan name and output directory
+  - title: bbot - 自定义扫描名与输出目录
     desc: |
-      Specifies a custom name for the scan and a custom location for all output files.
-      If the scan name is reused, BBOT will append the results to the existing files instead of overwriting.
-      This helps in organizing results for different clients or recurring assessment projects.
+      为扫描指定自定义名称，并为所有输出文件指定自定义位置。
+      如果重复使用扫描名，BBOT 会将结果追加到现有文件而非覆盖。
+      这有助于为不同客户或周期性评估项目组织结果。
     command: "bbot -t {{target}} -p subdomain-enum -n {{name}} -o {{path|./results}}"
 
-  - title: bbot - increase reporting distance
+  - title: bbot - 增加报告距离
     desc: |
-      Displays events that are further away from the initial scope by increasing the report distance.
-      By default, BBOT only shows in-scope events; distance 1 will show assets one hop away (like related IPs).
-      Use this to discover related infrastructure that might not be directly linked to the target domain.
+      通过增大报告距离，显示离初始范围更远的事件。
+      默认情况下 BBOT 只显示范围内事件；距离 1 将显示一跳之外的资产（如相关 IP）。
+      使用它来发现可能未直接链接到目标域的相关基础设施。
     command: "bbot -t {{target}} -p subdomain-enum -c scope.report_distance={{distance|1}}"
 
   # === MAINTENANCE ===
-  - title: bbot - install all module dependencies
+  - title: bbot - 安装所有模块依赖
     desc: |
-      Downloads and installs all external binaries and libraries required by every BBOT module.
-      This uses Ansible internally to ensure the system is fully prepared for any type of scan.
-      Run this when setting up a new pentest machine or VPS to avoid runtime installation delays.
+      下载并安装每个 BBOT 模块所需的所有外部二进制文件与库。
+      它在内部使用 Ansible 确保系统为任何类型的扫描做好充分准备。
+      在设置新的渗透测试机器或 VPS 时运行，以避免运行时安装延迟。
     command: "bbot --install-all-deps"
 
-  - title: bbot - list all available modules and flags
+  - title: bbot - 列出所有可用模块与标志
     desc: |
-      Provides a comprehensive list of all installed modules, their descriptions, and associated flags.
-      This is useful for discovering new modules or checking if a specific tool is available.
-      You can also use this to see which modules are categorized under flags like 'deadly' or 'aggressive'.
+      提供所有已安装模块、其描述与关联标志的完整列表。
+      这对于发现新模块或检查特定工具是否可用很有用。
+      你也可以用它查看哪些模块归类在 'deadly' 或 'aggressive' 等标志下。
     command: "bbot -l"

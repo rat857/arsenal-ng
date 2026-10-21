@@ -3,77 +3,59 @@ tags: [web, scanner, security, pentest, enumeration, discovery, brute-force]
 
 actions:
   # === BASIC SCANNING ===
-  - title: dirstalk - basic directory scan
+  - title: dirstalk - 基本目录扫描
     desc: |
-      Performs a standard directory discovery scan on a target URL using a wordlist.
-      This is the most common entry point for web reconnaissance to find hidden files or folders.
-      A dictionary file is required, which can be a local path or a remote URL.
-      Ensure the target URL includes the protocol (http/https).
+      使用字典对目标 URL 执行标准的目录发现扫描。
+      这是 Web 侦察中查找隐藏文件或文件夹的最常见入口，需要提供一个字典文件，可为本地路径或远程 URL。
     command: "dirstalk scan {{url}} --dictionary {{dictionary_path}}"
 
-  - title: dirstalk - scan with custom depth and threads
+  - title: dirstalk - 自定义深度和线程扫描
     desc: |
-      Adjusts the recursion depth and the number of concurrent threads to control scan behavior.
-      A higher scan depth allows the tool to automatically crawl into discovered subdirectories.
-      Increasing the thread count will speed up the scan but may increase the load on the target server.
-      Be cautious with high thread counts as they might trigger rate-limiting or Web Application Firewalls (WAF).
+      调整递归深度和并发线程数来控制扫描行为。
+      更高的扫描深度允许工具自动爬取发现的子目录，增加线程数可加快扫描但会增加目标服务器负载。
     command: "dirstalk scan {{url}} --dictionary {{dictionary_path}} --scan-depth {{depth|3}} --threads {{threads|10}}"
 
   # === REQUEST CUSTOMIZATION ===
-  - title: dirstalk - scan with custom HTTP methods
+  - title: dirstalk - 使用自定义 HTTP 方法扫描
     desc: |
-      Configures the scanner to use specific HTTP methods during the discovery process.
-      While GET is the default, some directories might only respond to POST, PUT, or OPTIONS methods.
-      This is particularly useful when testing REST APIs or modern web applications.
-      Multiple methods can be provided as a comma-separated list.
+      将扫描器配置为在发现过程中使用特定的 HTTP 方法。
+      GET 是默认方法，但某些目录可能只响应 POST、PUT 或 OPTIONS，测试 REST API 或现代 Web 应用时尤为有用，可用逗号分隔提供多个方法。
     command: "dirstalk scan {{url}} --dictionary {{dictionary_path}} --http-methods {{methods|GET,POST}}"
 
-  - title: dirstalk - authenticated scan using cookies and headers
+  - title: dirstalk - 使用 Cookie 和请求头进行认证扫描
     desc: |
-      Injects custom cookies and headers into every request sent by the scanner.
-      This is essential for scanning areas of a website that are protected by authentication or specific session requirements.
-      The --use-cookie-jar flag can be added to handle session cookies returned by the server automatically.
-      Use this to discover administrative panels or user-specific directories that are not publicly accessible.
+      将自定义 Cookie 和请求头注入扫描器发出的每个请求。
+      对扫描受认证或特定会话要求保护的网站区域至关重要，可添加 --use-cookie-jar 标志自动处理服务器返回的会话 Cookie。
     command: "dirstalk scan {{url}} --dictionary {{dictionary_path}} --cookie \"{{cookie_name}}={{value}}\ --header \"{{header_name}}: {{header_value}}\""
 
-  - title: dirstalk - customize user agent and timeout
+  - title: dirstalk - 自定义 User-Agent 和超时
     desc: |
-      Sets a custom User-Agent string and defines the timeout for HTTP requests.
-      Changing the User-Agent can help bypass basic security filters that block known scanner signatures.
-      The timeout value is defined in milliseconds; increasing it is helpful for slow-responding servers or high-latency connections.
-      Default timeout is usually 5000ms if not specified.
+      设置自定义 User-Agent 字符串并定义 HTTP 请求的超时时间。
+      更改 User-Agent 可帮助绕过屏蔽已知扫描器特征的简单安全过滤，超时值以毫秒为单位，对响应缓慢的服务器建议增大。
     command: "dirstalk scan {{url}} --dictionary {{dictionary_path}} --user-agent \"{{user_agent|Mozilla/5.0}}\" --http-timeout {{timeout_ms|10000}}"
 
   # === EVASION AND CONNECTIVITY ===
-  - title: dirstalk - scan through SOCKS5 proxy
+  - title: dirstalk - 通过 SOCKS5 代理扫描
     desc: |
-      Routes all outgoing scan traffic through a specified SOCKS5 proxy server.
-      This is a common technique used to mask the source IP of the scanner or to route traffic through Tor.
-      It is highly recommended when performing authorized penetration tests where anonymity or source-IP rotation is required.
-      The proxy address should be provided in the host:port format.
+      将所有发出的扫描流量经由指定的 SOCKS5 代理服务器转发。
+      这是掩盖扫描器源 IP 或通过 Tor 转发流量的常见技术，代理地址应以 host:port 格式提供。
     command: "dirstalk scan {{url}} --dictionary {{dictionary_path}} --socks5 {{proxy_address|127.0.0.1:9150}}"
 
   # === FILTERING AND OUTPUT ===
-  - title: dirstalk - ignore specific HTTP status codes
+  - title: dirstalk - 忽略特定 HTTP 状态码
     desc: |
-      Filters out specific HTTP response status codes from the results and processing.
-      By default, dirstalk ignores 404 errors, but you can add 403, 301, or others to reduce noise.
-      This helps focus on successful hits (200 OK) or specific interesting responses like 500 Internal Server Error.
-      Provide the codes as a comma-separated list of integers.
+      从结果和处理中过滤掉特定的 HTTP 响应状态码。
+      默认 dirstalk 会忽略 404 错误，但你可以添加 403、301 或其他状态码以减少噪声，以逗号分隔的整数列表提供。
     command: "dirstalk scan {{url}} --dictionary {{dictionary_path}} --http-statuses-to-ignore {{status_codes|404,403}}"
 
-  - title: dirstalk - save scan results to file
+  - title: dirstalk - 保存扫描结果到文件
     desc: |
-      Directs the scan results to be saved into a local file for later analysis.
-      This is crucial for documentation and for piping findings into other tools in a pentest pipeline.
-      The output file will contain the discovered paths along with their metadata.
-      Ensure you have write permissions in the directory where the output file is created.
+      将扫描结果定向保存到本地文件以供后续分析。
+      对文档记录以及将发现接入渗透测试管道中的其他工具至关重要，输出文件将包含发现的路径及其元数据。
     command: "dirstalk scan {{url}} --dictionary {{dictionary_path}} --out {{output_file|results.txt}}"
 
-  - title: dirstalk - enable HTTP request caching
+  - title: dirstalk - 启用 HTTP 请求缓存
     desc: |
-      Enables or disables the internal HTTP cache to avoid redundant requests to the same URL.
-      This is particularly useful if the server issues multiple redirects to the same location during a recursive scan.
-      Caching is enabled by default (true), but can be toggled to ensure every request is fresh.
-      Using the cache can significantly reduce the total number of requests sent to the target.
+      启用或禁用内部 HTTP 缓存，避免对同一 URL 发出冗余请求。
+      当服务器在递归扫描期间对同一位置发出多次重定向时尤为有用，使用缓存可显著减少发送到目标的总请求数。
     command: "dirstalk scan {{url}} --dictionary {{dictionary_path}} --http-cache-requests={{boolean|true}}"

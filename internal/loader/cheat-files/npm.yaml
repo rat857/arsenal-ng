@@ -3,133 +3,115 @@ tags: [javascript, nodejs, package-manager, development, security, build-tool]
 
 actions:
 # === INITIALIZATION AND INSTALLATION ===
- - title: npm - initialize project
+ - title: npm - 初始化项目
    desc: |
-     Create a package.json file for a new project to track metadata and dependencies. 
-     This command initiates an interactive walkthrough to set up project details. 
-     Using the --yes flag skips the questionnaire and uses default values for all fields.
+     为新项目创建 package.json 文件，跟踪元数据和依赖。此命令启动交互式向导来设置项目详情。
+     使用 --yes 标志可跳过问卷并对所有字段使用默认值。
    command: "npm init {{flag|--yes}}"
 
- - title: npm - install dependencies
+ - title: npm - 安装依赖
    desc: |
-     Install all dependencies listed in the package.json file located in the current directory. 
-     This is typically the first command run after cloning a project repository. 
-     It creates the node_modules folder and ensures the environment matches the package-lock.json.
+     安装当前目录中 package.json 文件列出的所有依赖。这通常是克隆项目仓库后运行的第一个命令。
+     它创建 node_modules 文件夹并确保环境与 package-lock.json 匹配。
    command: "npm install"
 
- - title: npm - add specific package
+ - title: npm - 添加指定包
    desc: |
-     Add a specific package to the project's production dependencies list. 
-     This command downloads the package and updates both package.json and package-lock.json. 
-     You can specify a version number or a tag if the latest version is not desired.
+     将特定包添加到项目的生产依赖列表。此命令下载该包并更新 package.json 和 package-lock.json。
+     若不想用最新版本，可以指定版本号或标签。
    command: "npm install {{package_name}}"
 
- - title: npm - add development package
+ - title: npm - 添加开发包
    desc: |
-     Install a package specifically for development purposes, such as testing frameworks or linters. 
-     These dependencies are stored in the devDependencies section of your package.json. 
-     They are not included when the application is installed in a production environment.
+     专门为开发目的安装包，如测试框架或 linter。这些依赖存储在 package.json 的 devDependencies 部分。
+     应用在生产环境安装时不会包含它们。
    command: "npm install {{package_name}} --save-dev"
 
- - title: npm - global installation
+ - title: npm - 全局安装
    desc: |
-     Install a package globally on your system rather than in the local project folder. 
-     This is commonly used for command-line tools that you want to access from any directory. 
-     Depending on your system configuration, this may require administrator or sudo privileges.
+     在系统上全局安装包，而不是在本地项目文件夹中。常用于你想从任何目录访问的命令行工具。
+     根据系统配置，这可能需要管理员或 sudo 权限。
    command: "npm install -g {{package_name}}"
 
 # === MAINTENANCE AND UPDATES ===
- - title: npm - list installed packages
+ - title: npm - 列出已安装的包
    desc: |
-     Display a tree structure of all installed packages and their current versions. 
-     The depth flag allows you to limit the output to top-level packages or nested dependencies. 
-     This is a helpful tool for troubleshooting version mismatches or dependency hell.
+     显示所有已安装包及其当前版本的树状结构。depth 标志允许你将输出限制为顶层包或嵌套依赖。
+     这是排查版本不匹配或依赖地狱的有用工具。
    command: "npm list --depth={{depth|0}}"
 
- - title: npm - check outdated packages
+ - title: npm - 检查过时的包
    desc: |
-     Compare the versions of installed packages against the latest versions available in the registry. 
-     The output highlights which packages have newer patches, minor updates, or major releases. 
-     It provides a clear view of what needs updating to keep the project current.
+     将已安装包的版本与注册表中可用的最新版本进行比较。输出高亮哪些包有较新的补丁、次要更新或主要版本。
+     它清晰展示需要更新什么以保持项目最新。
    command: "npm outdated"
 
- - title: npm - update packages
+ - title: npm - 更新包
    desc: |
-     Update all or specific packages to the latest version allowed by the semver range in package.json. 
-     This command will respect the carets and tildes defined in your configuration. 
-     It is recommended to run tests after updating to ensure no breaking changes were introduced.
+     将所有或特定包更新到 package.json 中 semver 范围允许的最新版本。此命令会遵循配置中定义的插入符和波浪号。
+     更新后建议运行测试，确保没有引入破坏性变更。
    command: "npm update {{package_name|}}"
 
- - title: npm - uninstall package
+ - title: npm - 卸载包
    desc: |
-     Remove a package from the node_modules folder and delete its entry from package.json. 
-     This helps keep the project clean by removing unused code and dependencies. 
-     You can also use the -g flag to uninstall globally installed packages.
+     从 node_modules 文件夹移除包，并从 package.json 删除其条目。这通过移除未使用的代码和依赖来保持项目干净。
+     也可以使用 -g 标志卸载全局安装的包。
    command: "npm uninstall {{package_name}}"
 
 # === SECURITY AND AUDITING ===
- - title: npm - security audit
+ - title: npm - 安全审计
    desc: |
-     Scan your project's dependency tree for known security vulnerabilities. 
-     It generates a detailed report of vulnerable packages, the severity of the risk, and available fixes. 
-     Regular auditing is essential for maintaining a secure production environment.
+     扫描项目依赖树中的已知安全漏洞。它生成详细的报告，包含存在漏洞的包、风险严重程度和可用修复。
+     定期审计对维护安全的生产环境至关重要。
    command: "npm audit"
 
- - title: npm - fix security vulnerabilities
+ - title: npm - 修复安全漏洞
    desc: |
-     Automatically apply suggested fixes for vulnerabilities identified during an audit. 
-     This command will update package versions to the nearest secure release within semver constraints. 
-     Use the --force flag if you need to install updates that might involve breaking changes.
+     自动应用审计期间发现的漏洞的建议修复。此命令会在 semver 约束内将包版本更新到最近的安全版本。
+     若需要安装可能涉及破坏性变更的更新，使用 --force 标志。
    command: "npm audit fix {{force_flag|}}"
 
 # === EXECUTION AND SCRIPTS ===
- - title: npm - run custom script
+ - title: npm - 运行自定义脚本
    desc: |
-     Execute a command defined in the "scripts" object of the package.json file. 
-     Common script names include "start", "test", and "build", but custom names are supported. 
-     This provides a consistent interface for developers to interact with the project's build pipeline.
+     执行 package.json 文件 scripts 对象中定义的命令。常见脚本名包括 start、test 和 build，也支持自定义名称。
+     这为开发者与项目构建流水线交互提供一致的接口。
    command: "npm run {{script_name|start}}"
 
- - title: npm - execute package without install
+ - title: npm - 无需安装即执行包
    desc: |
-     Run a command from a local or remote npm package without permanently installing it. 
-     This is powered by npx (shipped with npm) and is ideal for one-off tasks like scaffolding. 
-     It ensures you are always using the latest version of the tool without cluttering global space.
+     无需永久安装即可从本地或远程 npm 包运行命令。这由 npx（随 npm 附带）提供支持，适合脚手架等一次性任务。
+     它确保你始终使用工具的最新版本，而不会弄乱全局空间。
    command: "npm exec {{binary_name}}"
 
 # === REGISTRY AND PUBLISHING ===
- - title: npm - registry login
+ - title: npm - 注册表登录
    desc: |
-     Authenticate your local environment with the npm registry or a private equivalent. 
-     This command opens a browser or prompts for credentials to store a local access token. 
-     Authentication is required before you can publish packages or access private scoped content.
+     将本地环境与 npm 注册表或私有等价物进行认证。此命令打开浏览器或提示输入凭据以存储本地访问令牌。
+     发布包或访问私有作用域内容前需要进行认证。
    command: "npm login"
 
- - title: npm - publish package
+ - title: npm - 发布包
    desc: |
-     Upload the current package to the npm registry for others to install and use. 
-     Ensure the version number in package.json is updated before running this, as registries do not allow overwrites. 
-     For scoped packages, you may need to specify the access level as public or restricted.
+     将当前包上传到 npm 注册表供他人安装和使用。运行前确保 package.json 中的版本号已更新，因为注册表不允许覆盖。
+     对于作用域包，你可能需要将访问级别指定为 public 或 restricted。
    command: "npm publish --access {{access_level|public}}"
 
- - title: npm - view package info
+ - title: npm - 查看包信息
    desc: |
-     Retrieve metadata about a package from the registry without downloading it. 
-     This can show available versions, maintainers, dependencies, and README content. 
-     It is useful for verifying package details before deciding to add it to your project.
+     从注册表获取包的元数据，而不下载它。这可以显示可用版本、维护者、依赖和 README 内容。
+     在决定将包添加到项目前验证其详情很有用。
    command: "npm view {{package_name}}"
 
 # === CONFIGURATION AND UTILITIES ===
- - title: npm - set configuration
+ - title: npm - 设置配置
    desc: |
-     Modify settings in the npm configuration files (e.g., .npmrc). 
-     This is often used to set a custom registry URL, proxy settings, or default author information. 
-     Changes made here persist across different projects for the current user.
+     修改 npm 配置文件（如 .npmrc）中的设置。常用于设置自定义注册表 URL、代理设置或默认作者信息。
+     此处所做的更改会跨不同项目为当前用户持久保留。
    command: "npm config set {{key}} {{value}}"
 
- - title: npm - clean package cache
+ - title: npm - 清理包缓存
    desc: |
-     Clear the local cache where npm stores downloaded package data. 
-     This is a troubleshooting step used when package installations are failing or corrupted. 
-     In modern npm versions, the --force flag is required to execute this command.
+     清除 npm 存储已下载包数据的本地缓存。这是包安装失败或损坏时使用的排查步骤。
+     在现代 npm 版本中，需要 --force 标志才能执行此命令。
    command: "npm cache clean --force"

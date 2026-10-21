@@ -3,90 +3,90 @@ tags: [web, security, pentest, enumeration, fuzzing, reconnaissance, parameter-d
 
 actions:
   # === BASIC DISCOVERY ===
-  - title: arjun - basic GET parameter discovery
+  - title: arjun - 基础 GET 参数发现
     desc: |
-      Performs parameter discovery using the GET method on a single URL. 
-      This is the most common starting point for finding hidden query parameters that might lead to vulnerabilities like XSS, SQLi, or SSRF. 
-      Arjun uses a heuristic approach to determine which parameters are valid by observing changes in the HTTP response.
+      在单个 URL 上使用 GET 方法执行参数发现。
+      这是寻找隐藏查询参数的最常见起点，这些参数可能导致 XSS、SQLi 或 SSRF 等漏洞。
+      Arjun 通过观察 HTTP 响应的变化，采用启发式方法判断哪些参数是有效的。
     command: "arjun -u {{url}}"
 
-  - title: arjun - POST parameter discovery
+  - title: arjun - POST 参数发现
     desc: |
-      Specifically targets parameters within POST requests using standard form encoding (application/x-www-form-urlencoded). 
-      Many web applications process sensitive data or state-changing actions via POST, making this a critical scan for discovering hidden functional parameters. 
-      This is particularly useful for testing login forms, profile updates, or hidden administrative actions.
+      使用标准表单编码（application/x-www-form-urlencoded）专门针对 POST 请求中的参数。
+      许多 Web 应用通过 POST 处理敏感数据或状态变更操作，因此这是发现隐藏功能参数的关键扫描。
+      它对于测试登录表单、个人资料更新或隐藏的管理操作特别有用。
     command: "arjun -u {{url}} -m POST"
 
-  - title: arjun - JSON parameter discovery
+  - title: arjun - JSON 参数发现
     desc: |
-      Identifies parameters within a JSON-formatted request body. 
-      Modern web applications and REST APIs frequently use JSON for data exchange, and traditional parameter fuzzers often miss these. 
-      Arjun will structure its probes as JSON objects to ensure the backend API correctly parses the injected parameter names.
+      识别 JSON 格式请求体中的参数。
+      现代 Web 应用与 REST API 常使用 JSON 进行数据交换，而传统参数模糊测试工具常会遗漏它们。
+      Arjun 会将其探测构造为 JSON 对象，以确保后端 API 正确解析注入的参数名。
     command: "arjun -u {{url}} -m JSON"
 
-  - title: arjun - XML parameter discovery
+  - title: arjun - XML 参数发现
     desc: |
-      Targets XML-based endpoints to find hidden tags or attributes that the application might be processing. 
-      This is highly effective against SOAP services or legacy enterprise applications that rely on XML data structures. 
-      It helps in identifying potential entry points for XXE (XML External Entity) or other logic-based vulnerabilities.
+      针对基于 XML 的端点，查找应用可能正在处理的隐藏标签或属性。
+      它对于 SOAP 服务或依赖 XML 数据结构的传统企业应用非常有效。
+      它有助于识别 XXE（XML 外部实体）或其他基于逻辑漏洞的潜在入口点。
     command: "arjun -u {{url}} -m XML"
 
   # === ADVANCED SCANNING & PERFORMANCE ===
-  - title: arjun - passive discovery
+  - title: arjun - 被动发现
     desc: |
-      Leverages passive sources like the Wayback Machine, CommonCrawl, and AlienVault OTX to find historically used parameters. 
-      This method is completely non-intrusive as it doesn't send requests to the target server initially. 
-      It provides a significant head start by gathering parameters that were previously known to exist on the endpoint.
+      利用 Wayback Machine、CommonCrawl 与 AlienVault OTX 等被动来源查找历史上使用过的参数。
+      该方法完全不具侵入性，因为它最初不会向目标服务器发送请求。
+      它通过收集端点此前已知存在的参数，提供显著的开局优势。
     command: "arjun -u {{url}} --passive"
 
-  - title: arjun - custom wordlist and threads
+  - title: arjun - 自定义字典与线程
     desc: |
-      Uses a specific wordlist for parameter names and adjusts the execution speed with threads. 
-      While Arjun comes with an excellent internal database, custom wordlists are vital for environment-specific parameters (e.g., proprietary CMS attributes). 
-      Increasing threads can speed up the process, but may lead to rate-limiting or false negatives if the server cannot handle the load.
+      使用特定的参数名字典，并通过线程调整执行速度。
+      虽然 Arjun 自带优秀的内置数据库，但自定义字典对于环境特定的参数（如专有 CMS 属性）至关重要。
+      增加线程可加快流程，但如果服务器无法承受负载，可能导致限速或漏报。
     command: "arjun -u {{url}} -w {{wordlist|/usr/share/wordlists/dirb/common.txt}} -t {{threads|10}}"
 
-  - title: arjun - fine-tuning chunk size
+  - title: arjun - 微调块大小
     desc: |
-      Controls how many parameters are sent in a single HTTP request. 
-      Reducing the chunk size is helpful when dealing with Web Application Firewalls (WAFs) that limit the length of the URL or the number of parameters. 
-      A smaller chunk size increases the number of requests but improves accuracy in restrictive environments.
+      控制单个 HTTP 请求中发送的参数数量。
+      当面对限制 URL 长度或参数数量的 Web 应用防火墙（WAF）时，减小块大小很有帮助。
+      较小的块大小会增加请求数量，但在受限环境中可提高准确性。
     command: "arjun -u {{url}} -c {{chunks|250}}"
 
   # === AUTHENTICATION & HEADERS ===
-  - title: arjun - authenticated scan with headers
+  - title: arjun - 带请求头的认证扫描
     desc: |
-      Adds custom HTTP headers such as Cookies or Authorization tokens to every request. 
-      This is essential for discovering parameters on pages that are hidden behind a login wall. 
-      Ensure that your session token is valid throughout the scan to prevent redirected or invalid responses.
+      向每个请求添加自定义 HTTP 头，例如 Cookie 或 Authorization 令牌。
+      这对于发现隐藏在登录墙之后页面上的参数至关重要。
+      请确保会话令牌在整个扫描期间有效，以防止重定向或无效响应。
     command: 'arjun -u {{url}} --headers "Cookie: {{session_id}}; Authorization: Bearer {{token}}"'
 
   # === INPUT & OUTPUT ===
-  - title: arjun - bulk scanning from file
+  - title: arjun - 从文件批量扫描
     desc: |
-      Imports a list of URLs from a text file to perform parameter discovery on multiple targets sequentially. 
-      This is the most efficient way to handle a large attack surface during the reconnaissance phase. 
-      The input file should contain one URL per line, including the protocol (http/https).
+      从文本文件导入 URL 列表，对多个目标依次执行参数发现。
+      这是在侦察阶段处理大攻击面的最高效方式。
+      输入文件应每行一个 URL，并包含协议（http/https）。
     command: "arjun -i {{targets_file}}"
 
-  - title: arjun - export results to JSON
+  - title: arjun - 将结果导出为 JSON
     desc: |
-      Saves the discovered parameters into a structured JSON file for further analysis or automation. 
-      The JSON output is highly recommended for integrating Arjun's findings into other tools or custom reporting scripts. 
-      It contains detailed information about the found parameters for each scanned URL.
+      将发现的参数保存到结构化 JSON 文件中，以便进一步分析或自动化。
+      强烈建议使用 JSON 输出，以便将 Arjun 的发现集成到其他工具或自定义报告脚本中。
+      它包含每个已扫描 URL 所发现参数的详细信息。
     command: "arjun -u {{url}} -oJ {{output_file|results.json}}"
 
-  - title: arjun - proxying to Burp Suite
+  - title: arjun - 代理到 Burp Suite
     desc: |
-      Routes all of Arjun's outgoing requests through a proxy, typically Burp Suite (127.0.0.1:8080). 
-      This allows you to manually inspect the traffic, analyze the differences in responses, and send interesting findings to the Repeater or Intruder. 
-      It is a bridge between automated discovery and manual exploitation.
+      将 Arjun 的所有出站请求路由到代理，通常是 Burp Suite（127.0.0.1:8080）。
+      这使你能够人工检查流量、分析响应差异，并将有趣的发现发送到 Repeater 或 Intruder。
+      它是自动化发现与人工利用之间的桥梁。
     command: "arjun -u {{url}} -oB {{proxy|127.0.0.1:8080}}"
 
   # === STABILITY & CONSTRAINTS ===
-  - title: arjun - stable mode and rate limiting
+  - title: arjun - 稳定模式与限速
     desc: |
-      Forces the tool to prioritize stability over speed by implementing the --stable flag and setting a maximum request rate. 
-      The stable mode is useful for targets that return dynamic content lengths which might confuse Arjun's detection engine. 
-      Rate limiting is crucial to avoid being blocked by anti-DoS protections or WAFs on production servers.
+      通过启用 --stable 标志并设置最大请求速率，强制工具优先考虑稳定性而非速度。
+      稳定模式适用于返回动态内容长度、可能混淆 Arjun 检测引擎的目标。
+      限速对于避免被生产服务器上的反 DoS 防护或 WAF 封锁至关重要。
     command: "arjun -u {{url}} --stable --rate-limit {{rate|5}}"

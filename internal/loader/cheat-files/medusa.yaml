@@ -3,96 +3,83 @@ tags: [network, security, pentest, enumeration, brute-force, authentication]
 
 actions:
   # === BASIC AUTHENTICATION ===
-  - title: medusa - basic authentication
+  - title: medusa - 基础认证
     desc: |
-      Performs a login attempt against a single host with a single username and password. 
-      This is the simplest form of authentication testing and is useful for verifying credentials or testing a specific account after manual discovery. 
-      Ensure the correct module name is provided for the service running on the host (e.g., ssh, ftp, telnet).
+      用单个用户名和密码对单个主机执行登录尝试。这是最简单的认证测试形式，用于验证凭据或在手动发现后测试特定账户。
+      确保为主机上运行的服务提供正确的模块名（如 ssh、ftp、telnet）。
     command: "medusa -h {{target}} -u {{username}} -p {{password}} -M {{module}}"
 
-  - title: medusa - password wordlist attack
+  - title: medusa - 密码字典攻击
     desc: |
-      Attempts to login to a target using a single username and a list of passwords from a specified file. 
-      This is the most common use case for recovering forgotten passwords or testing for weak security configurations during a pentest. 
-      Large wordlists might significantly increase the time required and the risk of account lockout on the target system.
+      使用单个用户名和来自指定文件的密码列表尝试登录目标。这是在渗透测试中恢复遗忘密码或测试弱安全配置的最常见用例。
+      大型字典可能显著增加所需时间以及目标系统账户锁定的风险。
     command: "medusa -h {{target}} -u {{username}} -P {{password_list|/usr/share/wordlists/rockyou.txt}} -M {{module}}"
 
-  - title: medusa - user and password wordlist attack
+  - title: medusa - 用户名和密码字典攻击
     desc: |
-      Tests multiple usernames against multiple passwords on a single target host. 
-      Medusa will iterate through the user list and try every password in the password list for each user. 
-      This exhaustive search is powerful but generates a high volume of traffic and log entries on the target.
+      在单个目标主机上测试多个用户名和多个密码。Medusa 会遍历用户列表，并为每个用户尝试密码列表中的每个密码。
+      这种穷举搜索很强大，但会在目标上产生大量流量和日志条目。
     command: "medusa -h {{target}} -U {{user_list}} -P {{password_list}} -M {{module}}"
 
   # === MULTI-TARGET & COMBO ATTACKS ===
-  - title: medusa - attack multiple hosts
+  - title: medusa - 攻击多个主机
     desc: |
-      Reads target IP addresses or hostnames from a text file to perform concurrent attacks across a network. 
-      This is highly effective for internal network assessments where multiple servers might share similar credentials or configurations. 
-      Use the -T flag to control how many hosts are processed in parallel to manage resource consumption.
+      从文本文件读取目标 IP 地址或主机名，在网络上执行并发攻击。这对多个服务器可能共享相似凭据或配置的内部网络评估非常有效。
+      使用 -T 标志控制并行处理的主机数以管理资源消耗。
     command: "medusa -H {{host_file}} -u {{username}} -P {{password_list}} -M {{module}}"
 
-  - title: medusa - combo file attack
+  - title: medusa - 组合文件攻击
     desc: |
-      Uses a specialized 'combo' file where each line contains a username and password pair separated by a colon (user:pass). 
-      This is efficient when you have leaked credential pairs or specific combinations gathered from other reconnaissance phases. 
-      It streamlines the process by avoiding the massive cross-product of separate user and password files.
+      使用专门的 combo 文件，其中每行包含以冒号分隔的用户名密码对（user:pass）。当你拥有泄露的凭据对或从其他侦察阶段收集的特定组合时很高效。
+      它通过避免单独用户文件和密码文件的大量笛卡尔积来简化流程。
     command: "medusa -h {{target}} -C {{combo_file}} -M {{module}}"
 
   # === MODULE SPECIFIC EXAMPLES ===
-  - title: medusa - ssh brute-force
+  - title: medusa - SSH 暴力破解
     desc: |
-      Specifically targets the SSH service on a host to attempt credential discovery. 
-      SSH is a high-value target for attackers, so this module is frequently used to gain initial access to Linux/Unix systems. 
-      Be mindful of 'fail2ban' or similar Intrusion Prevention Systems (IPS) that might block your IP after several failed attempts.
+      专门针对主机上的 SSH 服务尝试发现凭据。SSH 是攻击者的高价值目标，因此此模块常用于获取 Linux/Unix 系统的初始访问。
+      注意 fail2ban 或类似入侵防御系统（IPS）可能在多次失败尝试后阻止你的 IP。
     command: "medusa -h {{target}} -u {{username|root}} -P {{password_list}} -M ssh"
 
-  - title: medusa - web form http authentication
+  - title: medusa - Web 表单 HTTP 认证
     desc: |
-      Performs brute-force against services using HTTP basic, digest, or NTLM authentication. 
-      It is useful for testing routers, administrative web interfaces, or protected web directories. 
-      If the service resides in a specific subdirectory, use the -m flag to pass the directory parameter to the module.
+      对使用 HTTP basic、digest 或 NTLM 认证的服务执行暴力破解。用于测试路由器、管理 Web 界面或受保护的 Web 目录。
+      若服务位于特定子目录，使用 -m 标志向模块传递目录参数。
     command: "medusa -h {{target}} -u {{username|admin}} -P {{password_list}} -M http -m {{web_path|DIR:/admin}}"
 
-  - title: medusa - mssql database attack
+  - title: medusa - MSSQL 数据库攻击
     desc: |
-      Targets Microsoft SQL Server instances to find valid database administrative or user credentials. 
-      This can lead to full database compromise or even remote code execution if 'xp_cmdshell' is enabled. 
-      Always ensure you have permission to test database instances as it can impact production performance.
+      针对 Microsoft SQL Server 实例查找有效的数据库管理员或用户凭据。若启用了 xp_cmdshell，可能导致数据库完全沦陷甚至远程代码执行。
+      务必确保你有权限测试数据库实例，因为它可能影响生产性能。
     command: "medusa -h {{target}} -u {{username|sa}} -P {{password_list}} -M mssql"
 
   # === OPTIMIZATION & ADVANCED OPTIONS ===
-  - title: medusa - check for empty or matching passwords
+  - title: medusa - 检查空密码或与用户名相同的密码
     desc: |
-      Automatically checks if the password is empty (n) or identical to the username (s) before trying the wordlist. 
-      Many misconfigured systems or default installations still use these weak credential patterns. 
-      This is a quick way to find "low-hanging fruit" during the initial phase of a security audit.
+      在尝试字典前自动检查密码是否为空（n）或与用户名相同（s）。许多配置错误的系统或默认安装仍使用这些弱凭据模式。
+      这是在安全审计初期快速发现低垂果实的方法。
     command: "medusa -h {{target}} -u {{username}} -e {{check_type|ns}} -M {{module}}"
 
-  - title: medusa - optimized parallel scanning
+  - title: medusa - 优化并行扫描
     desc: |
-      Increases the speed of the brute-force attack by adjusting the number of concurrent threads. 
-      The -t flag controls the number of login attempts per host, while -T controls the number of hosts scanned simultaneously. 
-      Setting these values too high may cause network congestion, packet loss, or crash the target service.
+      通过调整并发线程数提高暴力破解速度。-t 标志控制每主机的登录尝试数，而 -T 控制同时扫描的主机数。
+      将这些值设置过高可能导致网络拥塞、数据包丢失或目标服务崩溃。
     command: "medusa -h {{target}} -U {{user_file}} -P {{password_list}} -M {{module}} -t {{threads|10}} -T {{host_threads|5}}"
 
-  - title: medusa - scan over ssl with custom port
+  - title: medusa - 使用自定义端口通过 SSL 扫描
     desc: |
-      Forces the connection to use SSL/TLS encryption and specifies a non-standard TCP port. 
-      This is mandatory for encrypted services like HTTPS (port 443), LDAPS (port 636), or custom-wrapped legacy services. 
-      Using the -s flag ensures that Medusa attempts an SSL handshake before sending authentication data.
+      强制连接使用 SSL/TLS 加密，并指定非标准 TCP 端口。这对 HTTPS（端口 443）、LDAPS（端口 636）或自定义封装的遗留服务等加密服务是必需的。
+      使用 -s 标志确保 Medusa 在发送认证数据前尝试 SSL 握手。
     command: "medusa -h {{target}} -u {{username}} -P {{password_list}} -M {{module}} -s -n {{port}}"
 
-  - title: medusa - stop on valid credentials
+  - title: medusa - 发现有效凭据即停止
     desc: |
-      Terminates the scanning process immediately after a valid set of credentials is discovered. 
-      The -f flag stops scanning the current host, while -F stops the entire audit across all hosts in the list. 
-      This is a "stealthier" and more efficient approach once your access objective is achieved.
+      发现有效凭据集后立即终止扫描过程。-f 标志停止扫描当前主机，而 -F 停止列表中所有主机的整个审计。
+      一旦达到访问目标，这是更隐蔽且更高效的方法。
     command: "medusa -h {{target}} -U {{user_file}} -P {{password_list}} -M {{module}} -f"
 
-  - title: medusa - resume previous scan
+  - title: medusa - 恢复之前的扫描
     desc: |
-      Resumes a previously interrupted scan based on a map file generated during the initial run. 
-      This is extremely useful for long-running brute-force sessions that were stopped due to network issues or time constraints. 
-      It prevents redundant testing of credentials that have already been checked.
+      根据初始运行期间生成的 map 文件恢复之前中断的扫描。这对于因网络问题或时间限制而停止的长时间暴力破解会话非常有用。
+      它避免对已检查过的凭据做冗余测试。
     command: "medusa -Z {{map_file_from_previous_scan}}"

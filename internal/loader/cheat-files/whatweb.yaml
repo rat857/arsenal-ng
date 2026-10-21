@@ -4,103 +4,90 @@ tags: [web, scanner, security, pentest, enumeration, fingerprinting, reconnaissa
 actions:
 # === TARGET SELECTION & BASIC SCANNING ===
 
- - title: whatweb - basic website fingerprinting
+ - title: whatweb - 基础网站指纹识别
    desc: |
-     Identify the technologies used by a specific web server using a single target.
-     This is the most common starting point for web reconnaissance to find CMS, web servers, and libraries.
-     It operates at the default stealthy aggression level (Level 1), making minimal requests.
+     使用单个目标识别特定 Web 服务器使用的技术。这是 Web 侦察中最常见的起点，用于发现 CMS、Web 服务器和库。
+     它以默认的隐蔽攻击级别（Level 1）运行，请求最少。
    command: "whatweb {{target}}"
 
- - title: whatweb - scan multiple targets from file
+ - title: whatweb - 从文件扫描多个目标
    desc: |
-     Read a list of URLs, hostnames, or IP addresses from a text file for batch processing.
-     This is highly efficient for scanning large scopes or lists generated from sub-domain discovery tools.
-     You can also pipe input directly from other tools by using -i /dev/stdin.
+     从文本文件读取 URL、主机名或 IP 地址列表进行批量处理。这对于扫描大规模范围或子域名发现工具生成的列表非常高效。
+     你也可以通过使用 -i /dev/stdin 直接从其他工具管道传入输入。
    command: "whatweb -i {{input_file}}"
 
- - title: whatweb - scan network range for web services
+ - title: whatweb - 扫描网段中的 Web 服务
    desc: |
-     Discover web servers across an entire IP range using CIDR notation.
-     This command automatically identifies which IPs have active web services and fingerprints them.
-     It is particularly useful during internal network penetration tests for asset discovery.
+     使用 CIDR 表示法在整个 IP 范围内发现 Web 服务器。此命令自动识别哪些 IP 具有活跃的 Web 服务并对其进行指纹识别。
+     它在内部网络渗透测试中用于资产发现时特别有用。
    command: "whatweb --no-errors {{ip_range|192.168.1.0/24}}"
 
 # === AGGRESSION & DEPTH ===
 
- - title: whatweb - aggressive technology detection
+ - title: whatweb - 激进技术检测
    desc: |
-     Perform a deeper scan by making additional requests if a technology is detected.
-     Level 3 is useful when you need to find exact versions of CMS or plugins that are not visible in the headers.
-     Be aware that this increases traffic and is more likely to be logged by Web Application Firewalls (WAFs).
+     通过检测到技术后进行额外请求来执行更深入的扫描。当需要查找请求头中不可见的 CMS 或插件的确切版本时，Level 3 很有用。
+     注意这会增加流量，且更可能被 Web 应用防火墙（WAF）记录。
    command: "whatweb -a 3 {{target}}"
 
- - title: whatweb - heavy footprinting
+ - title: whatweb - 重型足迹扫描
    desc: |
-     Execute the most thorough scan level by attempting all plugin URLs against the target.
-     Level 4 makes a significant number of HTTP requests and is not stealthy at all.
-     Use this only when you have explicit permission and need exhaustive technology mapping.
+     通过对目标尝试所有插件 URL 来执行最彻底的扫描级别。Level 4 会发出大量 HTTP 请求，完全不隐蔽。
+     仅在你获得明确授权且需要详尽技术测绘时使用。
    command: "whatweb -a 4 {{target}}"
 
 # === HTTP CONFIGURATION & AUTHENTICATION ===
 
- - title: whatweb - scan with custom headers and user-agent
+ - title: whatweb - 使用自定义请求头和 User-Agent 扫描
    desc: |
-     Modify the HTTP request headers to bypass basic security filters or impersonate a specific browser.
-     You can add any custom header like 'Authorization' or 'X-Forwarded-For' to test different server behaviors.
-     This helps in identifying how the server responds to different types of clients or mobile devices.
+     修改 HTTP 请求头，以绕过基础安全过滤器或模拟特定浏览器。你可以添加 Authorization 或 X-Forwarded-For 等任意自定义请求头来测试不同的服务器行为。
+     这有助于识别服务器如何响应不同类型的客户端或移动设备。
    command: "whatweb --user-agent \"{{user_agent|Mozilla/5.0}}\" --header \"{{header_name|X-Custom-Header}}:{{header_value|value}}\" {{target}}"
 
- - title: whatweb - authenticated scan with cookies
+ - title: whatweb - 使用 Cookie 认证扫描
    desc: |
-     Provide session cookies or basic authentication credentials to scan pages behind a login wall.
-     This allows for fingerprinting administrative panels, internal dashboards, or authenticated application logic.
-     Use this carefully with basic auth as it might trigger account lockout policies if credentials are incorrect.
+     提供会话 Cookie 或基础认证凭据，扫描登录墙后面的页面。这允许对管理面板、内部仪表盘或认证后的应用逻辑进行指纹识别。
+     使用基础认证时需谨慎，因为凭据错误可能触发账户锁定策略。
    command: "whatweb --cookie \"{{cookies|session=123}}\" --user \"{{user_pass|admin:password}}\" {{target}}"
 
- - title: whatweb - scan through a proxy
+ - title: whatweb - 通过代理扫描
    desc: |
-     Route all WhatWeb traffic through a specified proxy server like Burp Suite or Tor.
-     This is useful for debugging requests or hiding the source IP of the scanner.
-     Ensure the proxy is active and reachable before running the command to avoid connection errors.
+     将所有 WhatWeb 流量路由到指定代理服务器，如 Burp Suite 或 Tor。这对于调试请求或隐藏扫描器的源 IP 很有用。
+     运行命令前确保代理活跃且可达，以避免连接错误。
    command: "whatweb --proxy {{proxy_host|127.0.0.1:8080}} {{target}}"
 
 # === PLUGINS & FILTERING ===
 
- - title: whatweb - search for specific technology with grep
+ - title: whatweb - 使用 grep 搜索特定技术
    desc: |
-     Filter the output to show only results that match a specific string or regular expression.
-     This is perfect for identifying all servers in a large scan that run a specific software like WordPress or Apache.
-     It significantly reduces terminal noise when scanning large numbers of hosts.
+     过滤输出，仅显示匹配特定字符串或正则表达式的结果。这非常适合在大规模扫描中识别所有运行特定软件（如 WordPress 或 Apache）的服务器。
+     它在扫描大量主机时显著减少终端噪声。
    command: "whatweb --grep \"{{regex|WordPress}}\" {{target}}"
 
- - title: whatweb - list and search plugins
+ - title: whatweb - 列出并搜索插件
    desc: |
-     Search through the internal plugin database for a specific keyword or technology name.
-     This helps you understand what WhatWeb is capable of detecting before running a scan.
-     The search covers plugin names, descriptions, and categories.
+     在内部插件数据库中搜索特定关键字或技术名称。这帮助你在运行扫描前了解 WhatWeb 能检测什么。
+     搜索涵盖插件名称、描述和类别。
    command: "whatweb --search-plugins {{keyword}}"
 
 # === OUTPUT & LOGGING ===
 
- - title: whatweb - save scan results to JSON
+ - title: whatweb - 将扫描结果保存为 JSON
    desc: |
-     Export the fingerprinting results into a JSON file for further programmatic analysis.
-     This format is ideal for integrating WhatWeb results with other automation tools or custom reporting scripts.
-     The JSON output contains detailed metadata about every detected plugin and version.
+     将指纹识别结果导出到 JSON 文件，供进一步程序化分析。此格式非常适合将 WhatWeb 结果与其他自动化工具或自定义报告脚本集成。
+     JSON 输出包含每个检测到的插件和版本的详细元数据。
    command: "whatweb --log-json={{output_file|results.json}} {{target}}"
 
- - title: whatweb - verbose output for detailed analysis
+ - title: whatweb - 详细输出用于深入分析
    desc: |
-     Enable verbose output to see detailed descriptions of every detected plugin.
-     This provides more context on why a specific technology was flagged and which patterns were matched.
-     It is highly recommended for manual verification of findings.
+     启用详细输出，查看每个检测到的插件的详细描述。这提供更多上下文，说明特定技术为何被标记以及匹配了哪些模式。
+     强烈建议用于人工验证发现。
    command: "whatweb -v {{target}}"
 
 # === PERFORMANCE ===
 
- - title: whatweb - high speed multi-threaded scan
+ - title: whatweb - 高速多线程扫描
    desc: |
-     Increase the number of simultaneous threads to speed up scans against multiple targets.
-     The default is 25, but you can increase it for faster processing of large network ranges.
-     Higher thread counts may increase the risk of being blocked by rate-limiting mechanisms.
+     增加同时线程数，加快对多个目标的扫描。默认值为 25，但你可以提高它以更快处理大型网段。
+     更高的线程数可能增加被限速机制拦截的风险。
    command: "whatweb -t {{threads|50}} -i {{input_file}}"

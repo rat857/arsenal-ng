@@ -3,33 +3,33 @@ tags: [network, security, pentest, icmp, reconnaissance, impacket, ping, network
 
 actions:
   # === BASIC CONNECTIVITY ===
-  - title: impacket-ping - Basic ICMP echo request
+  - title: impacket-ping - 基本 ICMP 回显请求
     desc: |
-      Sends a standard ICMP Echo Request from a specified source IP to a destination IP.
-      This tool is part of the Impacket library and is used to verify network reachability between two points.
-      It is particularly useful for testing raw socket communication and ensuring that the Impacket framework can correctly craft and receive ICMP packets on the current system.
+      从指定的源 IP 向目标 IP 发送标准 ICMP 回显请求。
+      该工具属于 Impacket 库，用于验证两点之间的网络可达性。
+      它特别适合测试原始套接字通信，并确保 Impacket 框架能在当前系统上正确构造和接收 ICMP 数据包。
     command: "impacket-ping {{src_ip}} {{dst_ip}}"
 
   # === NETWORK TROUBLESHOOTING ===
-  - title: impacket-ping - Source-specific connectivity test
+  - title: impacket-ping - 指定源地址的连通性测试
     desc: |
-      Verifies if a specific source address on the local machine can communicate with a target host.
-      This is highly effective when working with multiple network interfaces or virtual private networks (VPNs) to ensure traffic is routed through the correct path.
-      Users should ensure they have the necessary privileges (usually root/sudo) to create raw sockets required for this operation.
+      验证本机上的某个特定源地址能否与目标主机通信。
+      当使用多个网络接口或虚拟专用网络（VPN）时，此方法非常有效，可确保流量经由正确路径路由。
+      用户应确保拥有创建原始套接字所需的必要权限（通常是 root/sudo）。
     command: "impacket-ping {{local_interface_ip}} {{target_ip}}"
 
   # === RECONNAISSANCE & ENUMERATION ===
-  - title: impacket-ping - Active host discovery
+  - title: impacket-ping - 活动主机发现
     desc: |
-      Checks if a remote target is active by requesting an ICMP Echo Reply.
-      In a penetration testing scenario, this serves as a basic reconnaissance step to map out live hosts within a subnet.
-      Be aware that many modern firewalls and EDR solutions may block or rate-limit ICMP traffic, potentially leading to false negatives.
+      通过请求 ICMP 回显应答来检查远程目标是否在线。
+      在渗透测试场景中，这是绘制子网内活动主机的基本侦察步骤。
+      请注意，许多现代防火墙和 EDR 解决方案可能会阻止或限速 ICMP 流量，从而可能导致漏报。
     command: "impacket-ping {{gateway_ip}} {{remote_host_ip}}"
 
   # === SEGMENTATION TESTING ===
-  - title: impacket-ping - Network boundary validation
+  - title: impacket-ping - 网络边界验证
     desc: |
-      Tests the isolation between different network segments by attempting to ping across boundaries.
-      This command helps security auditors verify if firewall rules are correctly preventing or allowing ICMP traffic between sensitive zones.
-      If the command receives a reply, it indicates that ICMP traffic is permitted between the specified source and destination IPs.
+      通过尝试跨边界 ping 来测试不同网段之间的隔离情况。
+      此命令帮助安全审计人员验证防火墙规则是否正确阻止或允许敏感区域之间的 ICMP 流量。
+      如果命令收到应答，则表明指定的源 IP 与目标 IP 之间允许 ICMP 流量。
     command: "impacket-ping {{internal_source_ip}} {{dmz_target_ip}}"

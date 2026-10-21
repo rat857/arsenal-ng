@@ -107,16 +107,16 @@ func (m App) renderCheatRow(index int, cheat *model.Cheat, query string, matchSt
 	}
 
 	// Tool name
-	toolText := truncate(cheat.Tool, 12)
-	tool := fuzzyHighlight(fmt.Sprintf("%-12s", toolText), query, toolStyle, matchStyle)
+	toolText := padToWidth(cheat.Tool, 12)
+	tool := fuzzyHighlight(toolText, query, toolStyle, matchStyle)
 
 	// Title
-	titleText := truncate(cheat.Title, 40)
+	titleText := padToWidth(cheat.Title, 40)
 	var title string
 	if index == m.cursor {
-		title = selectedStyle.Render(fmt.Sprintf("%-40s", titleText))
+		title = selectedStyle.Render(titleText)
 	} else {
-		title = fuzzyHighlight(fmt.Sprintf("%-40s", titleText), query, lipgloss.NewStyle(), matchStyle)
+		title = fuzzyHighlight(titleText, query, lipgloss.NewStyle(), matchStyle)
 	}
 
 	// Tags
@@ -142,22 +142,22 @@ func (m App) renderCommandHints(query string) string {
 		b.WriteString(m.renderSetSuggestions(partial))
 
 	case strings.HasPrefix(q, "set ") && strings.Contains(q, "="):
-		b.WriteString(successStyle.Render("✓ Press Enter to set variable"))
+		b.WriteString(successStyle.Render("✓ 按回车设置变量"))
 
 	case q == "unset" || q == "unset ":
 		b.WriteString(m.renderUnsetHints())
 
 	case q == "variables" || q == "variables ":
-		b.WriteString(successStyle.Render("✓ Press Enter to show all variables"))
+		b.WriteString(successStyle.Render("✓ 按回车显示所有变量"))
 
 	case q == "tools":
-		b.WriteString(successStyle.Render("✓ Press Enter to show all available tools"))
+		b.WriteString(successStyle.Render("✓ 按回车显示所有可用工具"))
 
 	case q == "help" || q == "help ":
-		b.WriteString(successStyle.Render("✓ Press Enter to show help menu"))
+		b.WriteString(successStyle.Render("✓ 按回车显示帮助菜单"))
 
 	default:
-		b.WriteString(helpStyle.Render("Press Enter to execute command..."))
+		b.WriteString(helpStyle.Render("按回车执行命令..."))
 	}
 
 	return b.String()
@@ -166,7 +166,7 @@ func (m App) renderCommandHints(query string) string {
 func (m App) renderSetHints() string {
 	var b strings.Builder
 
-	b.WriteString(titleStyle.Render("💡 Common variables you can set:"))
+	b.WriteString(titleStyle.Render("💡 常用变量（可设置）："))
 	b.WriteString("\n\n")
 
 	for _, v := range commonVariables {
@@ -176,7 +176,7 @@ func (m App) renderSetHints() string {
 	}
 
 	b.WriteString("\n")
-	b.WriteString(helpStyle.Render("  Type the full command and press Enter"))
+	b.WriteString(helpStyle.Render("  输入完整命令后按回车"))
 
 	return b.String()
 }
@@ -184,7 +184,7 @@ func (m App) renderSetHints() string {
 func (m App) renderSetSuggestions(partial string) string {
 	var b strings.Builder
 
-	b.WriteString(titleStyle.Render("💡 Suggestions:"))
+	b.WriteString(titleStyle.Render("💡 建议："))
 	b.WriteString("\n\n")
 
 	found := false
@@ -198,11 +198,11 @@ func (m App) renderSetSuggestions(partial string) string {
 	}
 
 	if !found {
-		b.WriteString(helpStyle.Render(fmt.Sprintf("  set %s=<value>  (custom variable)\n", partial)))
+		b.WriteString(helpStyle.Render(fmt.Sprintf("  set %s=<值>  （自定义变量）\n", partial)))
 	}
 
 	b.WriteString("\n")
-	b.WriteString(helpStyle.Render("  Add '=' and value, then press Enter"))
+	b.WriteString(helpStyle.Render("  加上 '=' 和值，然后按回车"))
 
 	return b.String()
 }
@@ -212,23 +212,23 @@ func (m App) renderUnsetHints() string {
 
 	vars := m.globals.All()
 	if len(vars) == 0 {
-		b.WriteString(titleStyle.Render("  ⚠ No variables to unset"))
+		b.WriteString(titleStyle.Render("  ⚠ 没有可删除的变量"))
 		b.WriteString("\n\n")
-		b.WriteString(helpStyle.Render("  Set variables first:"))
+		b.WriteString(helpStyle.Render("  请先设置变量："))
 		b.WriteString("\n\n")
 		b.WriteString(fmt.Sprintf("    %s\n", argNameStyle.Render("set key=value")))
 		b.WriteString(fmt.Sprintf("    %s\n", argNameStyle.Render("set ip=10.10.10.10")))
 		b.WriteString(fmt.Sprintf("    %s\n", argNameStyle.Render("set domain=target.com")))
 	} else {
-		b.WriteString(titleStyle.Render("  💡 Variables you can unset:"))
+		b.WriteString(titleStyle.Render("  💡 可删除的变量："))
 		b.WriteString("\n\n")
 		for name, value := range vars {
 			varName := argNameStyle.Render(fmt.Sprintf("unset %-12s", name))
-			val := helpStyle.Render(fmt.Sprintf("(current: %s)", value))
+			val := helpStyle.Render(fmt.Sprintf("（当前值：%s）", value))
 			b.WriteString(fmt.Sprintf("    %s  %s\n", varName, val))
 		}
 		b.WriteString("\n")
-		b.WriteString(helpStyle.Render("  Type variable name and press Enter"))
+		b.WriteString(helpStyle.Render("  输入变量名后按回车"))
 	}
 
 	return b.String()

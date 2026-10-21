@@ -3,73 +3,73 @@ tags: [oast, out-of-band, pentest, security, enumeration, exploitation, network]
 
 actions:
 # === CLIENT USAGE ===
- - title: interactsh-client - basic execution
+ - title: interactsh-client - 基本执行
    desc: |
-     Starts the interactsh client with default settings to poll the public ProjectDiscovery servers. 
-     Upon execution, it generates a unique URL that can be used for Out-of-Band (OAST) testing. 
-     The client will continuously monitor for any DNS, HTTP, or SMTP interactions triggered by your payloads.
+     以默认设置启动 interactsh 客户端，轮询公共 ProjectDiscovery 服务器。
+     执行后，它会生成一个可用于带外（OAST）测试的唯一 URL。
+     客户端将持续监控你的载荷触发的任何 DNS、HTTP 或 SMTP 交互。
    command: "interactsh-client"
 
- - title: interactsh-client - generate multiple payloads
+ - title: interactsh-client - 生成多个载荷
    desc: |
-     Generates a specific number of unique interactsh payloads in a single session. 
-     This is highly useful when you need to test multiple injection points or different parameters simultaneously without mixing up the results. 
-     Each generated URL is tracked by the same client instance, providing consolidated feedback for all targets.
+     在单个会话中生成指定数量的唯一 interactsh 载荷。
+     当你需要同时测试多个注入点或不同参数而又不想混淆结果时，这非常有用。
+     每个生成的 URL 都由同一个客户端实例跟踪，为所有目标提供合并的反馈。
    command: "interactsh-client -n {{count|5}}"
 
- - title: interactsh-client - use custom self-hosted server
+ - title: interactsh-client - 使用自定义自托管服务器
    desc: |
-     Connects the client to a private, self-hosted interactsh server instead of the public ones. 
-     This is recommended for professional engagements where data privacy and confidentiality are paramount. 
-     If the server is protected, you must provide the corresponding authentication token using the -t flag.
+     将客户端连接到私有的自托管 interactsh 服务器，而非公共服务器。
+     对于数据隐私和保密性至关重要的专业评估，建议使用此方式。
+     如果服务器受保护，你必须使用 -t 标志提供相应的身份验证令牌。
    command: "interactsh-client -server {{server_url}} -token {{auth_token}}"
 
- - title: interactsh-client - protocol specific filtering
+ - title: interactsh-client - 按协议过滤
    desc: |
-     Filters the output to display only specific types of interactions such as DNS, HTTP, or SMTP. 
-     This helps reduce noise when you are specifically testing for a particular vulnerability class like DNS exfiltration or SSRF via HTTP. 
-     You can use flags like -dns-only, -http-only, or -smtp-only depending on your current testing objective.
+     过滤输出，仅显示特定类型的交互，如 DNS、HTTP 或 SMTP。
+     当你专门测试特定漏洞类别（如通过 HTTP 的 DNS 窃取或 SSRF）时，这有助于降低噪音。
+     你可以根据当前测试目标使用 -dns-only、-http-only 或 -smtp-only 等标志。
    command: "interactsh-client -{{protocol_filter|dns-only}}"
 
- - title: interactsh-client - save results to JSON
+ - title: interactsh-client - 将结果保存为 JSON
    desc: |
-     Redirects all captured interactions into a file in JSONL (JSON Lines) format. 
-     JSON output is ideal for automated processing, integration with other security tools, or detailed reporting. 
-     Using a log file ensures that you don't lose interaction data if the terminal buffer clears or the session terminates.
+     将所有捕获的交互重定向到 JSONL（JSON Lines）格式的文件。
+     JSON 输出非常适合自动化处理、与其他安全工具集成或详细报告。
+     使用日志文件可确保在终端缓冲区清除或会话终止时不会丢失交互数据。
    command: "interactsh-client -o {{output_file|results.json}} -json"
 
- - title: interactsh-client - persistent session management
+ - title: interactsh-client - 持久会话管理
    desc: |
-     Stores or reads session data from a specific file to maintain persistence across different runs. 
-     This allows you to close the client and resume monitoring for the same generated payloads at a later time. 
-     It is extremely useful for long-term testing where callbacks might occur hours or days after the initial injection.
+     将会话数据存储到特定文件或从特定文件读取，以在不同运行之间维持持久性。
+     这允许你关闭客户端并在之后恢复对相同已生成载荷的监控。
+     对于回调可能发生在初始注入后数小时或数天的长期测试非常有用。
    command: "interactsh-client -sf {{session_file|mysession.session}}"
 
 # === SERVER USAGE ===
- - title: interactsh-server - deploy basic OAST server
+ - title: interactsh-server - 部署基本 OAST 服务器
    desc: |
-     Starts a self-hosted interactsh server on a dedicated domain and public IP address. 
-     This requires you to have configured NS records for the domain to point to this server's IP address. 
-     Self-hosting is the best way to ensure that interaction logs never leave your controlled environment.
+     在专用域名和公共 IP 地址上启动自托管 interactsh 服务器。
+     这要求你已为该域名配置指向此服务器 IP 地址的 NS 记录。
+     自托管是确保交互日志永不离开你受控环境的最佳方式。
    command: "interactsh-server -domain {{domain}} -ip {{public_ip}}"
 
- - title: interactsh-server - enable authentication and security
+ - title: interactsh-server - 启用身份验证和安全
    desc: |
-     Secures the self-hosted server by requiring a token for any client attempting to poll data. 
-     Using a static token allows multiple team members to share the same server securely. 
-     This prevents unauthorized third parties from discovering your payloads or viewing sensitive interaction data.
+     通过要求任何尝试轮询数据的客户端提供令牌来保护自托管服务器。
+     使用静态令牌允许多个团队成员安全地共享同一服务器。
+     这可以防止未授权第三方发现你的载荷或查看敏感交互数据。
    command: "interactsh-server -domain {{domain}} -auth -token {{secret_token}}"
 
- - title: interactsh-server - advanced protocol listeners
+ - title: interactsh-server - 高级协议监听器
    desc: |
-     Enables additional interaction listeners for protocols like LDAP, SMB, and FTP. 
-     Note that SMB listeners often require specific dependencies like Impacket and Python 3 to be installed on the host. 
-     These extra services significantly expand the attack surface you can test for Out-of-Band vulnerabilities.
+     为 LDAP、SMB 和 FTP 等协议启用额外的交互监听器。
+     请注意，SMB 监听器通常需要在主机上安装 Impacket 和 Python 3 等特定依赖。
+     这些额外服务显著扩展了你可以测试带外漏洞的攻击面。
    command: "interactsh-server -domain {{domain}} -ldap -smb -ftp"
 
- - title: interactsh-server - custom response configuration
+ - title: interactsh-server - 自定义响应配置
    desc: |
-     Enables dynamic responses and custom directory listing for the HTTP/HTTPS listeners. 
-     This allows the server to serve specific files or headers, which can be used to simulate realistic environments or bypass certain security controls. 
-     It is particularly useful for advanced SSRF exploitation scenarios where a specific response body is required.
+     为 HTTP/HTTPS 监听器启用动态响应和自定义目录列表。
+     这允许服务器提供特定文件或标头，可用于模拟真实环境或绕过某些安全控制。
+     它对于需要特定响应体的高级 SSRF 利用场景特别有用。
    command: "interactsh-server -domain {{domain}} -dr -hd {{web_directory|/var/www/html}}"

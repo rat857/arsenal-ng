@@ -3,68 +3,68 @@ tags: [active-directory, kerberos, as-rep-roasting, pentest, enumeration, securi
 
 actions:
   # === ENUMERATION AND DISCOVERY ===
-  - title: impacket-GetNPUsers - list vulnerable users from file
+  - title: impacket-GetNPUsers - 从文件列出易受攻击用户
     desc: |
-      This command iterates through a list of usernames to identify accounts that do not require Kerberos preauthentication. 
-      It is a vital reconnaissance step in Active Directory environments to find targets for AS-REP roasting. 
-      If a user is found with preauth disabled, their TGT can be requested without knowing their password.
+      遍历用户名列表，识别不需要 Kerberos 预认证的账户。
+      这是 Active Directory 环境中寻找 AS-REP roasting 目标的关键侦察步骤。
+      如果发现某用户禁用了预认证，就可在不知道其密码的情况下请求其 TGT。
     command: "impacket-GetNPUsers {{domain}}/ -usersfile {{users_file}} -dc-ip {{dc_ip}}"
 
-  - title: impacket-GetNPUsers - query specific user for preauth status
+  - title: impacket-GetNPUsers - 查询特定用户的预认证状态
     desc: |
-      Checks if a specific, known username has the 'Do not require Kerberos preauthentication' attribute set.
-      Use this when you have a high-value target account and want to verify if it's susceptible to AS-REP roasting.
-      This command does not request the hash unless the -request flag is added, making it less noisy.
+      检查某个已知用户名是否设置了“不要求 Kerberos 预认证”属性。
+      当你拥有高价值目标账户并想确认其是否易受 AS-REP roasting 攻击时使用。
+      除非添加 -request 标志，否则此命令不会请求哈希，因此噪声较小。
     command: "impacket-GetNPUsers {{domain}}/{{username}} -dc-ip {{dc_ip}}"
 
   # === EXPLOITATION (AS-REP ROASTING) ===
-  - title: impacket-GetNPUsers - request and output hashes for cracking
+  - title: impacket-GetNPUsers - 请求并输出哈希用于破解
     desc: |
-      Requests the AS-REP (Authentication Service Response) for users without preauthentication and outputs the crackable hash.
-      The output is displayed in the terminal by default and is formatted for offline cracking tools.
-      This is the primary method for performing an AS-REP roasting attack to obtain user credentials.
+      为未启用预认证的用户请求 AS-REP（认证服务响应）并输出可破解的哈希。
+      输出默认显示在终端中，并已格式化为可供离线破解工具使用。
+      这是执行 AS-REP roasting 攻击以获取用户凭据的主要方法。
     command: "impacket-GetNPUsers {{domain}}/ -usersfile {{users_file}} -request -dc-ip {{dc_ip}}"
 
-  - title: impacket-GetNPUsers - export hashes to file for Hashcat
+  - title: impacket-GetNPUsers - 将哈希导出到文件供 Hashcat 使用
     desc: |
-      Requests TGTs for vulnerable users and saves the resulting hashes into a file specifically formatted for Hashcat.
-      The default format for Hashcat (mode 18200) allows for immediate offline brute-forcing or dictionary attacks.
-      Ensure you have write permissions in the directory where the output file is being created.
+      为易受攻击的用户请求 TGT，并将生成的哈希保存到专门为 Hashcat 格式化的文件中。
+      Hashcat 默认格式（模式 18200）可直接用于离线暴力破解或字典攻击。
+      请确保输出文件所在目录具有写入权限。
     command: "impacket-GetNPUsers {{domain}}/ -usersfile {{users_file}} -request -format hashcat -outputfile {{output_file|hashes.txt}} -dc-ip {{dc_ip}}"
 
-  - title: impacket-GetNPUsers - export hashes for John the Ripper
+  - title: impacket-GetNPUsers - 为 John the Ripper 导出哈希
     desc: |
-      Collects AS-REP hashes and saves them in a format compatible with John the Ripper.
-      This is useful if your cracking workflow involves JtR instead of Hashcat.
-      The command targets all users in the provided list and handles the communication with the Domain Controller.
+      收集 AS-REP 哈希并以与 John the Ripper 兼容的格式保存。
+      当你的破解流程使用 JtR 而非 Hashcat 时很有用。
+      该命令针对所提供列表中的所有用户，并处理与域控制器的通信。
     command: "impacket-GetNPUsers {{domain}}/ -usersfile {{users_file}} -request -format john -outputfile {{output_file|hashes.jtr}} -dc-ip {{dc_ip}}"
 
   # === AUTHENTICATED QUERIES ===
-  - title: impacket-GetNPUsers - authenticate using NTLM hashes
+  - title: impacket-GetNPUsers - 使用 NTLM 哈希认证
     desc: |
-      Performs the query by authenticating as a specific user using their NTLM hashes instead of a plaintext password.
-      This is useful in "Pass-the-Hash" scenarios where you have the hash of a domain user and want to enumerate other accounts.
-      Note that some environments might require valid authentication to query the directory for these attributes.
+      使用特定用户的 NTLM 哈希而非明文密码进行认证以执行查询。
+      在拥有域用户哈希并想枚举其他账户的“Pass-the-Hash”场景中很有用。
+      注意某些环境可能需要有效认证才能查询目录中的这些属性。
     command: "impacket-GetNPUsers {{domain}}/{{username}} -hashes {{hash}} -request -dc-ip {{dc_ip}}"
 
-  - title: impacket-GetNPUsers - authenticate using Kerberos ticket (ccache)
+  - title: impacket-GetNPUsers - 使用 Kerberos 票据（ccache）认证
     desc: |
-      Uses an existing Kerberos ticket-granting ticket (TGT) from a ccache file to authenticate the request to the DC.
-      The -k flag tells the tool to use Kerberos, and -no-pass prevents it from prompting for a password.
-      This is a more stealthy approach as it avoids NTLM authentication and leverages existing valid sessions.
+      使用 ccache 文件中已有的 Kerberos 票据授予票据（TGT）向 DC 认证请求。
+      -k 标志表示使用 Kerberos，-no-pass 防止工具提示输入密码。
+      这是一种更隐蔽的方法，可避免 NTLM 认证并利用现有有效会话。
     command: "impacket-GetNPUsers {{domain}}/{{username}} -k -no-pass -dc-ip {{dc_ip}}"
 
   # === ADVANCED OPTIONS ===
-  - title: impacket-GetNPUsers - troubleshoot with debug mode
+  - title: impacket-GetNPUsers - 使用调试模式排查
     desc: |
-      Runs the tool with verbose debug output enabled to help diagnose connection or authentication issues.
-      This is particularly useful when troubleshooting RPC errors, clock skew issues, or connectivity problems with the Domain Controller.
-      It provides detailed information about the underlying Impacket library calls and Kerberos exchanges.
+      以详细调试输出运行工具，帮助诊断连接或认证问题。
+      在排查 RPC 错误、时钟偏差或与域控制器的连接问题时尤为有用。
+      它提供底层 Impacket 库调用和 Kerberos 交互的详细信息。
     command: "impacket-GetNPUsers {{domain}}/{{username}} -request -debug -dc-ip {{dc_ip}}"
 
-  - title: impacket-GetNPUsers - specify DC hostname
+  - title: impacket-GetNPUsers - 指定 DC 主机名
     desc: |
-      Directs the request to a specific Domain Controller using its hostname instead of just its IP.
-      This can be necessary in environments where Kerberos strictness requires the SPN to match the target hostname.
-      If omitted, the tool usually tries to resolve the domain name to an IP address.
+      使用主机名而非仅 IP 将请求定向到特定的域控制器。
+      在 Kerberos 严格性要求 SPN 与目标主机名匹配的环境中可能是必需的。
+      如果省略，工具通常会尝试将域名解析为 IP 地址。
     command: "impacket-GetNPUsers {{domain}}/ -usersfile {{users_file}} -request -dc-host {{dc_hostname}} -dc-ip {{dc_ip}}"

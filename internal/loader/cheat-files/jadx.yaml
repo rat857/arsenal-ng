@@ -3,82 +3,71 @@ tags: [android, security, decompiler, reverse-engineering, java, pentest, static
 
 actions:
 # === BASIC USAGE ===
- - title: jadx - basic decompilation
+ - title: jadx - 基础反编译
    desc: |
-     Decompile an APK, DEX, or JAR file into a specified output directory. 
-     This is the standard entry point for reverse engineering Android applications to view their source code.
-     The tool converts Dalvik bytecode back into readable Java classes and extracts the AndroidManifest.xml and resources.
+     将 APK、DEX 或 JAR 文件反编译到指定的输出目录。这是逆向分析 Android 应用以查看源码的标准入口。
+     该工具会把 Dalvik 字节码还原为可读的 Java 类，并提取 AndroidManifest.xml 和资源文件。
    command: "jadx -d {{output_dir|out}} {{input_file}}"
 
- - title: jadx - decompile source only
+ - title: jadx - 仅反编译源码
    desc: |
-     Decompile the application but skip the resource decoding process (layouts, drawables, etc.).
-     This is significantly faster than a full decompile and is useful when you only care about the Java/Kotlin logic.
-     Use this to avoid potential errors related to resource parsing in heavily obfuscated apps.
+     反编译应用但跳过资源解码过程（布局、drawable 等）。这比完整反编译快得多，适用于只关心 Java/Kotlin 逻辑的场景。
+     在重度混淆的应用中可用它避免资源解析相关的错误。
    command: "jadx -r -s -d {{output_dir|src_only}} {{input_file}}"
 
- - title: jadx - decompile resources only
+ - title: jadx - 仅反编译资源
    desc: |
-     Extract and decode only the application resources and manifest without decompiling source code.
-     This is useful for analyzing the AndroidManifest.xml for exported components or checking strings.xml for API keys.
-     It saves time when the code logic is not the primary focus of the current analysis task.
+     只提取并解码应用资源和清单文件，不反编译源码。适用于分析 AndroidManifest.xml 中的导出组件，或检查 strings.xml 中的 API 密钥。
+     当代码逻辑不是当前分析重点时可节省时间。
    command: "jadx -s -d {{output_dir|res_only}} {{input_file}}"
 
 # === ADVANCED DECOMPILATION ===
- - title: jadx - enable deobfuscation
+ - title: jadx - 启用反混淆
    desc: |
-     Activate the internal deobfuscation engine to rename short or non-printable class and method names.
-     Jadx will generate unique names for mangled identifiers, making the code flow much easier to follow.
-     A mapping file (JOBF) is created in the output directory so you can maintain consistent names across sessions.
+     激活内置反混淆引擎，重命名过短或不可打印的类名与方法名。Jadx 会为被混淆的标识符生成唯一名称，使代码流程更易理解。
+     输出目录中会生成映射文件（JOBF），便于跨会话保持名称一致。
    command: "jadx --deobf {{input_file}}"
 
- - title: jadx - decompile specific class
+ - title: jadx - 反编译指定类
    desc: |
-     Target a specific class for decompilation by providing its full package name.
-     This is extremely efficient for large applications where you only need to investigate a specific logic or vulnerability.
-     It bypasses the need to wait for the entire APK to be processed, saving memory and CPU cycles.
+     通过提供完整包名，仅反编译指定的类。对于只需调查特定逻辑或漏洞的大型应用非常高效。
+     无需等待整个 APK 处理完成，可节省内存和 CPU 资源。
    command: "jadx --single-class {{class_name}} {{input_file}}"
 
- - title: jadx - export as gradle project
+ - title: jadx - 导出为 Gradle 项目
    desc: |
-     Save the decompiled source code as a structured Gradle project.
-     This allows the output to be imported directly into Android Studio or IntelliJ IDEA for advanced navigation.
-     The tool attempts to recreate the project structure, making it easier to use IDE features like "Find Usages" or "Refactor".
+     将反编译后的源码保存为结构化的 Gradle 项目。这样可以把输出直接导入 Android Studio 或 IntelliJ IDEA 进行高级导航。
+     该工具会尝试重建项目结构，便于使用“查找用法”或“重构”等 IDE 功能。
    command: "jadx -e -d {{output_dir|gradle_project}} {{input_file}}"
 
 # === OUTPUT & FORMATTING ===
- - title: jadx - output in json format
+ - title: jadx - 以 JSON 格式输出
    desc: |
-     Change the output format to JSON instead of standard Java files.
-     This is primarily used for automated analysis where other tools or scripts need to parse the structure of the app.
-     The JSON output contains metadata about classes, methods, and their relationships within the binary.
+     将输出格式改为 JSON 而非标准 Java 文件。主要用于需要其他工具或脚本解析应用结构的自动化分析。
+     JSON 输出包含类、方法及其在二进制中关系的元数据。
    command: "jadx --output-format json -d {{output_dir|json_out}} {{input_file}}"
 
- - title: jadx - fallback mode
+ - title: jadx - 回退模式
    desc: |
-     Force the decompiler into fallback mode to show raw instructions.
-     Use this when the standard decompilation fails or produces "bad code" that doesn't make sense.
-     It provides a more direct representation of the bytecode, which is less readable but more accurate in error scenarios.
+     强制反编译器进入回退模式以显示原始指令。当标准反编译失败或产生无法理解的“坏代码”时使用。
+     它提供更直接的字节码表示，可读性较差但在出错场景下更准确。
    command: "jadx -m fallback {{input_file}}"
 
 # === TROUBLESHOOTING & PLUGINS ===
- - title: jadx - skip dex checksum verification
+ - title: jadx - 跳过 DEX 校验和验证
    desc: |
-     Disable the verification of the DEX file checksum before loading.
-     This is often required for analyzing malware or APKs that have been manually tampered with to break analysis tools.
-     By skipping the check, Jadx can process files that would otherwise be rejected as "corrupted".
+     加载前禁用 DEX 文件校验和验证。分析恶意软件或被手动篡改以破坏分析工具的 APK 时通常需要此项。
+     跳过校验后，Jadx 可以处理原本会被当作“损坏”而拒绝的文件。
    command: "jadx -Pdex-input.verify-checksum=no {{input_file}}"
 
- - title: jadx - quiet logging
+ - title: jadx - 安静日志
    desc: |
-     Set the log level to QUIET to suppress all output except for critical errors.
-     This is recommended when using Jadx as part of a larger automation script or CI/CD pipeline.
-     It prevents the console from being flooded with progress percentages and informational messages.
+     将日志级别设为 QUIET，只输出严重错误。当 Jadx 作为大型自动化脚本或 CI/CD 流水线的一部分时推荐使用。
+     可避免控制台被进度百分比和信息性消息淹没。
    command: "jadx --log-level QUIET {{input_file}}"
 
- - title: jadx - list installed plugins
+ - title: jadx - 列出已安装插件
    desc: |
-     Display a list of all currently installed Jadx plugins.
-     Plugins can extend functionality for different input formats (like Smali) or custom deobfuscation logic.
-     Use this to verify if your environment has the necessary extensions for specific reverse engineering tasks.
+     显示当前已安装的所有 Jadx 插件。插件可以为不同输入格式（如 Smali）或自定义反混淆逻辑扩展功能。
+     用它来确认环境是否具备特定逆向任务所需的扩展。
    command: "jadx plugins --list"

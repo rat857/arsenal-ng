@@ -4,80 +4,60 @@ tags: [active-directory, windows, pentest, authentication, security, impacket, p
 actions:
   # === BASIC PASSWORD CHANGES ===
 
-  - title: impacket-changepasswd - simple password change
+  - title: impacket-changepasswd - 简单密码更改
     desc: |
-      Changes the password of a target user by providing their current cleartext password.
-      This is the most common method used when a user is forced to change their password or when you have acquired the current credentials.
-      The tool defaults to using SMB/RPC protocols to communicate with the target's SAM or the Domain Controller.
+      通过提供目标用户的当前明文密码来更改其密码。这是用户被迫更改密码或你已获取当前凭据时最常用的方法。工具默认使用 SMB/RPC 协议与目标的 SAM 或域控制器通信。
     command: "impacket-changepasswd {{domain}}/{{username}}:{{current_password}}@{{target_ip}} -newpass {{new_password}}"
 
-  - title: impacket-changepasswd - change password using NTLM hashes
+  - title: impacket-changepasswd - 使用 NTLM 哈希更改密码
     desc: |
-      Perform a password change for a user by authenticating with their current NTLM hashes instead of a cleartext password.
-      This is particularly useful in "Pass-the-Hash" scenarios where the cleartext password is unknown but the hash is available.
-      The new password can be provided as cleartext using the -newpass flag.
+      通过使用用户当前的 NTLM 哈希而非明文密码认证来为用户执行密码更改。这在明文密码未知但哈希可用的 Pass-the-Hash 场景中特别有用。新密码可使用 -newpass 参数以明文提供。
     command: "impacket-changepasswd {{domain}}/{{username}}@{{target_ip}} -hashes {{lm_hash:nt_hash}} -newpass {{new_password}}"
 
-  - title: impacket-changepasswd - update password to a new NTLM hash
+  - title: impacket-changepasswd - 将密码更新为新 NTLM 哈希
     desc: |
-      Updates a user's password by providing a new NTLM hash instead of a cleartext string.
-      This allows you to set a password to a known hash value directly, which can be useful for maintaining persistence or synchronizing accounts.
-      Note that the target system must support setting passwords via hash for this to succeed.
+      通过提供新 NTLM 哈希而非明文字符串来更新用户密码。这允许你将密码直接设置为已知的哈希值，对于维持持久化或同步账户非常有用。请注意，目标系统必须支持通过哈希设置密码才能成功。
     command: "impacket-changepasswd {{domain}}/{{username}}:{{current_password}}@{{target_ip}} -newhashes {{new_nt_hash}}"
 
   # === ADMINISTRATIVE RESETS ===
 
-  - title: impacket-changepasswd - administrative password reset
+  - title: impacket-changepasswd - 管理性密码重置
     desc: |
-      Resets a target user's password using a different account that possesses administrative privileges.
-      The -altuser and -altpass flags specify the privileged account (e.g., Domain Admin) performing the action.
-      This is standard procedure when an administrator needs to recover access to a locked or forgotten user account.
+      使用具有管理权限的其他账户重置目标用户的密码。-altuser 和 -altpass 参数指定执行操作的特权账户（如域管理员）。当管理员需要恢复对已锁定或遗忘的用户账户的访问时，这是标准流程。
     command: "impacket-changepasswd -altuser {{admin_username}} -altpass {{admin_password}} {{domain}}/{{target_username}}@{{target_ip}} -newpass {{new_password}}"
 
-  - title: impacket-changepasswd - admin reset with -reset flag
+  - title: impacket-changepasswd - 使用 -reset 参数的管理重置
     desc: |
-      Attempts to reset a user's password using administrative privileges while explicitly using the reset logic.
-      The -reset (or -admin) flag tells the tool to use administrative RPC calls which may bypass certain password complexity or history policies.
-      This is often required when the "change" operation (which requires knowing the old password) is not applicable.
+      使用管理权限重置用户密码，同时显式使用重置逻辑。-reset（或 -admin）参数告诉工具使用管理 RPC 调用，这可能绕过某些密码复杂性或历史策略。当“更改”操作（需要知道旧密码）不适用时通常需要此方法。
     command: "impacket-changepasswd -altuser {{admin_username}} -althash {{admin_nt_hash}} -reset {{domain}}/{{target_username}}@{{target_ip}} -newpass {{new_password}}"
 
   # === PROTOCOL SPECIFIC OPERATIONS ===
 
-  - title: impacket-changepasswd - change password via LDAP
+  - title: impacket-changepasswd - 通过 LDAP 更改密码
     desc: |
-      Forces the password change operation to occur over the LDAP protocol instead of the default SMB/RPC.
-      This is useful in environments where SMB (port 445) is restricted but LDAP (port 389) or LDAPS (port 636) is accessible.
-      Ensure the target is a Domain Controller when attempting to use the LDAP protocol for domain accounts.
+      强制密码更改操作通过 LDAP 协议而非默认的 SMB/RPC 执行。在 SMB（445 端口）受限但 LDAP（389 端口）或 LDAPS（636 端口）可访问的环境中非常有用。尝试对域账户使用 LDAP 协议时，请确保目标是域控制器。
     command: "impacket-changepasswd -protocol {{protocol|ldap}} {{domain}}/{{username}}:{{password}}@{{target_ip}} -newpass {{new_password}}"
 
-  - title: impacket-changepasswd - change password via Kerberos (kpasswd)
+  - title: impacket-changepasswd - 通过 Kerberos（kpasswd）更改密码
     desc: |
-      Utilizes the kpasswd protocol (typically port 464) to perform the password change.
-      This method is native to Kerberos environments and is often used by Windows clients joined to a domain.
-      It is a good alternative if RPC-based password changes are being monitored or blocked by host-based firewalls.
+      利用 kpasswd 协议（通常是 464 端口）执行密码更改。此方法是 Kerberos 环境原生的，通常被加入域的 Windows 客户端使用。如果基于 RPC 的密码更改被基于主机的防火墙监控或阻止，这是一个很好的替代方案。
     command: "impacket-changepasswd -protocol {{protocol|kpasswd}} {{domain}}/{{username}}:{{password}}@{{target_ip}} -newpass {{new_password}}"
 
   # === ADVANCED AUTHENTICATION ===
 
-  - title: impacket-changepasswd - change password using Kerberos tickets
+  - title: impacket-changepasswd - 使用 Kerberos 票据更改密码
     desc: |
-      Authenticates the password change request using existing Kerberos tickets from a ccache file.
-      The -k flag instructs the tool to look for credentials in the environment variable KRB5CCNAME.
-      The -no-pass flag is used because the authentication is handled by the ticket rather than a password provided on the CLI.
+      使用来自 ccache 文件的现有 Kerberos 票据认证密码更改请求。-k 参数指示工具在环境变量 KRB5CCNAME 中查找凭据。使用 -no-pass 参数是因为认证由票据处理，而非在 CLI 上提供的密码。
     command: "impacket-changepasswd -k -no-pass -dc-ip {{dc_ip}} {{domain}}/{{username}}@{{target_hostname}} -newpass {{new_password}}"
 
-  - title: impacket-changepasswd - change password with AES Key
+  - title: impacket-changepasswd - 使用 AES 密钥更改密码
     desc: |
-      Uses a Kerberos AES key (128 or 256 bits) for authentication instead of a password or NTLM hash.
-      This is a common requirement in environments where NTLM is disabled and only AES-based Kerberos is permitted.
-      You must provide the correct FQDN for the target and the Domain Controller IP for Kerberos resolution.
+      使用 Kerberos AES 密钥（128 或 256 位）而非密码或 NTLM 哈希进行认证。在禁用 NTLM、仅允许基于 AES 的 Kerberos 的环境中，这是常见要求。你必须为目标提供正确的 FQDN，并为 Kerberos 解析提供域控制器 IP。
     command: "impacket-changepasswd -aesKey {{hex_key}} {{domain}}/{{username}}@{{target_hostname}} -dc-ip {{dc_ip}} -newpass {{new_password}}"
 
   # === DEBUGGING AND LOGGING ===
 
-  - title: impacket-changepasswd - debug mode with timestamps
+  - title: impacket-changepasswd - 带时间戳的调试模式
     desc: |
-      Executes the password change operation with verbose debugging output and timestamps for every log entry.
-      This is essential for troubleshooting connection issues, protocol negotiation failures, or permission errors.
-      The output will show the underlying RPC or LDAP calls being made during the process.
+      执行密码更改操作，并带有详细的调试输出和每条日志条目的时间戳。这对于排查连接问题、协议协商失败或权限错误至关重要。输出会显示过程中进行的底层 RPC 或 LDAP 调用。
     command: "impacket-changepasswd -debug -ts {{domain}}/{{username}}:{{password}}@{{target_ip}} -newpass {{new_password}}"

@@ -3,86 +3,66 @@ tags: [system, storage, linux, unix, filesystem, security, pentest]
 
 actions:
   # === BASIC OPERATIONS ===
-  - title: mount - basic mount
+  - title: mount - 基础挂载
     desc: |
-      Attach a physical or logical device to a specific point in the directory tree. 
-      This is the primary method for accessing external drives, partitions, or network storage. 
-      Superuser privileges are typically required to perform this operation. 
-      Ensure the target mount point directory exists before executing the command.
+      将物理或逻辑设备挂载到目录树中的特定位置。这是访问外部驱动器、分区或网络存储的主要方法。
+      执行此操作通常需要超级用户权限。执行命令前确保目标挂载点目录存在。
     command: "mount {{device}} {{mount_point}}"
 
-  - title: mount - specify filesystem type
+  - title: mount - 指定文件系统类型
     desc: |
-      Explicitly define the filesystem type of the device being mounted. 
-      This is useful when the operating system fails to auto-detect the format or when using specific drivers. 
-      Common types include ext4, xfs, ntfs-3g, or nfs. 
-      Using the correct type prevents data corruption and mounting errors.
+      显式定义被挂载设备的文件系统类型。当操作系统无法自动检测格式或使用特定驱动时很有用。
+      常见类型包括 ext4、xfs、ntfs-3g 或 nfs。使用正确类型可防止数据损坏和挂载错误。
     command: "mount -t {{fs_type|ext4}} {{device}} {{mount_point}}"
 
-  - title: mount - list mounted filesystems
+  - title: mount - 列出已挂载的文件系统
     desc: |
-      Display all currently mounted filesystems on the system along with their options. 
-      This command is essential for verifying where devices are attached and what permissions they have. 
-      It provides details such as the device path, mount point, filesystem type, and mount flags (ro, rw, etc.). 
-      No special privileges are required to view the list of mounts.
+      显示系统上所有当前已挂载的文件系统及其选项。此命令对于验证设备挂载位置及其权限至关重要。
+      它提供设备路径、挂载点、文件系统类型和挂载标志（ro、rw 等）等详细信息。查看挂载列表无需特殊权限。
     command: "mount"
 
   # === SYSTEM OPERATIONS ===
-  - title: mount - mount all from fstab
+  - title: mount - 从 fstab 挂载全部
     desc: |
-      Mount all filesystems listed in the /etc/fstab configuration file. 
-      This command is typically used after making changes to the fstab file to apply them without a system reboot. 
-      It will ignore entries marked with the 'noauto' option. 
-      This is a common step during system initialization or after adding new persistent storage.
+      挂载 /etc/fstab 配置文件中列出的所有文件系统。此命令通常在对 fstab 文件做更改后使用，以便无需重启系统即可应用。
+      它会忽略标记有 noauto 选项的条目。这是系统初始化期间或添加新持久存储后的常见步骤。
     command: "mount -a"
 
-  - title: mount - remount as read-only or read-write
+  - title: mount - 重新挂载为只读或读写
     desc: |
-      Change the mount options of an already attached filesystem without unmounting it first. 
-      This is frequently used during system recovery to change a read-only root partition to read-write mode. 
-      It can also be used to quickly lock a partition to prevent further modifications. 
-      Note that some processes holding open files may prevent a successful remount.
+      无需先卸载即可更改已挂载文件系统的挂载选项。系统恢复期间常用于将只读根分区改为读写模式。
+      也可用于快速锁定分区以防止进一步修改。注意一些持有打开文件的进程可能阻止重新挂载成功。
     command: "mount -o remount,{{mode|rw}} {{mount_point}}"
 
   # === ADVANCED MOUNTING ===
-  - title: mount - bind mount
+  - title: mount - 绑定挂载
     desc: |
-      Mount an existing directory onto another directory, creating an alias in the filesystem. 
-      This allows the same content to be accessible from two different locations simultaneously. 
-      It is a powerful tool for configuring chroot environments or managing container volumes. 
-      The contents of the target directory are hidden by the source directory until unmounted.
+      将现有目录挂载到另一个目录，在文件系统中创建别名。这使相同内容可同时从两个不同位置访问。
+      它是配置 chroot 环境或管理容器卷的强大工具。目标目录的内容会被源目录隐藏，直到卸载。
     command: "mount --bind {{source_dir}} {{target_dir}}"
 
-  - title: mount - mount ISO or disk image
+  - title: mount - 挂载 ISO 或磁盘镜像
     desc: |
-      Mount a filesystem image file using a loop device. 
-      This enables you to browse and interact with the contents of an ISO file or raw disk image as if it were a physical disk. 
-      This is highly useful for software installation from media images or forensic analysis of disk dumps. 
-      The system automatically handles the loop device attachment in most modern distributions.
+      使用 loop 设备挂载文件系统镜像文件。这使你能够像浏览物理磁盘一样浏览和交互 ISO 文件或原始磁盘镜像的内容。
+      对从介质镜像安装软件或对磁盘转储进行取证分析非常有用。大多数现代发行版会自动处理 loop 设备的挂接。
     command: "mount -o loop {{image_file}} {{mount_point}}"
 
   # === SECURITY & RESTRICTIONS ===
-  - title: mount - security restricted mount
+  - title: mount - 安全限制挂载
     desc: |
-      Mount a device with specific flags to restrict the execution of binaries and the use of special files. 
-      The 'noexec' flag prevents scripts and binaries from running, while 'nosuid' ignores set-user-identifier bits. 
-      This is a critical hardening technique for world-writable partitions like /tmp or user-controlled media. 
-      It significantly reduces the risk of privilege escalation attacks from those partitions.
+      使用特定标志挂载设备，限制二进制文件的执行和特殊文件的使用。noexec 标志阻止脚本和二进制文件运行，而 nosuid 忽略 set-user-identifier 位。
+      这是对 /tmp 或用户控制的介质等可写分区进行加固的关键技术，可显著降低从这些分区进行权限提升攻击的风险。
     command: "mount -o noexec,nosuid,nodev {{device}} {{mount_point}}"
 
-  - title: mount - read-only mount
+  - title: mount - 只读挂载
     desc: |
-      Mount a device in read-only mode to prevent any data modification. 
-      This is the safest way to examine potentially compromised or failing hardware. 
-      It ensures that no write operations, including metadata updates like access times, occur on the media. 
-      This is standard practice during digital forensics and incident response.
+      以只读模式挂载设备，防止任何数据修改。这是检查可能已受损或故障硬件的最安全方式。
+      它确保介质上不会发生写操作，包括访问时间等元数据更新。这是数字取证和事件响应中的标准做法。
     command: "mount -r {{device}} {{mount_point}}"
 
   # === NETWORK FILESYSTEMS ===
-  - title: mount - mount NFS share
+  - title: mount - 挂载 NFS 共享
     desc: |
-      Connect to a remote Network File System (NFS) export. 
-      This allows you to access files over the network as if they were stored on your local machine. 
-      You must ensure the nfs-common or nfs-utils package is installed on the client. 
-      Check network connectivity and firewall settings if the connection times out.
+      连接到远程网络文件系统（NFS）导出。这让你可以像访问本地文件一样通过网络访问文件。
+      必须确保客户端安装了 nfs-common 或 nfs-utils 包。若连接超时，请检查网络连通性和防火墙设置。
     command: "mount -t nfs {{server_ip}}:{{remote_path}} {{mount_point}}"

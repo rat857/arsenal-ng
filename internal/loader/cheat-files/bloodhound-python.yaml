@@ -3,75 +3,75 @@ tags: [active-directory, enumeration, pentest, security, reconnaissance, windows
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: bloodhound-python - basic domain enumeration
+  - title: bloodhound-python - 基础域枚举
     desc: |
-      Performs standard collection including Group, LocalAdmin, Session, and Trusts. 
-      This is the most common starting point when you have valid domain credentials. 
-      The resulting JSON files are generated in the current directory and can be uploaded to the BloodHound GUI.
+      执行标准收集，包括 Group、LocalAdmin、Session 与 Trusts。
+      当你拥有有效域凭据时，这是最常见的起点。
+      生成的 JSON 文件位于当前目录，可上传到 BloodHound GUI。
     command: "bloodhound-python -u {{username}} -p {{password}} -d {{domain}}  -dc {{dc_ip}}  -c Default"
 
-  - title: bloodhound-python - collect all data including ACLs
+  - title: bloodhound-python - 收集包括 ACL 在内的所有数据
     desc: |
-      Collects all available information including detailed Access Control Lists (ACLs). 
-      This method provides the most comprehensive view of the environment, enabling the discovery of complex attack paths like GenericAll or WriteDacl. 
-      Note that this produces larger files and takes more time than a default scan.
+      收集包括详细访问控制列表（ACL）在内的所有可用信息。
+      此方法提供对环境的全面视图，可发现 GenericAll 或 WriteDacl 等复杂攻击路径。
+      注意这会生成更大的文件，且比默认扫描耗时更长。
     command: "bloodhound-python -u {{username}} -p {{password}} -d {{domain}}  -c All"
 
-  - title: bloodhound-python - domain controller only collection
+  - title: bloodhound-python - 仅收集域控制器
     desc: |
-      Limits enumeration to only query the Domain Controller without connecting to individual computers. 
-      This is a stealthier and faster collection method that avoids triggering alerts on workstations. 
-      It is ideal for initial reconnaissance where speed and low visibility are prioritized over session data.
+      将枚举限制为仅查询域控制器，而不连接各台计算机。
+      这是一种更隐蔽、更快速的收集方法，可避免在工作站上触发告警。
+      它非常适合以速度与低可见性优先于会话数据的初始侦察。
     command: "bloodhound-python -u {{username}} -p {{password}} -d {{domain}}  -c DCOnly"
 
   # === AUTHENTICATION VARIATIONS ===
-  - title: bloodhound-python - enumeration with ntlm hashes
+  - title: bloodhound-python - 使用 NTLM 哈希枚举
     desc: |
-      Authenticates to the domain using NTLM hashes instead of a cleartext password. 
-      This is particularly useful in Pass-the-Hash scenarios or when you have extracted hashes from a local database. 
-      The hash should be provided in the format LM:NTLM or just the NTLM part preceded by a colon.
+      使用 NTLM 哈希而非明文密码对域进行认证。
+      这在 Pass-the-Hash 场景或你已从本地数据库提取哈希时特别有用。
+      哈希应以 LM:NTLM 格式提供，或仅 NTLM 部分并以冒号开头。
     command: "bloodhound-python -u {{username}} --hashes {{ntlm_hash}} -d {{domain}}"
 
-  - title: bloodhound-python - authenticate via kerberos ticket
+  - title: bloodhound-python - 通过 Kerberos 票据认证
     desc: |
-      Uses an existing Kerberos ticket (ccache file) for authentication. 
-      You must ensure the KRB5CCNAME environment variable points to your ticket file before running the command. 
-      This method is often preferred for lateral movement or when operating from a Linux machine joined to the realm via SSSD.
+      使用现有的 Kerberos 票据（ccache 文件）进行认证。
+      运行命令前，必须确保 KRB5CCNAME 环境变量指向你的票据文件。
+      在横向移动或从通过 SSSD 加入领域的 Linux 机器操作时，通常首选此方法。
     command: "bloodhound-python -k -no-pass -d {{domain}}  -dc {{dc_hostname}} "
 
-  - title: bloodhound-python - authenticate using AES keys
+  - title: bloodhound-python - 使用 AES 密钥认证
     desc: |
-      Provides an AES key (128 or 256 bits) for Kerberos authentication. 
-      This is an alternative to using passwords or hashes when you have captured or calculated the user's secret keys. 
-      It helps in bypassing certain NTLM-only monitoring controls.
+      提供 AES 密钥（128 或 256 位）用于 Kerberos 认证。
+      当你已捕获或计算出用户密钥时，它是使用密码或哈希的替代方案。
+      它有助于绕过某些仅监控 NTLM 的控制措施。
     command: "bloodhound-python -u {{username}} -aesKey {{hex_key}}  -d {{domain}} "
 
   # === ADVANCED COLLECTION & NETWORK ===
-  - title: bloodhound-python - collect logged on users
+  - title: bloodhound-python - 收集已登录用户
     desc: |
-      Specifically attempts to collect session information from remote computers. 
-      This action typically requires local administrator privileges on the target machines to succeed. 
-      It is highly effective for identifying where Domain Admins or other high-privileged users are currently logged in.
+      专门尝试从远程计算机收集会话信息。
+      该操作通常需要对目标机器具有本地管理员权限才能成功。
+      它对于识别域管理员或其他高权限用户当前登录的位置非常有效。
     command: "bloodhound-python -u {{username}} -p {{password}} -d {{domain}}  -c LoggedOn"
 
-  - title: bloodhound-python - use LDAPS and custom nameserver
+  - title: bloodhound-python - 使用 LDAPS 与自定义名称服务器
     desc: |
-      Forces the ingestor to use LDAP over SSL/TLS (LDAPS) on port 636 and specifies a custom DNS server. 
-      Using LDAPS is necessary in environments where LDAP signing is enforced or cleartext LDAP is blocked. 
-      Specifying a nameserver ensures the tool can resolve internal domain names when your local DNS is not configured for the target.
+      强制收集器使用 SSL/TLS 上的 LDAP（LDAPS，端口 636），并指定自定义 DNS 服务器。
+      在强制执行 LDAP 签名或阻止明文 LDAP 的环境中，必须使用 LDAPS。
+      指定名称服务器可确保当本地 DNS 未配置目标域时，工具仍能解析内部域名。
     command: "bloodhound-python -u {{username}} -p {{password}} -d {{domain}}  --use-ldaps -ns {{dns_ip}} "
 
-  - title: bloodhound-python - define target computer list
+  - title: bloodhound-python - 定义目标计算机列表
     desc: |
-      Specifies a text file containing a list of target computer FQDNs to enumerate. 
-      This allows you to scope the enumeration to a specific subset of machines rather than the entire domain. 
-      It is useful for staying within the boundaries of a specific engagement scope.
+      指定一个文本文件，其中包含要枚举的目标计算机 FQDN 列表。
+      这使你能将枚举范围限定在特定机器子集，而非整个域。
+      它对于保持在特定任务范围内很有用。
     command: "bloodhound-python -u {{username}} -p {{password}} -d {{domain}}  --computerfile {{file_path}} "
 
   # === PERFORMANCE & OUTPUT ===
-  - title: bloodhound-python - optimized collection with compression
+  - title: bloodhound-python - 带压缩的优化收集
     desc: |
-      Increases the number of worker threads to speed up the enumeration process in large environments. 
-      The --zip flag automatically packages all generated JSON files into a single compressed archive for easy download. 
-      Adding an output prefix helps distinguish between results from different domains or different phases of a test.
+      增加工作线程数以加快大型环境中的枚举过程。
+      --zip 标志自动将所有生成的 JSON 文件打包到单个压缩归档中，便于下载。
+      添加输出前缀有助于区分不同域或不同测试阶段的结果。
     command: "bloodhound-python -u {{username}} -p {{password}} -d {{domain}}  -w {{workers|20}} --zip -op {{prefix_name}} "

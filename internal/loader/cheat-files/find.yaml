@@ -3,82 +3,71 @@ tags: [linux, file-system, enumeration, forensics, utility, security, pentest]
 
 actions:
 # === BASIC SEARCH ===
- - title: find - search for a file by name
+ - title: find - 按名称搜索文件
    desc: |
-     Locate files within a directory tree that match a specific filename pattern. This is the most common use case for identifying where a specific configuration or source file is stored. 
-     Be aware that searching from the root directory might require elevated privileges to access all folders and avoid "Permission denied" errors. 
-     The search is recursive by default, traversing all subdirectories.
+     在目录树中定位匹配特定文件名模式的文件。
+     这是识别特定配置或源文件存储位置的最常见用例，从根目录搜索可能需要提权才能访问所有文件夹，搜索默认递归遍历所有子目录。
    command: "find {{search_path|/}} -name \"{{filename}}\""
 
- - title: find - case-insensitive search
+ - title: find - 不区分大小写搜索
    desc: |
-     Search for files regardless of their capitalization using the iname flag. This is particularly useful when you are unsure if a file uses CamelCase, lowercase, or uppercase naming conventions. 
-     It helps avoid missing targets due to strict character matching in Unix-like environments. 
-     This is often used when looking for specific software components that may vary in naming style.
+     使用 iname 标志搜索文件而不考虑其大小写。
+     当你不确定文件使用驼峰、小写还是大写命名约定时尤为有用，有助于避免因类 Unix 环境中严格的字符匹配而错过目标。
    command: "find {{search_path|/}} -iname \"{{filename}}\""
 
- - title: find - filter by type
+ - title: find - 按类型过滤
    desc: |
-     Limit the search results to either files or directories using the type flag. Use 'f' for regular files or 'd' for directories to narrow down results during system enumeration. 
-     This reduces clutter when you are only looking for executable binaries or specific configuration directories. 
-     Filtering by type is essential when performing operations that only apply to files, such as content searching.
+     使用 type 标志将搜索结果限制为文件或目录。
+     在系统枚举期间，使用 f 表示普通文件或 d 表示目录以缩小结果范围，可减少只寻找可执行二进制文件或特定配置目录时的杂乱。
    command: "find {{search_path|.}} -type {{type|f}} -name \"{{pattern|*.txt}}\""
 
 # === SIZE AND TIME ===
- - title: find - search by file size
+ - title: find - 按文件大小搜索
    desc: |
-     Find files that are larger or smaller than a specific size threshold. This is useful for identifying large log files that consume disk space or unusually small configuration files. 
-     Note that suffixes like 'k', 'M', and 'G' are used for kilobytes, megabytes, and gigabytes respectively. 
-     Prefixing the size with '+' finds files larger than the value, while '-' finds files smaller than the value.
+     查找大于或小于特定大小阈值的文件。
+     可用于识别占用磁盘空间的大型日志文件或异常小的配置文件，k、M 和 G 后缀分别表示千字节、兆字节和吉字节，前缀 + 查找大于该值的文件，- 查找小于该值的文件。
    command: "find {{search_path|.}} -size {{size|+100M}}"
 
- - title: find - search by modification time
+ - title: find - 按修改时间搜索
    desc: |
-     Locate files that were modified within a specific number of days. This is an essential technique for forensic analysis or finding recently updated system files after a breach. 
-     Using a minus sign (e.g., -7) searches for files modified less than the specified number of days ago. 
-     This can also be used to find files modified more than a certain number of days ago by using a plus sign.
+     定位在特定天数内被修改的文件。
+     这是取证分析或入侵后查找最近更新系统文件的基本技术，使用减号（如 -7）搜索少于指定天数前修改的文件。
    command: "find {{search_path|.}} -mtime {{days|-7}}"
 
 # === PERMISSIONS AND OWNERSHIP ===
- - title: find - search by permissions
+ - title: find - 按权限搜索
    desc: |
-     Find files that have specific numeric or symbolic permission sets. This is often used during security audits to identify world-writable files or files with the SUID bit set. 
-     Identifying improperly configured permissions is a key step in privilege escalation. 
-     The -perm flag can check for exact matches or for at least the specified bits being set.
+     查找具有特定数字或符号权限集的文件。
+     在安全审计中常用于识别全局可写文件或设置了 SUID 位的文件，识别配置不当的权限是权限提升的关键步骤。
    command: "find {{search_path|/}} -perm {{permissions|0777}}"
 
- - title: find - find SUID files
+ - title: find - 查找 SUID 文件
    desc: |
-     Locate files that have the Set User ID (SUID) bit enabled. These files run with the privileges of the file owner rather than the user executing them, making them prime targets for privilege escalation. 
-     Permission '4000' specifically targets the SUID bit. 
-     Always verify these files against known binaries to detect potential backdoors.
+     定位启用了设置用户 ID（SUID）位的文件。
+     这些文件以文件属主而非执行用户的权限运行，是权限提升的主要目标，权限 4000 专门针对 SUID 位，请始终对照已知二进制文件验证这些文件以检测潜在后门。
    command: "find {{search_path|/}} -perm -4000 -type f"
 
- - title: find - find files by owner
+ - title: find - 按属主查找文件
    desc: |
-     Search for files owned by a specific user or group. This is helpful for auditing sensitive data access or identifying files left behind by specific service accounts. 
-     It can be combined with other flags to find files owned by a user that also have dangerous permissions. 
-     This command is useful for identifying "orphaned" files that belong to users no longer on the system.
+     搜索由特定用户或组拥有的文件。
+     有助于审计敏感数据访问或识别特定服务账户遗留的文件，可与其他标志结合查找由某用户拥有且同时具有危险权限的文件。
    command: "find {{search_path|/}} -user {{username|root}}"
 
 # === EXECUTION AND CLEANUP ===
- - title: find - execute command on results
+ - title: find - 对结果执行命令
    desc: |
-     Perform a specific shell action on every file that matches the search criteria. The curly braces '{}' are a placeholder for the current file being processed. 
-     Use this with caution, especially when executing destructive commands like 'rm' or 'chmod'. 
-     The command must end with a semicolon (escaped as \;) or a plus sign for bulk execution.
+     对每个匹配搜索条件的文件执行特定的 shell 操作。
+     花括号 {} 是当前正在处理文件的占位符，执行 rm 或 chmod 等破坏性命令时请格外谨慎，命令必须以分号（转义为 \\;）或加号结尾以进行批量执行。
    command: "find {{search_path|.}} -name \"{{pattern|*.log}}\" -exec {{action|ls -l}} {} \\;"
 
- - title: find - find empty files or directories
+ - title: find - 查找空文件或目录
    desc: |
-     Search for files or directories that contain no data or sub-items. This is helpful for system cleanup or identifying failed processes that created empty placeholders. 
-     It is a quick way to audit directory structures for unused resources. 
-     This can be combined with the -delete flag to automatically remove empty results.
+     搜索不含数据或子项的文件或目录。
+     有助于系统清理或识别创建了空占位符的失败进程，是审计目录结构中未使用资源的快速方式，可与 -delete 标志结合自动删除空结果。
    command: "find {{search_path|.}} -type {{type|f}} -empty"
 
- - title: find - limit search depth
+ - title: find - 限制搜索深度
    desc: |
-     Restrict the search to a maximum depth of directories. This prevents the tool from descending too deep into complex file systems or network mounts. 
-     A depth of '1' searches only the current directory. 
-     This is highly recommended when searching large volumes to save time and system resources.
+     将搜索限制在最大目录深度。
+     防止工具深入复杂的文件系统或网络挂载，深度 1 只搜索当前目录，搜索大型卷时强烈建议使用以节省时间和系统资源。
    command: "find {{search_path|.}} -maxdepth {{depth|2}} -name \"{{pattern|*.conf}}\""

@@ -4,38 +4,36 @@ tags: [security, pentest, credentials, forensics, exploitation, reconnaissance, 
 actions:
 # === PASSWORD EXTRACTION ===
 
- - title: PassDetective - extract passwords from shell history
+ - title: PassDetective - 从 shell 历史记录中提取密码
    desc: |
-     Automatically scans and analyzes shell history files to identify and extract plaintext passwords.
-     This command is primarily used during post-exploitation or forensic analysis to find credentials accidentally leaked in command-line arguments.
-     It parses history change descriptions and identifies common patterns used for sensitive data.
-     Results are displayed for inspection, allowing researchers to quickly gather credentials for lateral movement.
+     自动扫描并分析 shell 历史文件，识别并提取明文密码。
+     该命令主要用于后渗透或取证分析阶段，查找在命令行参数中意外泄露的凭据。
+     它会解析历史变更描述并识别用于存放敏感数据的常见模式，结果会显示出来以供检查，便于研究人员快速收集用于横向移动的凭据。
    command: "PassDetective extract"
 
- - title: PassDetective - display help for extraction module
+ - title: PassDetective - 显示提取模块的帮助信息
    desc: |
-     Shows detailed usage information and specific flags available for the extraction command.
-     Use this when you need to verify if the tool supports specific history file paths or filtering options.
-     It provides insight into the underlying logic the tool uses to identify secrets within the shell history.
-     Regularly checking the help menu is recommended as new features or pattern updates might be added.
+     显示 extract 命令的详细用法信息以及可用的具体标志。
+     当你需要确认该工具是否支持特定的历史文件路径或过滤选项时使用。
+     它能让你了解该工具在 shell 历史中识别机密所采用的底层逻辑；建议定期查看帮助菜单，因为可能会添加新功能或模式更新。
    command: "PassDetective extract --help"
 
 # === SHELL CONFIGURATION ===
 
- - title: PassDetective - generate shell completion script
+ - title: PassDetective - 生成 shell 补全脚本
    desc: |
-     Generates an autocompletion script for the specified shell environment to enhance productivity.
-     The command supports various shells such as bash, zsh, fish, or powershell to provide tab-completion for commands.
-     This is useful for power users who want to quickly navigate through the tool's available sub-commands and flags.
-     After generation, the output must typically be sourced or moved to the appropriate shell completion directory.
+     为指定的 shell 环境生成自动补全脚本以提升效率。
+     该命令支持 bash、zsh、fish 或 powershell 等多种 shell，可为命令提供 Tab 补全。
+     对希望快速浏览工具可用子命令和标志的高级用户很有用。
+     生成后通常需要将输出 source 或移动到相应的 shell 补全目录。
    command: "PassDetective completion {{shell_type|bash}}"
 
 # === GENERAL HELP ===
 
- - title: PassDetective - show general help information
+ - title: PassDetective - 显示常规帮助信息
    desc: |
-     Displays the primary help menu including the list of available commands and global flags.
-     This is the standard starting point to understand the basic structure of the tool and its capabilities.
-     It lists global flags such as the help flag which can be applied to any sub-command for context-specific info.
-     No special privileges are usually required to run the help command.
+     显示主帮助菜单，包括可用命令列表和全局标志。
+     这是了解工具基本结构及其能力的标准起点。
+     它会列出全局标志（例如可应用于任何子命令以获取上下文特定信息的 help 标志）。
+     运行 help 命令通常不需要特殊权限。
    command: "PassDetective --help"

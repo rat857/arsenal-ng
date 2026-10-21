@@ -3,54 +3,54 @@ tags: [active-directory, pentest, privilege-escalation, impacket, security, kerb
 
 actions:
   # === BASIC ESCALATION ===
-  - title: impacket-raiseChild - basic child to forest escalation
+  - title: impacket-raiseChild - 基本的子域到林权限提升
     desc: |
-      This command initiates the privilege escalation process from a child domain to the forest root domain. 
-      It works by identifying the trust relationship and automating the creation of a Golden Ticket with the SID of the Enterprise Admins group. 
-      This is primarily used when you have compromised a Domain Admin account in a child domain and wish to gain full control over the entire forest.
+      此命令发起从子域到林根域的权限提升过程。
+      它通过识别信任关系并自动创建带有 Enterprise Admins 组 SID 的黄金票据来工作。
+      这主要用于当你已攻陷子域中的域管理员帐户并希望获得对整个林的完全控制时。
     command: "impacket-raiseChild {{domain}}/{{username}}:{{password}}@{{target_ip}}"
 
-  - title: impacket-raiseChild - escalation using NTLM hashes
+  - title: impacket-raiseChild - 使用 NTLM 哈希进行提升
     desc: |
-      Performs the privilege escalation attack using NTLM hashes instead of a plaintext password. 
-      This is an essential technique in Pass-the-Hash scenarios where the cleartext password of the child domain admin is not available. 
-      The hash must be provided in the format LMHASH:NTHASH (e.g., aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0).
+      使用 NTLM 哈希而非明文密码执行权限提升攻击。
+      在传递哈希场景中，当子域管理员的明文密码不可用时，这是一项必不可少的技术。
+      哈希必须以 LMHASH:NTHASH 格式提供（例如 aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0）。
     command: "impacket-raiseChild -hashes {{lmhash:nthash}} {{domain}}/{{username}}@{{target_ip}}"
 
   # === ADVANCED AUTHENTICATION & PERSISTENCE ===
-  - title: impacket-raiseChild - escalation using Kerberos authentication
+  - title: impacket-raiseChild - 使用 Kerberos 身份验证进行提升
     desc: |
-      Uses Kerberos tickets for authentication instead of NTLM. 
-      This requires a valid Kerberos cache (ccache) file and the environment variable KRB5CCNAME to be set correctly. 
-      Using Kerberos can help bypass environments where NTLM is disabled or heavily monitored for anomalies.
+      使用 Kerberos 票据而非 NTLM 进行身份验证。
+      这需要一个有效的 Kerberos 缓存（ccache）文件，并正确设置环境变量 KRB5CCNAME。
+      使用 Kerberos 有助于绕过禁用 NTLM 或对异常行为进行严密监控的环境。
     command: "impacket-raiseChild -k -no-pass {{domain}}/{{username}}@{{target_ip}}"
 
-  - title: impacket-raiseChild - export golden ticket to file
+  - title: impacket-raiseChild - 将黄金票据导出到文件
     desc: |
-      Generates the escalated Golden Ticket for the forest root and saves it to a specified file path. 
-      This allows for later use with other Impacket tools like secretsdump or psexec by setting the KRB5CCNAME variable to the saved file. 
-      It is a highly effective method for maintaining persistent access to the forest root without needing to run the exploit again.
+      生成针对林根的提升黄金票据，并将其保存到指定文件路径。
+      之后可将 KRB5CCNAME 变量指向该保存的文件，与 secretsdump 或 psexec 等其他 Impacket 工具一起使用。
+      这是在无需再次运行漏洞利用的情况下维持对林根持久访问的高效方法。
     command: "impacket-raiseChild -w {{output_path|forest_admin.ccache}} {{domain}}/{{username}}:{{password}}@{{target_ip}}"
 
   # === TARGETING & EXECUTION ===
-  - title: impacket-raiseChild - target specific user RID
+  - title: impacket-raiseChild - 指定目标用户 RID
     desc: |
-      Specifies a target User RID to impersonate in the parent domain during the escalation process. 
-      By default, the tool targets the Administrator account with RID 500, which is the most common path to full control. 
-      Changing the RID can be useful if the default Administrator account is renamed, disabled, or if you need to impersonate a different high-privileged user.
+      在提升过程中指定要在父域中模拟的目标用户 RID。
+      默认情况下，该工具针对 RID 为 500 的 Administrator 帐户，这是获得完全控制的最常见路径。
+      如果默认 Administrator 帐户被重命名、禁用，或你需要模拟其他高权限用户，更改 RID 会很有用。
     command: "impacket-raiseChild -targetRID {{rid|500}} {{domain}}/{{username}}:{{password}}@{{target_ip}}"
 
-  - title: impacket-raiseChild - automatic execution on forest root
+  - title: impacket-raiseChild - 在林根上自动执行
     desc: |
-      Automatically executes a semi-interactive shell on the target forest root domain controller after successful escalation. 
-      It functions similarly to psexec, using the newly generated high-privileged credentials to gain immediate command execution. 
-      Use the IP address or hostname of the Parent Domain Controller for the target-exec argument.
+      提升成功后，自动在目标林根域控制器上执行半交互式 shell。
+      其功能类似于 psexec，使用新生成的高权限凭据立即获得命令执行能力。
+      target-exec 参数使用父域控制器的 IP 地址或主机名。
     command: "impacket-raiseChild -target-exec {{parent_dc_ip}} {{domain}}/{{username}}:{{password}}@{{target_ip}}"
 
   # === TROUBLESHOOTING ===
-  - title: impacket-raiseChild - enable debug logging
+  - title: impacket-raiseChild - 启用调试日志
     desc: |
-      Runs the escalation tool with verbose debug output enabled. 
-      This is critical for troubleshooting connection issues, RPC errors, or understanding why the SID history injection might be failing. 
-      It provides detailed information about the underlying protocols and steps being performed by the script.
+      以启用详细调试输出的方式运行提升工具。
+      这对于排查连接问题、RPC 错误或理解 SID 历史注入为何失败至关重要。
+      它提供有关脚本执行的底层协议和步骤的详细信息。
     command: "impacket-raiseChild -debug {{domain}}/{{username}}:{{password}}@{{target_ip}}"

@@ -3,76 +3,76 @@ tags: [pentaest, security, exploitation, lateral-movement, smb, windows, impacke
 
 actions:
   # === AUTHENTICATION METHODS ===
-  - title: impacket-psexec - basic password authentication
+  - title: impacket-psexec - 基本密码身份验证
     desc: |
-      Provides a remote interactive shell on the target machine using a plaintext password.
-      This is the most common way to gain SYSTEM level access if you have administrative credentials.
-      Note that this method requires the user to have administrative privileges and access to the ADMIN$ share.
-      Execution involves creating a temporary service on the target which might be flagged by AV/EDR.
+      使用明文密码在目标机器上提供远程交互式 shell。
+      如果你拥有管理员凭据，这是获取 SYSTEM 级别访问权限的最常见方式。
+      请注意，此方法要求用户具有管理员权限并能访问 ADMIN$ 共享。
+      执行过程会在目标上创建临时服务，可能被 AV/EDR 标记。
     command: "impacket-psexec {{domain|.}}/{{username}}:{{password}}@{{target_ip}}"
 
-  - title: impacket-psexec - pass-the-hash (ntlm)
+  - title: impacket-psexec - 传递哈希（NTLM）
     desc: |
-      Performs authentication using NTLM hashes instead of a cleartext password.
-      This is extremely useful during lateral movement when you have extracted hashes from memory or SAM databases.
-      If you only have the NT hash, you can leave the LM hash part empty (e.g., :NTHASH).
-      This bypasses the need for the actual password while still granting full administrative shell access.
+      使用 NTLM 哈希而非明文密码进行身份验证。
+      当你从内存或 SAM 数据库中提取到哈希时，这在横向移动中非常有用。
+      如果只有 NT 哈希，可以将 LM 哈希部分留空（例如 :NTHASH）。
+      这绕过了对实际密码的需求，同时仍能获得完整的管理员 shell 访问权限。
     command: "impacket-psexec -hashes {{hash}} {{domain|.}}/{{username}}@{{target_ip}}"
 
-  - title: impacket-psexec - kerberos authentication (ticket)
+  - title: impacket-psexec - Kerberos 身份验证（票据）
     desc: |
-      Authenticates using a Kerberos ticket stored in the KRB5CCNAME environment variable.
-      The -k flag tells the tool to use Kerberos, and -no-pass ensures it doesn't prompt for a password.
-      This is essential in environments where NTLM is disabled or when performing silver/golden ticket attacks.
-      Ensure your target matches the SPN in the ticket and that DNS resolution is working correctly for the domain.
+      使用存储在 KRB5CCNAME 环境变量中的 Kerberos 票据进行身份验证。
+      -k 标志告诉工具使用 Kerberos，-no-pass 确保不提示输入密码。
+      这在禁用 NTLM 的环境或执行白银/黄金票据攻击时必不可少。
+      确保目标与票据中的 SPN 匹配，且域的 DNS 解析正常工作。
     command: "impacket-psexec -k -no-pass {{domain}}/{{username}}@{{target_name}}"
 
-  - title: impacket-psexec - kerberos authentication (aes key)
+  - title: impacket-psexec - Kerberos 身份验证（AES 密钥）
     desc: |
-      Uses a specific AES hex key (128 or 256 bits) for Kerberos authentication instead of a password.
-      This is often used when you have intercepted or extracted machine account keys or user AES keys.
-      It provides a more "stealthy" way to authenticate than NTLM in modern Windows environments.
-      The -dc-ip flag is often recommended here to ensure the tool knows where to send Kerberos requests.
+      使用特定的 AES 十六进制密钥（128 或 256 位）进行 Kerberos 身份验证，而非使用密码。
+      这通常在你拦截或提取到计算机帐户密钥或用户 AES 密钥时使用。
+      在现代 Windows 环境中，它提供比 NTLM 更“隐蔽”的身份验证方式。
+      通常建议同时使用 -dc-ip 标志，以确保工具知道将 Kerberos 请求发送到何处。
     command: "impacket-psexec -k -aesKey {{hex_key}} {{domain}}/{{username}}@{{target_name}}"
 
   # === EXECUTION & FILE OPERATIONS ===
-  - title: impacket-psexec - execute local binary on target
+  - title: impacket-psexec - 在目标上执行本地二进制文件
     desc: |
-      Uploads a local executable file to the target system and executes it.
-      The tool will copy the specified file to the remote system, run it as a service, and then remove it.
-      This is the standard way to run custom payloads, agents, or specialized diagnostic tools remotely.
-      Any arguments required by the uploaded binary can be passed at the end of the command string.
+      将本地可执行文件上传到目标系统并执行。
+      该工具会将指定文件复制到远程系统，将其作为服务运行，然后将其删除。
+      这是远程运行自定义载荷、代理或专用诊断工具的标准方式。
+      上传的二进制文件所需的任何参数都可以附加在命令字符串末尾。
     command: "impacket-psexec -c {{local_path}} {{domain|.}}/{{username}}@{{target_ip}} {{args}}"
 
-  - title: impacket-psexec - run specific command (non-interactive)
+  - title: impacket-psexec - 运行特定命令（非交互式）
     desc: |
-      Executes a single specific command on the remote target and returns the output.
-      Instead of dropping into a full interactive cmd.exe shell, it runs the provided string and exits.
-      This is ideal for automated scripts or quick reconnaissance tasks like checking the current user or network config.
-      The default command if none is specified is always cmd.exe.
+      在远程目标上执行单条特定命令并返回输出。
+      它不会进入完整的交互式 cmd.exe shell，而是运行提供的字符串后退出。
+      这非常适合自动化脚本或快速侦察任务，例如检查当前用户或网络配置。
+      如果未指定命令，默认始终为 cmd.exe。
     command: "impacket-psexec {{domain|.}}/{{username}}@{{target_ip}} {{command|whoami /all}}"
 
   # === ADVANCED CONFIGURATION & STEALTH ===
-  - title: impacket-psexec - custom service and binary names
+  - title: impacket-psexec - 自定义服务和二进制文件名
     desc: |
-      Customizes the name of the service and the binary uploaded to the target.
-      By default, PSEXEC uses "RemComSvc" and "RemComSvc.exe", which are easily detected by security software.
-      Changing these to something more benign (like "SvcHostUpdate") can help in bypassing basic signature-based detection.
-      This is a simple but effective technique for basic obfuscation during an engagement.
+      自定义上传到目标的服务名称和二进制文件名。
+      默认情况下，PSEXEC 使用“RemComSvc”和“RemComSvc.exe”，很容易被安全软件检测到。
+      将它们改成更无害的名称（如“SvcHostUpdate”）有助于绕过基本的基于特征的检测。
+      这是在评估过程中进行简单混淆的简单而有效的技术。
     command: "impacket-psexec -service-name {{service_name|SystemUpdate}} -remote-binary-name {{binary_name|update.exe}} {{domain|.}}/{{username}}@{{target_ip}}"
 
-  - title: impacket-psexec - specify domain controller and target ip
+  - title: impacket-psexec - 指定域控制器和目标 IP
     desc: |
-      Manually specifies the Domain Controller IP and the target machine's IP address.
-      Use -dc-ip when the domain name cannot be resolved via DNS or when targeting a specific DC.
-      Use -target-ip when the target's NetBIOS/DNS name is known but not resolvable in the current network context.
-      This ensures the SMB connection goes to the correct host while the authentication context remains valid.
+      手动指定域控制器 IP 和目标机器的 IP 地址。
+      当域名无法通过 DNS 解析或需要指定特定 DC 时使用 -dc-ip。
+      当目标的 NetBIOS/DNS 名称已知但在当前网络环境中无法解析时使用 -target-ip。
+      这确保 SMB 连接到达正确的主机，同时身份验证上下文保持有效。
     command: "impacket-psexec -dc-ip {{dc_ip}} -target-ip {{target_ip}} {{domain}}/{{username}}@{{target_name}}"
 
-  - title: impacket-psexec - change default smb port
+  - title: impacket-psexec - 更改默认 SMB 端口
     desc: |
-      Connects to the remote SMB server on a non-standard port.
-      While SMB traditionally runs on port 445, some environments might use port forwarding or non-standard configurations.
-      This option allows you to redirect the tool's traffic to the specific port where the SMB service is listening.
-      Useful for bypassing certain firewall restrictions or when targeting forwarded services in lab environments.
+      在非标准端口上连接远程 SMB 服务器。
+      虽然 SMB 传统上运行在 445 端口，但某些环境可能使用端口转发或非标准配置。
+      此选项允许你将工具流量重定向到 SMB 服务正在监听的特定端口。
+      对于绕过某些防火墙限制或在实验环境中针对转发服务很有用。
     command: "impacket-psexec -port {{port|445}} {{domain|.}}/{{username}}@{{target_ip}}"

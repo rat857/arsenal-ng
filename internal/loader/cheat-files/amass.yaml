@@ -3,84 +3,84 @@ tags: [reconnaissance, dns, enumeration, subdomains, osint, pentest, security]
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: amass - passive subdomain discovery
+  - title: amass - 被动子域发现
     desc: |
-      Performs passive reconnaissance by gathering data from public sources without directly interacting with the target's infrastructure. 
-      This is the safest method for initial discovery to avoid detection or when the scope forbids active scanning. 
-      It aggregates results from search engines, certificate transparency logs, and web archives.
+      通过从公开来源收集数据执行被动侦察，而不直接与目标基础设施交互。
+      这是初始发现阶段最安全的方法，可避免被检测或在范围禁止主动扫描时使用。
+      它聚合来自搜索引擎、证书透明度日志与网络档案的结果。
     command: "amass enum -passive -d {{domain}}"
 
-  - title: amass - active subdomain enumeration
+  - title: amass - 主动子域枚举
     desc: |
-      Conducts a thorough search by actively attempting to resolve potential subdomains using DNS queries and certificate pulling. 
-      This mode includes techniques like brute-forcing, DNS zone transfers, and service banner grabbing if configured. 
-      Be aware that this method is much more intrusive and can be detected by security monitoring systems or trigger alerts.
+      通过使用 DNS 查询与证书拉取主动尝试解析潜在子域，进行彻底的搜索。
+      该模式包含暴力破解、DNS 区域传送以及（如已配置）服务横幅抓取等技术。
+      请注意此方法的侵入性更强，可能被安全监控系统检测或触发告警。
     command: "amass enum -active -d {{domain}} -brute"
 
   # === ADVANCED CONFIGURATION ===
-  - title: amass - enumeration with config file
+  - title: amass - 使用配置文件枚举
     desc: |
-      Utilizes a specific configuration file to manage API keys, data source settings, and recursive depth. 
-      Loading API keys for services like Censys, BinaryEdge, or Shodan significantly increases the breadth of the results. 
-      Ensure the config file path is correct and permissions are restricted, as it usually contains sensitive credentials.
+      利用指定的配置文件管理 API 密钥、数据源设置与递归深度。
+      加载 Censys、BinaryEdge 或 Shodan 等服务的 API 密钥可显著扩大结果的广度。
+      请确保配置文件路径正确且权限受限，因为它通常包含敏感凭据。
     command: "amass enum -config {{config|~/.config/amass/config.yaml}} -d {{domain}}"
 
-  - title: amass - restricted data sources
+  - title: amass - 受限数据源
     desc: |
-      Runs an enumeration using only a specific subset of data sources or by excluding certain ones. 
-      This is useful when you want to troubleshoot a specific provider or speed up the process by disabling slow sources. 
-      Use the -include or -exclude flags to precisely control where Amass fetches its intelligence data.
+      仅使用特定数据源子集或排除某些数据源来运行枚举。
+      当你需要排查特定数据源问题或通过禁用慢速来源来加速流程时很有用。
+      使用 -include 或 -exclude 标志精确控制 Amass 从何处获取情报数据。
     command: "amass enum -include {{sources|crtsh,hackertarget}} -d {{domain}}"
 
   # === INFRASTRUCTURE & INTEL ===
-  - title: amass - discover assets via ASN
+  - title: amass - 通过 ASN 发现资产
     desc: |
-      Identifies the Autonomous System Number (ASN) and associated IP ranges belonging to a specific organization. 
-      This helps in understanding the global network footprint and identifying hosted infrastructure that might not be linked via DNS. 
-      It is an essential step for broad scope engagements covering multiple network segments and data centers.
+      识别属于特定组织的自治系统号（ASN）及关联的 IP 段。
+      这有助于了解全球网络足迹，并识别可能未通过 DNS 关联的托管基础设施。
+      它是覆盖多个网段与数据中心的大范围评估中的关键步骤。
     command: "amass enum -asn {{asn_number}}"
 
-  - title: amass - scan specific IP ranges
+  - title: amass - 扫描特定 IP 段
     desc: |
-      Performs discovery against specific CIDR blocks to find associated domain names and infrastructure assets. 
-      This bridges the gap between traditional network scanning and domain enumeration by mapping IPs back to hostnames. 
-      It is particularly effective for identifying "shadow IT" hosted on company-owned address space.
+      针对特定 CIDR 网段执行发现，以查找关联的域名与基础设施资产。
+      通过将 IP 映射回主机名，弥合传统网络扫描与域名枚举之间的差距。
+      它对于识别托管在公司自有地址空间上的“影子 IT”尤为有效。
     command: "amass enum -cidr {{cidr|192.168.1.0/24}}"
 
   # === ANALYSIS & TRACKING ===
-  - title: amass - track differences between runs
+  - title: amass - 追踪多次运行间的差异
     desc: |
-      Compares the results of the current enumeration with previous runs stored in the internal OAM database. 
-      It highlights new, moved, or removed assets, allowing security teams to monitor attack surface drift over time. 
-      This is a critical feature for continuous monitoring and identifying newly exposed services in a dynamic environment.
+      将当前枚举结果与存储在内部 OAM 数据库中的历史运行结果进行比较。
+      它突出显示新增、变更或移除的资产，使安全团队能够监控攻击面随时间的变化。
+      这是持续监控并在动态环境中识别新暴露服务的关键特性。
     command: "amass track -d {{domain}}"
 
-  - title: amass - subdomain statistics and analysis
+  - title: amass - 子域统计与分析
     desc: |
-      Analyzes the discovered subdomains and presents a summarized view of the data. 
-      It provides insights into the distribution of IP addresses, data sources, and top-level domains. 
-      This is helpful for a quick high-level overview before diving into deep technical exploitation or for reporting purposes.
+      分析已发现的子域并呈现数据的汇总视图。
+      它提供关于 IP 地址分布、数据源与顶级域的洞察。
+      这有助于在深入技术利用或撰写报告之前快速获得高层次概览。
     command: "amass subs -d {{domain}}"
 
   # === VISUALIZATION ===
-  - title: amass - generate graph visualization
+  - title: amass - 生成图形可视化
     desc: |
-      Processes the discovered data from the database to create interactive graph visualizations. 
-      Supported formats include D3.js (web-ready), Graphistry, or files compatible with Gephi. 
-      Visualization helps in understanding complex relationships between domains, subdomains, IPs, and ASNs that are hard to spot in text logs.
+      处理数据库中已发现的数据以创建交互式图形可视化。
+      支持的格式包括 D3.js（可直接用于 Web）、Graphistry 或与 Gephi 兼容的文件。
+      可视化有助于理解文本日志中难以发现的域、子域、IP 与 ASN 之间的复杂关系。
     command: "amass viz -d3 -d {{domain}}"
 
   # === DATABASE MANAGEMENT ===
-  - title: amass - list enumeration history
+  - title: amass - 列出枚举历史
     desc: |
-      Displays a list of all previous enumeration sessions stored in the local graph database. 
-      Each session is assigned a unique index or UUID which can be used for tracking or comparative analysis. 
-      This is useful for managing multiple projects or long-term monitoring of the same target.
+      显示本地图数据库中存储的所有历史枚举会话的列表。
+      每个会话都分配有唯一索引或 UUID，可用于追踪或对比分析。
+      这对于管理多个项目或对同一目标进行长期监控很有用。
     command: "amass enum -list"
 
-  - title: amass - export results to text
+  - title: amass - 将结果导出为文本
     desc: |
-      Exports the discovered subdomains and their resolved IP addresses into a clean text file. 
-      This is the standard way to pipe Amass output into other tools like HTTPX, Nmap, or Nuclei. 
-      The -o flag ensures that the results are saved persistently for documentation and further processing in a pipeline.
+      将已发现的子域及其解析出的 IP 地址导出为干净的文本文件。
+      这是将 Amass 输出导入 HTTPX、Nmap 或 Nuclei 等其他工具的标准方式。
+      -o 标志确保结果被持久保存，以便文档化及在管道中进一步处理。
     command: "amass enum -d {{domain}} -o {{output_file|results.txt}}"

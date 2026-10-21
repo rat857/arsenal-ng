@@ -3,106 +3,77 @@ tags: [compression, archive, backup, security, utility, files]
 
 actions:
   # === BASIC OPERATIONS ===
-  - title: zip - basic file compression
+  - title: zip - 基础文件压缩
     desc: |
-      Create a new zip archive containing one or more specific files. This is the most 
-      straightforward usage for bundling individual documents or scripts into a single file. 
-      The resulting archive will be created in the current directory unless a path is specified. 
-      Ensure you have write permissions in the destination directory before execution.
+      创建包含一个或多个特定文件的新 zip 归档。这是将单个文档或脚本打包成单个文件最直接的用法。
+      除非指定路径，否则生成的归档将创建在当前目录中。执行前确保你在目标目录中有写权限。
     command: "zip {{archive_name|archive.zip}} {{files|file1.txt file2.txt}}"
 
-  - title: zip - recursive directory compression
+  - title: zip - 递归目录压缩
     desc: |
-      Compress an entire directory tree including all subdirectories and their contents. 
-      The -r flag is mandatory when you want to preserve the folder structure and include 
-      nested files. This is the standard method for backing up project folders or large data sets. 
-      Be aware that hidden files (starting with a dot) are included by default in most environments.
+      压缩整个目录树，包括所有子目录及其内容。当你想保留文件夹结构并包含嵌套文件时，-r 参数是必需的。
+      这是备份项目文件夹或大型数据集的标准方法。注意在大多数环境中隐藏文件（以点开头）默认包含在内。
     command: "zip -r {{archive_name|backup.zip}} {{directory_path|folder/}}"
 
-  - title: zip - move files into archive
+  - title: zip - 将文件移入归档
     desc: |
-      Add files to a zip archive and automatically delete the original source files from the disk. 
-      The -m flag is useful when you want to archive data to save space and don't need the 
-      uncompressed versions anymore. This operation effectively performs a "cut and paste" 
-      into the zip file. Use this with caution as the original files are removed upon successful compression.
+      将文件添加到 zip 归档，并自动从磁盘删除原始源文件。当你想归档数据以节省空间且不再需要未压缩版本时，-m 参数很有用。
+      此操作实际上是对 zip 文件执行“剪切粘贴”。请谨慎使用，因为压缩成功后原始文件会被删除。
     command: "zip -m {{archive_name|archive.zip}} {{files|temp_data.log}}"
 
-  - title: zip - junk directory names
+  - title: zip - 丢弃目录名
     desc: |
-      Store files in a zip archive without recording their directory paths. Using the -j flag 
-      will result in all files being placed in the root of the zip archive, regardless of 
-      their original location. This is helpful when you want to flatten a file structure for 
-      easier extraction. Note that if two files have the same name in different source folders, 
-      the archive may encounter naming conflicts.
+      在 zip 归档中存储文件而不记录其目录路径。使用 -j 参数将使所有文件放置在 zip 归档的根目录中，无论其原始位置如何。
+      当你想扁平化文件结构以便于解压时很有帮助。注意如果不同源文件夹中有两个同名文件，归档可能遇到命名冲突。
     command: "zip -j {{archive_name|flat.zip}} {{source_path|path/to/files/*}}"
 
   # === UPDATING AND FILTERING ===
-  - title: zip - update existing archive
+  - title: zip - 更新现有归档
     desc: |
-      Update an existing zip archive by adding new files or replacing changed ones. The -u 
-      flag compares the modification time of the files on disk with those in the archive. 
-      It only processes files that are newer or did not exist in the zip file previously. 
-      This is much more efficient than recreating a large archive from scratch.
+      通过添加新文件或替换已更改的文件来更新现有 zip 归档。-u 参数比较磁盘上文件与归档中文件的修改时间。
+      它仅处理较新或先前不存在于 zip 文件中的文件。这比从头重建大型归档高效得多。
     command: "zip -u {{archive_name|existing.zip}} {{files|updated_file.txt}}"
 
-  - title: zip - delete files from archive
+  - title: zip - 从归档中删除文件
     desc: |
-      Remove specific entries from an already existing zip archive. The -d flag allows you 
-      to clean up archives by deleting unnecessary files without unzipping the whole package. 
-      You must specify the path as it exists inside the zip archive for the command to find it. 
-      This operation modifies the archive file directly and reduces its contents.
+      从已存在的 zip 归档中删除特定条目。-d 参数允许你清理归档，删除不必要的文件而无需解压整个包。
+      你必须指定文件在 zip 归档中的路径，命令才能找到它。此操作直接修改归档文件并减少其内容。
     command: "zip -d {{archive_name|archive.zip}} {{file_to_remove|old_file.txt}}"
 
-  - title: zip - exclude specific files or patterns
+  - title: zip - 排除特定文件或模式
     desc: |
-      Create an archive while excluding specific files, directories, or patterns. The -x flag 
-      is essential for omitting version control folders like .git or temporary build files. 
-      Patterns must often be enclosed in quotes to prevent the shell from expanding them. 
-      This ensures your final package is clean and contains only the necessary production files.
+      创建归档时排除特定文件、目录或模式。-x 参数对于省略 .git 等版本控制文件夹或临时构建文件至关重要。
+      模式通常必须用引号括起来，以防止 Shell 展开。这确保你的最终包干净，仅包含必要的生产文件。
     command: "zip -r {{archive_name|clean_backup.zip}} {{directory|.}} -x {{exclude_pattern|*.git*}}"
 
   # === ENCRYPTION AND LEVELS ===
-  - title: zip - password protected encryption
+  - title: zip - 密码保护加密
     desc: |
-      Encrypt the contents of the zip archive with a password. When using the -e flag, 
-      the program will prompt you to enter and verify a password interactively. This 
-      provides a basic layer of security for sensitive data being transferred or stored. 
-      Please note that standard ZIP encryption is considered weak; use tools like 7z or 
-      GPG for high-security requirements.
+      使用密码加密 zip 归档的内容。使用 -e 参数时程序会交互式提示你输入并验证密码。
+      这为传输或存储的敏感数据提供基本安全层。请注意标准 ZIP 加密被认为是弱加密；高安全需求请使用 7z 或 GPG 等工具。
     command: "zip -e {{archive_name|secure.zip}} {{files|sensitive_data.txt}}"
 
-  - title: zip - maximum compression level
+  - title: zip - 最大压缩级别
     desc: |
-      Create an archive using the highest possible compression ratio. The -9 flag tells 
-      the tool to spend more CPU time to achieve the smallest file size possible. This 
-      is ideal for long-term storage or when preparing files for web downloads. Conversely, 
-      -1 can be used for the fastest compression with less size reduction.
+      使用尽可能高的压缩比创建归档。-9 参数告诉工具花费更多 CPU 时间以实现尽可能小的文件大小。
+      这非常适合长期存储或准备供 Web 下载的文件。反之 -1 可用于最快压缩，但体积减少较少。
     command: "zip -9 -r {{archive_name|optimized.zip}} {{directory|data_folder/}}"
 
   # === MAINTENANCE AND INTEGRITY ===
-  - title: zip - test archive integrity
+  - title: zip - 测试归档完整性
     desc: |
-      Verify the integrity of a zip archive to ensure it is not corrupted. The -T flag 
-      checks the internal structure and checksums of every file inside the archive. 
-      It is a best practice to run this after creating a critical backup to confirm the 
-      data can be safely extracted later. If errors are found, the tool will report which 
-      entries are damaged.
+      验证 zip 归档的完整性，确保其未损坏。-T 参数检查归档中每个文件的内部结构和校验和。
+      创建关键备份后运行此命令是最佳实践，以确认数据之后可以安全解压。如果发现错误，工具会报告哪些条目损坏。
     command: "zip -T {{archive_name|archive.zip}}"
 
-  - title: zip - repair corrupted archive
+  - title: zip - 修复损坏的归档
     desc: |
-      Attempt to repair a damaged or corrupted zip archive. The -FF (fix-fix) flag tries 
-      harder to recover data by scanning the archive for recognizable file headers. 
-      It is often used when an archive was partially downloaded or suffered disk errors. 
-      The command usually requires the --out flag to specify where the recovered data 
-      should be saved.
+      尝试修复损坏或损毁的 zip 归档。-FF（fix-fix）参数通过扫描归档中可识别的文件头更努力地恢复数据。
+      当归档部分下载或遭受磁盘错误时常用。该命令通常需要 --out 参数指定恢复数据的保存位置。
     command: "zip -FF {{corrupt_archive|damaged.zip}} --out {{fixed_archive|recovered.zip}}"
 
-  - title: zip - preserve symbolic links
+  - title: zip - 保留符号链接
     desc: |
-      Store symbolic links as links rather than compressing the actual file they point to. 
-      The -y flag is crucial for maintaining system configurations or software projects 
-      on Unix-like systems. Without this flag, zip will follow the link and archive the 
-      target file, which can significantly increase archive size and break path logic. 
-      This is highly recommended when archiving development environments.
+      将符号链接存储为链接，而不是压缩其指向的实际文件。-y 参数对于在类 Unix 系统上维护系统配置或软件项目至关重要。
+      没有此参数，zip 会跟随链接并归档目标文件，这可能显著增加归档大小并破坏路径逻辑。归档开发环境时强烈推荐使用。
     command: "zip -ry {{archive_name|system_backup.zip}} {{directory|/etc/}}"

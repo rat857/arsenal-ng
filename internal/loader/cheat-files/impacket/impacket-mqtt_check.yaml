@@ -3,53 +3,53 @@ tags: [network, iot, security, pentest, enumeration, mqtt, authentication]
 
 actions:
   # === BASIC AUTHENTICATION CHECKS ===
-  - title: impacket-mqtt_check - anonymous login check
+  - title: impacket-mqtt_check - 匿名登录检查
     desc: |
-      Attempts to connect to the MQTT broker without providing any credentials.
-      This is a crucial first step in security assessments to identify misconfigured brokers that allow public access.
-      If successful, it indicates that anyone can potentially subscribe to or publish messages on the broker.
+      尝试在不提供任何凭据的情况下连接到 MQTT 代理。
+      这是安全评估中识别允许公共访问的配置不当代理的关键第一步。
+      如果成功，说明任何人都可能订阅或发布该代理上的消息。
     command: "impacket-mqtt_check {{target_ip}}"
 
-  - title: impacket-mqtt_check - basic credential check
+  - title: impacket-mqtt_check - 基础凭据检查
     desc: |
-      Tests a specific username and password against the MQTT service.
-      Use this command when you have obtained potential credentials through reconnaissance or default password lists.
-      It helps verify if the provided credentials grant access to the message queuing telemetry transport service.
+      针对 MQTT 服务测试特定的用户名和密码。
+      当你通过侦察或默认密码列表获得潜在凭据时使用此命令。
+      它有助于验证所提供的凭据是否能访问消息队列遥测传输服务。
     command: "impacket-mqtt_check {{username}}:{{password}}@{{target_ip}}"
 
-  - title: impacket-mqtt_check - domain authentication check
+  - title: impacket-mqtt_check - 域认证检查
     desc: |
-      Performs an authentication check using domain-qualified credentials.
-      This is useful in corporate environments where MQTT brokers might be integrated with Active Directory or other identity providers.
-      The format follows the standard Impacket target syntax: domain/username:password@target.
+      使用域限定凭据执行认证检查。
+      在 MQTT 代理可能与 Active Directory 或其他身份提供程序集成的企业环境中很有用。
+      格式遵循标准 Impacket 目标语法：domain/username:password@target。
     command: "impacket-mqtt_check {{domain}}/{{username}}:{{password}}@{{target_ip}}"
 
   # === ADVANCED CONNECTION OPTIONS ===
-  - title: impacket-mqtt_check - secure connection with custom port
+  - title: impacket-mqtt_check - 使用自定义端口的安全连接
     desc: |
-      Connects to the MQTT broker using SSL/TLS encryption on a non-standard port.
-      Many secure MQTT (MQTTS) implementations use port 8883 instead of the default 1883.
-      Use the -ssl flag to ensure the tool attempts an encrypted handshake with the target.
+      在非标准端口上使用 SSL/TLS 加密连接到 MQTT 代理。
+      许多安全 MQTT（MQTTS）实现使用 8883 端口而非默认的 1883。
+      使用 -ssl 标志可确保工具尝试与目标进行加密握手。
     command: "impacket-mqtt_check -ssl -port {{port|8883}} {{target_ip}}"
 
-  - title: impacket-mqtt_check - custom client identifier
+  - title: impacket-mqtt_check - 自定义客户端标识符
     desc: |
-      Specifies a fixed Client ID to be used during the MQTT connection phase.
-      By default, the tool generates a random ID, but some brokers may restrict connections to specific ID patterns or known devices.
-      Setting a custom ID can help in bypassing certain ACLs or simulating a specific IoT device.
+      指定 MQTT 连接阶段使用的固定 Client ID。
+      默认情况下工具生成随机 ID，但某些代理可能将连接限制为特定 ID 模式或已知设备。
+      设置自定义 ID 有助于绕过某些 ACL 或模拟特定的 IoT 设备。
     command: "impacket-mqtt_check -client-id {{client_id|device_01}} {{target_ip}}"
 
   # === TROUBLESHOOTING AND LOGGING ===
-  - title: impacket-mqtt_check - verbose debug with timestamps
+  - title: impacket-mqtt_check - 带时间戳的详细调试
     desc: |
-      Runs the check in debug mode while prefixing every log entry with a timestamp.
-      This is highly recommended for troubleshooting network timeouts or protocol-level authentication errors.
-      The detailed output reveals the underlying Impacket library calls and the raw responses from the broker.
+      以调试模式运行检查，并为每条日志记录添加时间戳前缀。
+      强烈建议用于排查网络超时或协议级认证错误。
+      详细输出会显示底层的 Impacket 库调用以及代理返回的原始响应。
     command: "impacket-mqtt_check -debug -ts {{target_ip}}"
 
-  - title: impacket-mqtt_check - custom port connection
+  - title: impacket-mqtt_check - 自定义端口连接
     desc: |
-      Tests the MQTT service on a specific port without using SSL.
-      This is useful when the MQTT service is hosted on an alternative port (e.g., 1884) to avoid detection or conflict.
-      Always verify the port status with a port scanner like nmap before running this command.
+      在不使用 SSL 的情况下测试特定端口上的 MQTT 服务。
+      当 MQTT 服务为规避检测或冲突而托管在备用端口（如 1884）时很有用。
+      运行此命令前请始终用 nmap 等端口扫描器确认端口状态。
     command: "impacket-mqtt_check -port {{port|1883}} {{target_ip}}"

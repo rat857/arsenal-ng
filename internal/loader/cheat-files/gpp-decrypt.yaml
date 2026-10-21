@@ -4,26 +4,26 @@ tags: [pentest, active-directory, enumeration, credentials, security, windows]
 # === FILE OPERATIONS ===
 
 actions:
- - title: gpp-decrypt - decrypt from xml file
+ - title: gpp-decrypt - 从 XML 文件解密
    desc: |
-     This command is used to parse and decrypt credentials stored within a Group Policy Preference (GPP) XML file. It is typically utilized during the enumeration phase of an Active Directory assessment when a file such as Groups.xml or Services.xml is discovered on the SYSVOL share. The tool automatically identifies the 'cpassword' attribute and decrypts it using the publicly known static AES key provided by Microsoft. Users should ensure they have adequate read permissions for the target XML file before running this command.
+     此命令用于解析并解密存储在组策略首选项（GPP）XML 文件中的凭据。通常在 Active Directory 评估的枚举阶段使用，当在 SYSVOL 共享中发现 Groups.xml 或 Services.xml 等文件时。工具会自动识别 cpassword 属性，并使用微软公开的已知静态 AES 密钥进行解密。运行此命令前，请确保你对目标 XML 文件具有足够的读取权限。
    command: "gpp-decrypt -f {{xml_file|Groups.xml}}"
 
 # === STRING DECRYPTION ===
 
- - title: gpp-decrypt - decrypt single cpassword string
+ - title: gpp-decrypt - 解密单个 cpassword 字符串
    desc: |
-     This command allows for the direct decryption of a specific 'cpassword' string provided as a command-line argument. It is highly effective when a tester has manually extracted an encrypted string from a configuration file and needs a quick plaintext recovery. This method avoids the need to maintain or transport the entire XML file. The input string must be the exact Base64 encoded value found within the GPP attribute to ensure successful decryption.
+     此命令允许直接解密作为命令行参数提供的特定 cpassword 字符串。当测试者已从配置文件手动提取出加密字符串并需要快速恢复明文时，此方法非常有效。它避免了维护或传输整个 XML 文件的需要。输入字符串必须是 GPP 属性中的确切 Base64 编码值，以确保成功解密。
    command: "gpp-decrypt -c {{cpassword_string}}"
 
 # === OUTPUT AND VERBOSITY ===
 
- - title: gpp-decrypt - verbose decryption without banner
+ - title: gpp-decrypt - 无横幅的详细解密
    desc: |
-     This command performs decryption from a file while enabling detailed output and hiding the tool's introductory banner. Verbose mode provides additional context regarding the processing steps, which is useful for troubleshooting malformed XML files. Suppressing the banner is ideal for cleaner output when redirecting results into a log file or another processing script. This combination is standard for automated environments or when integrating gpp-decrypt into larger reconnaissance toolchains.
+     此命令从文件执行解密，同时启用详细输出并隐藏工具的开头横幅。详细模式提供有关处理步骤的额外上下文，有助于排查格式错误的 XML 文件。抑制横幅在将结果重定向到日志文件或另一个处理脚本时可提供更干净的输出。这种组合是自动化环境中的标准做法，也适用于将 gpp-decrypt 集成到更大的侦察工具链中。
    command: "gpp-decrypt -f {{xml_file|Groups.xml}} --verbose --no-banner"
 
- - title: gpp-decrypt - silent decryption of a string
+ - title: gpp-decrypt - 字符串静默解密
    desc: |
-     This command decrypts a single provided string while suppressing all non-essential output, such as version information and banners. It is specifically designed for use in scripts where only the decrypted password is required for subsequent automation steps. By removing the banner, the output becomes significantly easier to parse using standard text processing tools like grep or awk. This approach minimizes the risk of output pollution in automated security auditing workflows.
+     此命令解密单个提供的字符串，同时抑制所有非必要输出，如版本信息和横幅。它专为脚本设计，在后续自动化步骤中只需要解密后的密码。移除横幅后，输出使用 grep 或 awk 等标准文本处理工具解析起来更加容易。这种方法将自动化安全审计工作流中输出污染的风险降到最低。
    command: "gpp-decrypt -c {{cpassword_string}} --no-banner"

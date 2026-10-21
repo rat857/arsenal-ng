@@ -3,81 +3,82 @@ tags: [network, vpn, proxy, ssh, tunneling, security, pentest, pivoting]
 
 actions:
   # === BASIC CONNECTION & ROUTING ===
-  - title: sshuttle - basic subnet routing
+  - title: sshuttle - 基础子网路由
     desc: |
-      Route traffic for a specific subnet through the SSH tunnel. This is the most common use case for accessing internal network resources without a full VPN setup. 
-      Local root privileges are required to modify iptables/nftables and create the transparent proxy.
+      通过 SSH 隧道路由特定子网的流量。
+      这是无需完整 VPN 设置即可访问内部网络资源的最常见用例。
+      需要本地 root 权限来修改 iptables/nftables 并创建透明代理。
     command: "sshuttle -r {{user}}@{{remote_host}} {{subnet|10.0.0.0/24}}"
 
-  - title: sshuttle - route all traffic
+  - title: sshuttle - 路由所有流量
     desc: |
-      Forward all local traffic through the remote SSH server, acting like a full VPN. 
-      This is useful for bypassing local firewalls or hiding your local IP address for all connections. 
-      Be careful as this will redirect your internet traffic as well, which might be slow depending on the SSH connection.
+      通过远程 SSH 服务器转发所有本地流量，充当完整的 VPN。
+      这对于绕过本地防火墙或隐藏所有连接的本地 IP 地址很有用。
+      请注意，这也会重定向你的互联网流量，具体速度取决于 SSH 连接，可能会很慢。
     command: "sshuttle -r {{user}}@{{remote_host}} 0.0.0.0/0"
 
-  - title: sshuttle - automatic network routing
+  - title: sshuttle - 自动网络路由
     desc: |
-      Automatically determine which subnets to route based on the remote server's routing table. 
-      This is extremely useful during penetration testing when you don't know the internal network layout of the target environment. 
-      It queries the remote side and sets up routes for all networks the remote host can reach.
+      根据远程服务器的路由表自动确定要路由的子网。
+      当你不知道目标环境内部网络布局时，这在渗透测试期间极为有用。
+      它会查询远程端并为远程主机可达的所有网络设置路由。
     command: "sshuttle -r {{user}}@{{remote_host}} -N"
 
   # === DNS & HOSTNAME MANAGEMENT ===
-  - title: sshuttle - DNS traffic forwarding
+  - title: sshuttle - DNS 流量转发
     desc: |
-      Capture local DNS requests and forward them to the remote DNS server. 
-      This allows you to resolve internal hostnames (like internal-db.corp.local) that are only known to the remote network. 
-      It is essential for web application testing where virtual hosts or internal domains are used.
+      捕获本地 DNS 请求并将其转发到远程 DNS 服务器。
+      这允许你解析只有远程网络知道的内部主机名（如 internal-db.corp.local）。
+      对于使用虚拟主机或内部域名的 Web 应用测试至关重要。
     command: "sshuttle --dns -r {{user}}@{{remote_host}} {{subnet|0.0.0.0/0}}"
 
-  - title: sshuttle - automatic host file update
+  - title: sshuttle - 自动更新 hosts 文件
     desc: |
-      Continuously scan for remote hostnames and update the local /etc/hosts file. 
-      This enables you to use friendly names instead of IP addresses for remote services automatically. 
-      It works by observing the traffic and identifying hostnames associated with the IPs being accessed.
+      持续扫描远程主机名并更新本地 /etc/hosts 文件。
+      这使你能够自动使用友好名称而不是 IP 地址访问远程服务。
+      它通过观察流量并识别与所访问 IP 关联的主机名来工作。
     command: "sshuttle -H -r {{user}}@{{remote_host}} {{subnet}}"
 
   # === ADVANCED CONFIGURATION ===
-  - title: sshuttle - exclude specific subnets
+  - title: sshuttle - 排除特定子网
     desc: |
-      Route traffic while explicitly excluding a specific subnet or IP address. 
-      This is useful for maintaining local connectivity to a local LAN or specific management IPs while tunneling everything else. 
-      It prevents routing loops and ensures local resources remain accessible directly.
+      路由流量，同时明确排除特定子网或 IP 地址。
+      这对于在隧道传输其他所有流量的同时保持与本地 LAN 或特定管理 IP 的本地连接很有用。
+      它防止路由循环并确保本地资源保持直接可访问。
     command: "sshuttle -r {{user}}@{{remote_host}} 0.0.0.0/0 -x {{excluded_subnet|192.168.1.0/24}}"
 
-  - title: sshuttle - specify remote python path
+  - title: sshuttle - 指定远程 Python 路径
     desc: |
-      Define the path to the Python interpreter on the remote server. 
-      This is necessary when Python is not in the default PATH or when the environment requires a specific version (e.g., /usr/bin/python3). 
-      The remote server must have Python installed for sshuttle to function as it uploads a small helper script.
+      定义远程服务器上 Python 解释器的路径。
+      当 Python 不在默认 PATH 中，或环境需要特定版本（如 /usr/bin/python3）时，这是必需的。
+      远程服务器必须安装 Python，sshuttle 才能工作，因为它会上传一个小型辅助脚本。
     command: "sshuttle -r {{user}}@{{remote_host}} --python {{python_path|/usr/bin/python3}} {{subnet}}"
 
-  - title: sshuttle - use custom SSH command
+  - title: sshuttle - 使用自定义 SSH 命令
     desc: |
-      Specify a custom command to use for the SSH connection. 
-      This is useful for passing specific SSH options like identity files, port numbers, or disabling host key checking. 
-      It provides flexibility when the remote SSH server uses non-standard configurations.
+      指定用于 SSH 连接的自定义命令。
+      这对于传递特定 SSH 选项很有用，例如身份文件、端口号或禁用主机密钥检查。
+      当远程 SSH 服务器使用非标准配置时，它提供灵活性。
     command: "sshuttle -e 'ssh -i {{identity_file}} -p {{port|22}}' -r {{user}}@{{remote_host}} {{subnet}}"
 
   # === OPERATIONAL MODES ===
-  - title: sshuttle - run in background (daemon)
+  - title: sshuttle - 在后台运行（守护进程）
     desc: |
-      Start the sshuttle process as a background daemon. 
-      This is ideal for persistent pivoting during an engagement where you don't want to keep a dedicated terminal open. 
-      Use the pidfile option to easily track and kill the process when the session is finished.
+      将 sshuttle 进程作为后台守护进程启动。
+      这对于行动期间的持久枢纽非常理想，你不想保持专用终端打开。
+      使用 pidfile 选项可在会话结束时轻松跟踪和终止进程。
     command: "sshuttle -D --pidfile {{pid_file|/tmp/sshuttle.pid}} -r {{user}}@{{remote_host}} {{subnet}}"
 
-  - title: sshuttle - verbose debugging
+  - title: sshuttle - 详细调试
     desc: |
-      Increase the verbosity of the output to debug connection issues. 
-      Using multiple 'v' flags provides more detailed information about the inner workings and packet forwarding. 
-      This is helpful when the tunnel connects but traffic is not flowing as expected.
+      提高输出详细级别以调试连接问题。
+      使用多个 v 标志可提供关于内部工作和数据包转发的更详细信息。
+      当隧道已连接但流量未按预期流动时很有帮助。
     command: "sshuttle -vv -r {{user}}@{{remote_host}} {{subnet}}"
 
-  - title: sshuttle - specify tproxy method
+  - title: sshuttle - 指定 tproxy 方法
     desc: |
-      Manually specify the firewall hijacking method such as nft, nat, or tproxy. 
-      By default, sshuttle tries to guess the best method, but sometimes manual overrides are needed for specific Linux distributions. 
-      This can resolve issues where the default method fails due to kernel or firewall configuration limits.
+      手动指定防火墙劫持方法，如 nft、nat 或 tproxy。
+      默认情况下 sshuttle 会尝试猜测最佳方法，但某些 Linux 发行版有时需要手动覆盖。
+      当默认方法因内核或防火墙配置限制而失败时，这可以解决问题。
     command: "sshuttle --method {{method|nft}} -r {{user}}@{{remote_host}} {{subnet}}"

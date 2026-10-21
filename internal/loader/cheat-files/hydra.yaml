@@ -3,110 +3,71 @@ tags: [network, security, pentest, brute-force, authentication, exploitation, cr
 
 actions:
 # === BASIC AUTHENTICATION ===
- - title: hydra - simple ssh attack
+ - title: hydra - 简单 SSH 攻击
    desc: |
-     Performs a password spray or brute-force attack against an SSH service using a single username.
-     This is the most common starting point when you have identified a valid username like 'root' or 'admin'.
-     The -t parameter controls parallelism; lowering it can help avoid triggering rate-limiting or account lockout policies.
-     Always ensure you have permission to test the target as this generates significant log traffic.
+     使用单个用户名对 SSH 服务执行密码喷洒或暴力破解攻击。当你已识别出 root 或 admin 等有效用户名时，这是最常见的起点。-t 参数控制并行度；降低它有助于避免触发限流或账户锁定策略。请始终确保你有权限测试目标，因为这会生成大量日志流量。
    command: "hydra -l {{username|root}} -P {{passlist|/usr/share/wordlists/metasploit/unix_passwords.txt}} -t {{threads|4}} {{target}} ssh"
 
- - title: hydra - multiple users and passwords
+ - title: hydra - 多用户与多密码
    desc: |
-     Attempts to find valid credentials by iterating through both a list of usernames and a list of passwords.
-     The -L flag points to a file containing usernames, while -P points to a file containing passwords.
-     Hydra will test every password for the first user, then move to the next user, unless the -u flag is used to change the loop order.
-     This method is highly effective but time-consuming depending on the size of the wordlists.
+     通过遍历用户名列表和密码列表来尝试查找有效凭据。-L 参数指向包含用户名的文件，-P 指向包含密码的文件。Hydra 会为第一个用户测试每个密码，然后转到下一个用户，除非使用 -u 参数更改循环顺序。这种方法非常有效，但耗时取决于字典的大小。
    command: "hydra -L {{user_file}} -P {{pass_file}} {{target}} {{service|ftp}}"
 
- - title: hydra - colon separated credentials
+ - title: hydra - 冒号分隔的凭据
    desc: |
-     Uses a single file containing "login:password" pairs for the attack instead of separate files.
-     This is particularly useful when using default credential lists or output from tools like dpl4hydra.
-     It simplifies the command and ensures that only specific known combinations are tested.
-     Note that the -C flag replaces both the -L/-l and -P/-p options.
+     使用包含 login:password 对的单个文件进行攻击，而非分开的文件。在使用默认凭据列表或 dpl4hydra 等工具的输出时特别有用。它简化了命令，并确保只测试特定的已知组合。请注意 -C 参数同时替代 -L/-l 和 -P/-p 选项。
    command: "hydra -C {{cred_file}} {{target}} {{service|http-get}}"
 
 # === HTTP FORM ATTACKS ===
- - title: hydra - http post form attack
+ - title: hydra - HTTP POST 表单攻击
    desc: |
-     Attacks a web-based login form that uses the POST method.
-     The command requires a specific string format: "URL:FORM_PARAMETERS:FAILURE_CONDITION".
-     Replace placeholders with actual form field names (e.g., user=^USER^&pass=^PASS^) and the text that appears on a failed login.
-     This is one of the most powerful features of Hydra but requires manual inspection of the target's HTML form.
+     攻击使用 POST 方法的基于 Web 的登录表单。该命令需要特定的字符串格式：URL:FORM_PARAMETERS:FAILURE_CONDITION。用实际表单字段名（如 user=^USER^&pass=^PASS^）和登录失败时显示的文本替换占位符。这是 Hydra 最强大的功能之一，但需要手动检查目标的 HTML 表单。
    command: "hydra -l {{username|admin}} -P {{passlist}} {{target}} http-post-form \"{{path|/login.php}}:{{user_field|user}}=^USER^&{{pass_field|pass}}=^PASS^:{{fail_string|Login failed}}\""
 
- - title: hydra - http get with basic auth
+ - title: hydra - 带基础认证的 HTTP GET
    desc: |
-     Targets directories or files protected by HTTP Basic Authentication.
-     The service module 'http-get' is used for targets that prompt for a username and password via the browser's native dialog.
-     If the target uses SSL/TLS (HTTPS), you should append 's' to the service name (e.g., https-get) and use the -S flag.
-     This is commonly used for attacking administrative interfaces on routers or web servers.
+     针对受 HTTP Basic Authentication 保护的目录或文件。http-get 服务模块用于通过浏览器原生对话框提示输入用户名和密码的目标。如果目标使用 SSL/TLS（HTTPS），你应在服务名后追加 s（如 https-get）并使用 -S 参数。这常用于攻击路由器或 Web 服务器上的管理界面。
    command: "hydra -L {{user_file}} -P {{pass_file}} -S {{target}} http-get {{path|/admin}}"
 
 # === SERVICE SPECIFIC ATTACKS ===
- - title: hydra - rdp brute force
+ - title: hydra - RDP 暴力破解
    desc: |
-     Attacks the Remote Desktop Protocol (RDP) service, typically running on port 3389.
-     Modern Windows systems often have account lockout policies, so it is recommended to use a low thread count (-t 1).
-     RDP cracking can be slower than other protocols due to the overhead of the RDP handshake.
-     Ensure the target has RDP enabled and is reachable over the network before starting.
+     攻击远程桌面协议（RDP）服务，通常运行在 3389 端口。现代 Windows 系统通常有账户锁定策略，因此建议使用低线程数（-t 1）。由于 RDP 握手的开销，RDP 破解可能比其他协议慢。开始前请确保目标已启用 RDP 并可通过网络访问。
    command: "hydra -L {{user_file}} -P {{pass_file}} -t {{threads|1}} {{target}} rdp"
 
- - title: hydra - smb/domain attack
+ - title: hydra - SMB/域攻击
    desc: |
-     Attempts to crack SMB credentials, which are vital for lateral movement in Windows environments.
-     You can specify a domain by adding it to the username or using specific module options.
-     Be extremely cautious as failing SMB logins frequently triggers domain-wide account lockouts.
-     This module is useful for testing weak local administrator passwords or service accounts.
+     尝试破解 SMB 凭据，这对 Windows 环境中的横向移动至关重要。你可以通过将域添加到用户名或使用特定模块选项来指定域。请格外小心，因为 SMB 登录失败经常触发全域账户锁定。此模块可用于测试弱本地管理员密码或服务账户。
    command: "hydra -l {{username|administrator}} -P {{pass_file}} {{target}} smb"
 
- - title: hydra - mysql/database attack
+ - title: hydra - MySQL/数据库攻击
    desc: |
-     Targets the MySQL database service to gain unauthorized administrative access.
-     Database servers are often targets for sensitive data exfiltration after initial network entry.
-     This command tries to authenticate as the 'root' user, which is the default administrative account for MySQL.
-     Make sure to check if the database allows remote connections before running this attack.
+     针对 MySQL 数据库服务以获取未授权的管理访问。数据库服务器通常是初始网络入侵后敏感数据外泄的目标。此命令尝试以 root 用户（MySQL 的默认管理账户）身份认证。运行此攻击前请检查数据库是否允许远程连接。
    command: "hydra -l {{db_user|root}} -P {{pass_file}} {{target}} mysql"
 
 # === ADVANCED FEATURES ===
- - title: hydra - password generation (brute-force)
+ - title: hydra - 密码生成（暴力破解）
    desc: |
-     Generates passwords on the fly based on a defined character set instead of using a wordlist.
-     The -x syntax is MIN:MAX:CHARSET, where 'a' is lowercase, 'A' is uppercase, and '1' is numbers.
-     Example "3:5:a1" will try all combinations of lowercase letters and numbers between 3 and 5 characters long.
-     This is only recommended for very short passwords as the complexity increases exponentially.
+     基于定义的字符集实时生成密码，而非使用字典。-x 语法为 MIN:MAX:CHARSET，其中 a 表示小写、A 表示大写、1 表示数字。例如 3:5:a1 将尝试 3 到 5 个字符长的所有小写字母和数字组合。仅推荐用于非常短的密码，因为复杂度呈指数增长。
    command: "hydra -l {{username}} -x {{min|3}}:{{max|5}}:{{charset|a1}} {{target}} {{service|telnet}}"
 
- - title: hydra - restore aborted session
+ - title: hydra - 恢复中止的会话
    desc: |
-     Resumes a previously interrupted or crashed Hydra session using the hydra.restore file.
-     Hydra automatically creates this file in the directory where the command was executed.
-     This is essential for long-running attacks that might be interrupted by network instability or system reboots.
-     Simply run hydra with the -R flag to pick up exactly where the process left off.
+     使用 hydra.restore 文件恢复之前中断或崩溃的 Hydra 会话。Hydra 会在执行命令的目录中自动创建此文件。这对于可能因网络不稳定或系统重启而中断的长时间攻击至关重要。只需使用 -R 参数运行 hydra 即可从进程中断的位置继续。
    command: "hydra -R"
 
- - title: hydra - limit search and output
+ - title: hydra - 限制搜索并输出
    desc: |
-     Configures Hydra to stop immediately after finding a valid credential pair and saves the result to a file.
-     The -f flag tells Hydra to exit for the current host once a pair is found, while -F exits globally across all hosts.
-     The -o flag ensures that you have a persistent record of the cracked credentials for your report.
-     Using -vV (double verbosity) is also helpful to see exactly what is being tested in real-time.
+     配置 Hydra 在找到有效凭据对后立即停止，并将结果保存到文件。-f 参数告诉 Hydra 找到一对凭据后退出当前主机，而 -F 在所有主机上全局退出。-o 参数确保你为报告保留已破解凭据的持久记录。使用 -vV（双重详细）也有助于实时查看正在测试的具体内容。
    command: "hydra -L {{user_file}} -P {{pass_file}} -f -o {{output_file|found.txt}} {{target}} {{service}}"
 
 # === HELPER TOOLS ===
- - title: pw-inspector - filter wordlists
+ - title: pw-inspector - 过滤字典
    desc: |
-     Filters a password wordlist based on specific criteria like minimum or maximum length.
-     This is used to optimize Hydra attacks by removing passwords that do not meet the target's known policy.
-     For example, if you know the target requires at least 8 characters, you can pre-filter your wordlist to save time.
-     It can also filter based on character sets like requiring numbers or uppercase letters.
+     根据最小或最大长度等特定条件过滤密码字典。这通过移除不符合目标已知策略的密码来优化 Hydra 攻击。例如，如果你知道目标要求至少 8 个字符，你可以预先过滤字典以节省时间。它还可以根据字符集过滤，如要求包含数字或大写字母。
    command: "pw-inspector -i {{input_list}} -o {{output_list}} -m {{min_len|8}} -M {{max_len|20}}"
 
- - title: dpl4hydra - generate default passwords
+ - title: dpl4hydra - 生成默认密码
    desc: |
-     A helper tool that generates a list of default usernames and passwords for various hardware brands.
-     It pulls from a local database of known default credentials (like admin/admin for Linksys).
-     The output is formatted as login:password, making it ready for use with Hydra's -C option.
-     This is highly effective during the initial stages of internal network penetration tests.
+     一个辅助工具，为各种硬件品牌生成默认用户名和密码列表。它从已知默认凭据的本地数据库（如 Linksys 的 admin/admin）中提取。输出格式为 login:password，可直接用于 Hydra 的 -C 选项。在内部网络渗透测试的初始阶段非常有效。
    command: "dpl4hydra {{brand|linksys}}"

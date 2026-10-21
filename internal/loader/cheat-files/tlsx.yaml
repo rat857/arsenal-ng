@@ -3,96 +3,83 @@ tags: [network, security, tls, ssl, recon, enumeration, pentest]
 
 actions:
   # === BASIC SCANNING & INPUT ===
-  - title: tlsx - basic host scan
+  - title: tlsx - 基础主机扫描
     desc: |
-      Perform a basic TLS handshake against a single target to verify connectivity. 
-      This command is useful for a quick check to see if the target service supports TLS on the default port.
-      It returns the host and port if the connection is successful, serving as a baseline connectivity test.
+      对单个目标执行基础 TLS 握手以验证连通性。此命令用于快速检查目标服务在默认端口上是否支持 TLS。
+      如果连接成功，它会返回主机和端口，作为基线连通性测试。
     command: "tlsx -u {{target}}"
 
-  - title: tlsx - scan from list
+  - title: tlsx - 从列表扫描
     desc: |
-      Process multiple targets from a text file for bulk TLS analysis.
-      This is the standard approach when performing reconnaissance on large IP ranges or domain lists.
-      Ensure the input file contains one target per line to avoid parsing errors during execution.
+      从文本文件处理多个目标，进行批量 TLS 分析。这是对大型 IP 范围或域名列表执行侦察时的标准方法。
+      确保输入文件每行一个目标，以避免执行期间出现解析错误。
     command: "tlsx -list {{input_file|hosts.txt}}"
 
-  - title: tlsx - custom port scanning
+  - title: tlsx - 自定义端口扫描
     desc: |
-      Scan specific ports for TLS services instead of the default 443.
-      This is useful when looking for management interfaces or alternative web services like 8443 or 9443.
-      You can provide multiple ports separated by commas to increase the scope of your enumeration.
+      扫描特定端口上的 TLS 服务，而不是默认的 443。当查找管理接口或 8443、9443 等替代 Web 服务时很有用。
+      你可以提供多个逗号分隔的端口以扩大枚举范围。
     command: "tlsx -u {{target}} -p {{ports|443,8443,9443}}"
 
   # === ENUMERATION & PROBES ===
-  - title: tlsx - extract SAN and CN names
+  - title: tlsx - 提取 SAN 和 CN 名称
     desc: |
-      Extract Subject Alternative Names (SAN) and Common Names (CN) from the certificate.
-      This helps in discovering hidden subdomains or related infrastructure associated with a specific IP.
-      Use the -resp-only flag if you want to pipe just the discovered hostnames into other tools like dnsx or httpx.
+      从证书中提取主题备用名称（SAN）和通用名称（CN）。这有助于发现与特定 IP 关联的隐藏子域名或相关基础设施。
+      如果你想将发现的仅主机名管道传递给 dnsx 或 httpx 等其他工具，请使用 -resp-only 参数。
     command: "tlsx -u {{target}} -san -cn -resp-only"
 
-  - title: tlsx - tls version and cipher display
+  - title: tlsx - 显示 TLS 版本和密码套件
     desc: |
-      Identify the specific TLS version and cipher suite used by the target server.
-      This information is critical for identifying weak encryption protocols like SSLv3 or TLS 1.0.
-      It allows security auditors to verify if the server complies with modern encryption standards.
+      识别目标服务器使用的特定 TLS 版本和密码套件。此信息对于识别 SSLv3 或 TLS 1.0 等弱加密协议至关重要。
+      它使安全审计人员能够验证服务器是否符合现代加密标准。
     command: "tlsx -u {{target}} -tls-version -cipher"
 
-  - title: tlsx - jarm fingerprinting
+  - title: tlsx - JARM 指纹识别
     desc: |
-      Generate a JARM fingerprint for the target server's TLS stack.
-      JARM is a tool that allows for active fingerprinting of TLS servers to identify malicious infrastructure or similar setups.
-      Comparing JARM hashes can help link different IP addresses to the same software or organization.
+      为目标服务器的 TLS 栈生成 JARM 指纹。JARM 是一种允许对 TLS 服务器进行主动指纹识别的工具，用于识别恶意基础设施或相似配置。
+      比较 JARM 哈希有助于将不同 IP 地址关联到同一软件或组织。
     command: "tlsx -u {{target}} -jarm"
 
-  - title: tlsx - ja3 fingerprinting
+  - title: tlsx - JA3 指纹识别
     desc: |
-      Generate a JA3 fingerprint for the connection using the ztls engine.
-      This provides a unique identifier based on the client-server handshake parameters.
-      Note that this requires the scan mode to be compatible with ztls for accurate fingerprinting.
+      使用 ztls 引擎为连接生成 JA3 指纹。它基于客户端-服务器握手参数提供唯一标识符。
+      注意这需要扫描模式与 ztls 兼容才能准确识别指纹。
     command: "tlsx -u {{target}} -ja3"
 
-  - title: tlsx - full cipher enumeration
+  - title: tlsx - 完整密码套件枚举
     desc: |
-      Enumerate all supported ciphers on the target server to find weak or insecure options.
-      This probe tests various suites to see which ones the server accepts during the handshake.
-      It is an essential step for compliance testing and identifying vulnerabilities like SWEET32 or weak export ciphers.
+      枚举目标服务器支持的所有密码套件，以查找弱或不安全的选项。此探针测试各种套件，查看服务器在握手期间接受哪些。
+      这是合规性测试以及识别 SWEET32 或弱导出密码套件等漏洞的关键步骤。
     command: "tlsx -u {{target}} -cipher-enum -ct {{cipher_type|all}}"
 
   # === SECURITY & MISCONFIGURATION ===
-  - title: tlsx - check for misconfigurations
+  - title: tlsx - 检查配置错误
     desc: |
-      Detect various certificate issues such as expiration, self-signed status, or revocation.
-      This command is highly effective for finding low-hanging fruit in infrastructure security.
-      Identifying mismatched or untrusted certificates can indicate potential man-in-the-middle risks or neglected assets.
+      检测各种证书问题，如过期、自签名状态或吊销。此命令对于发现基础设施安全中的低垂果实非常有效。
+      识别不匹配或不受信任的证书可以表明潜在的中间人风险或被忽视的资产。
     command: "tlsx -l {{target_list}} -expired -self-signed -mismatched -revoked -untrusted"
 
-  - title: tlsx - verify certificate chain
+  - title: tlsx - 验证证书链
     desc: |
-      Enable full verification of the server's certificate chain.
-      This determines if the certificate is signed by a trusted CA and if the chain is complete.
-      It is particularly useful when troubleshooting "untrusted certificate" warnings in browsers or automated scripts.
+      启用对服务器证书链的完整验证。这可以确定证书是否由受信任的 CA 签署以及证书链是否完整。
+      在排查浏览器或自动化脚本中的“不受信任证书”警告时特别有用。
     command: "tlsx -u {{target}} -vc -tc"
 
   # === ADVANCED CONFIGURATIONS ===
-  - title: tlsx - custom sni scanning
+  - title: tlsx - 自定义 SNI 扫描
     desc: |
-      Specify a custom Server Name Indication (SNI) for the TLS handshake.
-      This is useful when a single IP hosts multiple sites (Virtual Hosting) and you need to reach a specific one.
-      If the SNI doesn't match the host, many servers will return a different certificate or refuse the connection.
+      为 TLS 握手指定自定义服务器名称指示（SNI）。当一个 IP 托管多个站点（虚拟主机）且你需要访问特定站点时很有用。
+      如果 SNI 与主机不匹配，许多服务器会返回不同证书或拒绝连接。
     command: "tlsx -u {{target_ip}} -sni {{domain_name}}"
 
-  - title: tlsx - json output for automation
+  - title: tlsx - JSON 输出用于自动化
     desc: |
-      Export all gathered TLS data into a structured JSON format.
-      This is the preferred method for integrating tlsx results with other automation scripts or databases.
-      The output includes detailed fields for fingerprints, certificate dates, and all extracted subject names.
+      将收集的所有 TLS 数据导出为结构化 JSON 格式。这是将 tlsx 结果与其他自动化脚本或数据库集成的首选方法。
+      输出包含指纹、证书日期和所有提取的主体名称等详细字段。
     command: "tlsx -u {{target}} -json -o {{output_file|results.json}}"
 
-  - title: tlsx - optimized high-concurrency scan
+  - title: tlsx - 优化高并发扫描
     desc: |
-      Run the tool with increased concurrency and specific timeouts for large-scale scanning.
-      Adjusting the -c flag allows for faster processing of large CIDR blocks or long lists of domains.
-      Be careful with high concurrency as it may trigger rate limits or impact the performance of the target network.
+      以更高的并发性和特定超时运行工具，用于大规模扫描。调整 -c 参数可以更快地处理大型 CIDR 块或长域名列表。
+      注意高并发可能触发限速或影响目标网络性能。
     command: "tlsx -l {{list}} -c {{concurrency|500}} -timeout {{timeout|10}} -retry {{retries|2}}"

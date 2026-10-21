@@ -3,68 +3,53 @@ tags: [security, pentest, reconnaissance, subdomain-takeover, dns, bug-bounty]
 
 actions:
   # === BASIC SCANNING ===
-  - title: subjack - basic wordlist scan
+  - title: subjack - 基础字典扫描
     desc: |
-      Perform a basic scan against a list of subdomains provided in a text file. This is the standard 
-      method for identifying potential takeover vulnerabilities by checking CNAME records against known 
-      vulnerable service fingerprints. Always ensure the wordlist is clean and contains one domain per line.
+      对文本文件中提供的子域名列表执行基础扫描。这是通过将 CNAME 记录与已知易受攻击的服务指纹进行比对来识别潜在接管漏洞的标准方法。
+      请始终确保字典干净且每行一个域名。
     command: "subjack -w {{wordlist}}"
 
-  - title: subjack - scan single domain
+  - title: subjack - 扫描单个域名
     desc: |
-      Check a specific target domain for takeover possibilities without needing a full wordlist. This 
-      is useful for ad-hoc testing when a specific subdomain has been identified as suspicious during 
-      manual reconnaissance. It provides a quick way to verify if the domain's CNAME points to an 
-      unclaimed service.
+      无需完整字典即可检查特定目标域名的接管可能性。当手动侦察发现某个子域名可疑时，适用于临时测试。
+      它提供了一种快速验证域名 CNAME 是否指向未认领服务的方式。
     command: "subjack -d {{domain}}"
 
   # === ADVANCED CONFIGURATION ===
-  - title: subjack - custom fingerprint file
+  - title: subjack - 自定义指纹文件
     desc: |
-      Specify a custom configuration file containing service signatures used for identification. Using 
-      a custom fingerprints.json file allows you to detect new or private cloud services not included 
-      in the default tool installation. This is critical for staying up to date with the latest 
-      subdomain takeover techniques.
+      指定包含用于识别的服务签名的自定义配置文件。使用自定义 fingerprints.json 文件可以检测默认工具安装中未包含的新或私有云服务。
+      这对于紧跟最新的子域名接管技术至关重要。
     command: "subjack -w {{wordlist}} -c {{config_file|/usr/share/subjack/fingerprints.json}}"
 
-  - title: subjack - secure scan with output
+  - title: subjack - 安全扫描并输出
     desc: |
-      Force the tool to use HTTPS for all requests to increase accuracy and ensure secure communication 
-      with target servers. The results are saved to a file, which will be formatted as JSON if the 
-      filename ends with a .json extension. This is recommended for professional reporting and 
-      automated processing of results.
+      强制工具对所有请求使用 HTTPS，以提高准确性并确保与目标服务器的安全通信。结果保存到文件中，如果文件名以 .json 结尾，将以 JSON 格式保存。
+      建议用于专业报告和结果的自动化处理。
     command: "subjack -w {{wordlist}} -ssl -o {{output_file|results.txt}}"
 
   # === PERFORMANCE & AGGRESSIVE SCANNING ===
-  - title: subjack - fast concurrent scanning
+  - title: subjack - 快速并发扫描
     desc: |
-      Increase the number of concurrent threads and adjust the timeout settings for faster scanning 
-      of large datasets. This is essential for mass-reconnaissance tasks during bug bounty hunting 
-      where thousands of subdomains need to be processed quickly. Be aware that very high thread 
-      counts may lead to network instability or rate limiting by the target.
+      增加并发线程数并调整超时设置，以便更快地扫描大型数据集。这在漏洞赏金狩猎中的大规模侦察任务里必不可少，因为需要快速处理数千个子域名。
+      请注意过高的线程数可能导致网络不稳定或目标限速。
     command: "subjack -w {{wordlist}} -t {{threads|50}} -timeout {{timeout|10}}"
 
-  - title: subjack - aggressive mode scanning
+  - title: subjack - 激进模式扫描
     desc: |
-      Send requests to every URL in the provided wordlist regardless of whether a CNAME record is 
-      initially identified. This "hidden gem" mode can find vulnerabilities that the default logic 
-      might skip, providing a more thorough assessment of the infrastructure. Note that this will 
-      generate significantly more network traffic than a standard scan.
+      无论是否初步识别到 CNAME 记录，都向字典中的每个 URL 发送请求。这种“隐藏宝藏”模式可以发现默认逻辑可能跳过的漏洞，提供对基础设施更彻底的评估。
+      注意这会产生比标准扫描多得多的网络流量。
     command: "subjack -w {{wordlist}} -a"
 
   # === ENUMERATION & VERBOSITY ===
-  - title: subjack - check for dead records
+  - title: subjack - 检查失效记录
     desc: |
-      Flag the presence of dead records that still have a valid CNAME entry in the DNS configuration. 
-      This mode is specifically designed to find subdomains that are pointing to services that no 
-      longer exist, making them prime candidates for hijacking. It helps in identifying cleanup 
-      tasks for IT administrators to improve DNS hygiene.
+      标记 DNS 配置中仍存在有效 CNAME 条目的失效记录。此模式专门用于查找指向已不存在服务的子域名，使其成为劫持的首要候选。
+      它有助于 IT 管理员识别清理任务，改善 DNS 卫生。
     command: "subjack -w {{wordlist}} -m -v"
 
-  - title: subjack - verbose scanning
+  - title: subjack - 详细扫描
     desc: |
-      Enable verbose output to display more detailed information for every request made during the 
-      scanning process. This is extremely helpful for debugging why a certain domain might be failing 
-      or to understand the underlying HTTP responses from the targets. Use this when you need to 
-      verify the logic the tool is using for its findings.
+      启用详细输出，显示扫描过程中每个请求的更多详细信息。这对于调试某个域名为何失败或理解目标的底层 HTTP 响应非常有帮助。
+      当你需要验证工具用于得出结论的逻辑时使用。
     command: "subjack -w {{wordlist}} -v"

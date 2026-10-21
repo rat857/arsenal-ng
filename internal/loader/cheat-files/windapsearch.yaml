@@ -3,117 +3,101 @@ tags: [active-directory, ldap, enumeration, pentest, security, network, discover
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: windapsearch - check domain functionality
+  - title: windapsearch - 检查域功能级别
     desc: |
-      Enumerates the Domain Functionality level of the target Active Directory environment.
-      This is often possible through an anonymous bind and provides the first glimpse into the domain's age and features.
-      It helps in determining which modern AD attacks might be applicable based on the functional level.
+      枚举目标 Active Directory 环境的域功能级别。这通常可以通过匿名绑定完成，并首次窥探域的历史和特性。
+      它有助于根据功能级别确定哪些现代 AD 攻击可能适用。
     command: "windapsearch --dc-ip {{dc_ip}} --functionality"
 
-  - title: windapsearch - list all domain users
+  - title: windapsearch - 列出所有域用户
     desc: |
-      Performs a full enumeration of all user objects within the Active Directory domain.
-      This is a fundamental reconnaissance step used to build a list of valid usernames for password spraying.
-      Requires a valid domain account or an environment where anonymous LDAP binds are permitted.
+      对 Active Directory 域中的所有用户对象执行完整枚举。这是构建有效用户名列表用于密码喷洒的基础侦察步骤。
+      需要有效的域账户或允许匿名 LDAP 绑定的环境。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} -U"
 
-  - title: windapsearch - list all domain groups
+  - title: windapsearch - 列出所有域组
     desc: |
-      Retrieves a complete list of all security and distribution groups within the domain.
-      Useful for mapping the organizational structure and identifying groups that may hold sensitive permissions.
-      Analysts use this to find non-standard groups that might be overlooked during basic enumeration.
+      获取域中所有安全组和分发组的完整列表。有助于测绘组织结构并识别可能拥有敏感权限的组。
+      分析师用它查找基础枚举期间可能被忽视的非标准组。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} -G"
 
-  - title: windapsearch - list all computer objects
+  - title: windapsearch - 列出所有计算机对象
     desc: |
-      Queries LDAP to find all computer objects registered in the Active Directory domain.
-      This command is essential for identifying workstations and servers that can be targeted for lateral movement.
-      It helps in visualizing the network topology and identifying high-value servers like SQL or Exchange.
+      查询 LDAP 以查找 Active Directory 域中注册的所有计算机对象。此命令对于识别可作为横向移动目标的工作站和服务器至关重要。
+      它有助于可视化网络拓扑并识别 SQL 或 Exchange 等高价值服务器。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} -C"
 
   # === PRIVILEGE & ACCESS ENUMERATION ===
-  - title: windapsearch - recursive domain admin members
+  - title: windapsearch - 递归查找域管理员成员
     desc: |
-      Specifically targets the "Domain Admins" group and lists all its members recursively.
-      Recursion is critical here because it finds users who are members of other groups that are nested inside Domain Admins.
-      This identifies the highest-privileged users in the domain, making them primary targets for credential theft.
+      专门针对 Domain Admins 组并递归列出其所有成员。递归在此至关重要，因为它能找到嵌套在 Domain Admins 内的其他组的成员用户。
+      这识别了域中权限最高的用户，使其成为凭据窃取的首要目标。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} --da"
 
-  - title: windapsearch - enumerate privileged users
+  - title: windapsearch - 枚举特权用户
     desc: |
-      Finds all users who have high-level privileges within the Active Directory forest.
-      This command performs recursive lookups for nested members across various administrative groups.
-      It is a comprehensive way to identify the "Keys to the Kingdom" beyond just the standard Domain Admins group.
+      查找 Active Directory 林中拥有高级权限的所有用户。此命令对各管理组执行嵌套成员的递归查询。
+      它是识别标准 Domain Admins 组之外“王国钥匙”的全面方式。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} -PU"
 
-  - title: windapsearch - search for admin objects (Protected ACLs)
+  - title: windapsearch - 搜索管理员对象（受保护 ACL）
     desc: |
-      Enumerates all objects that have protected Access Control Lists (ACLs).
-      In AD, objects with `adminCount=1` are protected by the AdminSDHolder process, typically signifying administrative accounts.
-      This helps identify accounts that might not be in standard admin groups but still possess elevated rights.
+      枚举所有具有受保护访问控制列表（ACL）的对象。在 AD 中 adminCount=1 的对象受 AdminSDHolder 进程保护，通常表示管理账户。
+      这有助于识别可能不在标准管理组但仍拥有提升权限的账户。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} --admin-objects"
 
-  - title: windapsearch - group membership lookup
+  - title: windapsearch - 组成员查询
     desc: |
-      Lists all members of a specific, user-defined Active Directory group.
-      This is useful when you find an interesting group name (e.g., "IT_Admins" or "Finance_Access") and want to see who belongs to it.
-      Replace the placeholder with the exact group name you wish to investigate.
+      列出特定用户定义的 Active Directory 组的所有成员。当你发现一个有趣的组名（如 IT_Admins 或 Finance_Access）并想查看其成员时很有用。
+      将占位符替换为你要调查的确切组名。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} -m {{group_name}}"
 
   # === VULNERABILITY & MISCONFIGURATION DISCOVERY ===
-  - title: windapsearch - identify kerberoastable users
+  - title: windapsearch - 识别可 Kerberoast 的用户
     desc: |
-      Enumerates all user objects that have a Service Principal Name (SPN) set.
-      These accounts are vulnerable to Kerberoasting, allowing an attacker to request a service ticket and attempt to crack the password offline.
-      This is one of the most common and effective ways to escalate privileges in an AD environment.
+      枚举所有设置了服务主体名称（SPN）的用户对象。这些账户容易受到 Kerberoasting 攻击，攻击者可以请求服务票据并尝试离线破解密码。
+      这是 AD 环境中提权最常见且有效的方法之一。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} --user-spns"
 
-  - title: windapsearch - users with unconstrained delegation
+  - title: windapsearch - 具有无约束委派的用户
     desc: |
-      Identifies user accounts configured with unconstrained delegation.
-      When a user with unconstrained delegation is compromised, an attacker can impersonate any user who authenticates to that service.
-      This is a major security risk and a common finding in security audits of older AD environments.
+      识别配置了无约束委派的用户账户。当具有无约束委派的用户被攻陷时，攻击者可以冒充任何向该服务认证的用户。
+      这是重大安全风险，也是较旧 AD 环境安全审计中的常见发现。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} --unconstrained-users"
 
-  - title: windapsearch - computers with unconstrained delegation
+  - title: windapsearch - 具有无约束委派的计算机
     desc: |
-      Lists computer objects in the domain that are allowed to perform unconstrained delegation.
-      Compromising such a machine allows an attacker to harvest TGTs of any user who connects to it (e.g., via the Printer Bug).
-      This is frequently used in modern AD exploitation chains to move from a domain user to a domain admin.
+      列出域中允许执行无约束委派的计算机对象。攻陷此类机器允许攻击者收割任何连接它的用户的 TGT（例如通过 Printer Bug）。
+      这在现代 AD 利用链中常用于从域用户提升到域管理员。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} --unconstrained-computers"
 
-  - title: windapsearch - list group policy objects (GPOs)
+  - title: windapsearch - 列出组策略对象（GPO）
     desc: |
-      Enumerate all Group Policy Objects (GPOs) defined in the Active Directory.
-      GPOs control the security configuration of the entire domain and can contain sensitive information like scripts or registry settings.
-      Understanding GPOs helps an attacker identify how security policies are enforced and where they might be bypassed.
+      枚举 Active Directory 中定义的所有组策略对象（GPO）。GPO 控制整个域的安全配置，可能包含脚本或注册表设置等敏感信息。
+      了解 GPO 有助于攻击者识别安全策略如何执行以及何处可能被绕过。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} --gpos"
 
   # === ADVANCED QUERIES & OUTPUT ===
-  - title: windapsearch - custom LDAP filter
+  - title: windapsearch - 自定义 LDAP 过滤器
     desc: |
-      Executes a completely custom LDAP query against the target Domain Controller.
-      This allows for highly specific searches, such as finding users with specific Account Control flags or custom attributes.
-      The user must provide a valid LDAP filter string to ensure the query executes correctly.
+      对目标域控制器执行完全自定义的 LDAP 查询。这允许高度特定的搜索，如查找具有特定 Account Control 标志或自定义属性的用户。
+      用户必须提供有效的 LDAP 过滤器字符串以确保查询正确执行。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} --custom \"{{ldap_filter|(objectClass=user)}}\""
 
-  - title: windapsearch - search with custom attributes
+  - title: windapsearch - 使用自定义属性搜索
     desc: |
-      Performs a user search while only returning specific LDAP attributes.
-      By default, LDAP returns many fields; this narrows it down to specific data like 'lastLogon' or 'badPwdCount'.
-      This is useful for gathering targeted intel without sifting through massive amounts of redundant data.
+      执行用户搜索，仅返回特定 LDAP 属性。默认情况下 LDAP 返回许多字段；这会将其缩小到 lastLogon 或 badPwdCount 等特定数据。
+      这对于收集有针对性的情报而无需筛选大量冗余数据很有用。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} -U --attrs {{attributes|sAMAccountName,description,memberOf}}"
 
-  - title: windapsearch - fuzzy search for objects
+  - title: windapsearch - 对象模糊搜索
     desc: |
-      Performs a fuzzy search across the directory for all entries matching a specific term.
-      This is helpful when you know part of a name or a service but aren't sure of its exact DN or object class.
-      It scans multiple fields to find the most relevant matches for the provided search term.
+      在目录中执行模糊搜索，查找匹配特定术语的所有条目。当你只知道名称或服务的一部分但不确定其确切 DN 或对象类别时很有帮助。
+      它扫描多个字段以找到与搜索词最相关的匹配。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} -s {{search_term}}"
 
-  - title: windapsearch - full attribute dump to file
+  - title: windapsearch - 将全部属性转储到文件
     desc: |
-      Dumps every single available LDAP attribute for all users and saves the output to a directory.
-      The `--full` flag ensures no data is left behind, which is vital for deep offline analysis.
-      The output is saved in TSV format, making it easy to import into spreadsheets or other analysis tools.
+      转储所有用户的每一个可用 LDAP 属性，并将输出保存到目录。--full 参数确保不遗漏任何数据，这对深度离线分析至关重要。
+      输出以 TSV 格式保存，便于导入电子表格或其他分析工具。
     command: "windapsearch --dc-ip {{dc_ip}} -u {{username}} -p {{password}} -U --full -o {{output_dir|results}}"

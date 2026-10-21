@@ -3,118 +3,102 @@ tags: [web-security, xss, scanner, pentest, reconnaissance, vulnerability-assess
 
 actions:
   # === BASIC SCANNING ===
-  - title: xsstrike - basic GET scan
+  - title: xsstrike - 基础 GET 扫描
     desc: |
-      Performs a basic reflected XSS scan on a target URL using GET parameters. 
-      This is the primary way to check for vulnerabilities in search queries or page IDs. 
-      The tool analyzes the response to detect reflection points and context to generate optimized payloads.
+      使用 GET 参数对目标 URL 执行基础反射型 XSS 扫描。这是检查搜索查询或页面 ID 中漏洞的主要方式。
+      工具分析响应以检测反射点和上下文，从而生成优化后的 payload。
     command: "xsstrike.py -u \"{{url}}\""
 
-  - title: xsstrike - POST data scan
+  - title: xsstrike - POST 数据扫描
     desc: |
-      Scans a target that requires POST data for processing instead of URL parameters. 
-      Useful for testing login forms, contact forms, or data submission modules that don't expose parameters in the URI. 
-      Ensure the data string follows the standard key=value format for proper parsing.
+      扫描需要 POST 数据而非 URL 参数处理的目标。适用于测试登录表单、联系表单或不暴露 URI 参数的数据提交模块。
+      确保数据字符串遵循标准的 key=value 格式以便正确解析。
     command: "xsstrike.py -u \"{{url}}\" --data \"{{post_data}}\""
 
-  - title: xsstrike - URL path injection
+  - title: xsstrike - URL 路径注入
     desc: |
-      Injects payloads directly into the URL path components instead of standard parameters. 
-      This is essential for modern web applications using RESTful routes where parts of the path (e.g., /user/profile/name) might be reflected in the page. 
-      It helps identify vulnerabilities in SEO-friendly URLs that conventional scanners might miss.
+      将 payload 直接注入 URL 路径组件，而非标准参数。这对于使用 RESTful 路由的现代 Web 应用至关重要，其中路径部分（如 /user/profile/name）可能反映在页面中。
+      它有助于识别传统扫描器可能遗漏的 SEO 友好 URL 中的漏洞。
     command: "xsstrike.py -u \"{{url_with_path}}\" --path"
 
-  - title: xsstrike - JSON POST scan
+  - title: xsstrike - JSON POST 扫描
     desc: |
-      Treats the provided POST data as a JSON object for vulnerability testing. 
-      Modern APIs and Single Page Applications (SPAs) often communicate using JSON payloads, and this switch ensures the payloads are handled correctly within the JSON structure. 
-      This prevents breaking the JSON syntax while attempting to inject scripts.
+      将提供的 POST 数据视为 JSON 对象进行漏洞测试。现代 API 和单页应用（SPA）通常使用 JSON payload 通信，此开关确保 payload 在 JSON 结构内得到正确处理。
+      这可以防止在尝试注入脚本时破坏 JSON 语法。
     command: "xsstrike.py -u \"{{url}}\" --data '{{json_payload}}' --json"
 
   # === AUTOMATION AND CRAWLING ===
-  - title: xsstrike - crawl and scan
+  - title: xsstrike - 爬取并扫描
     desc: |
-      Starts crawling from the target page to find internal links and automatically tests them for XSS. 
-      This is an efficient way to map out an entire application's attack surface without manual URL discovery. 
-      It combines discovery and exploitation phases into a single automated workflow.
+      从目标页面开始爬取以查找内部链接，并自动测试它们的 XSS。这是无需手动发现 URL 即可测绘整个应用攻击面的高效方式。
+      它将发现和利用阶段合并到单个自动化工作流中。
     command: "xsstrike.py -u \"{{url}}\" --crawl"
 
-  - title: xsstrike - crawl with custom depth
+  - title: xsstrike - 带自定义深度的爬取
     desc: |
-      Specifies how deep the crawler should go into the website's directory structure. 
-      A higher level allows for more extensive discovery but increases the scan time and resource consumption. 
-      The default depth is 2, which is generally sufficient for medium-sized websites.
+      指定爬虫进入网站目录结构的深度。更高级别允许更广泛的发现，但会增加扫描时间和资源消耗。
+      默认深度为 2，通常对中型网站足够。
     command: "xsstrike.py -u \"{{url}}\" --crawl -l {{depth|3}}"
 
-  - title: xsstrike - scan seeds from file
+  - title: xsstrike - 从文件扫描种子
     desc: |
-      Loads multiple URLs from a file to be used as seeds for crawling or direct testing. 
-      This is perfect for batch processing after a reconnaissance phase where multiple subdomains or endpoints have been discovered. 
-      The tool will process each entry in the file sequentially.
+      从文件加载多个 URL，用作爬取或直接测试的种子。这在侦察阶段发现多个子域名或端点后进行批量处理时非常理想。
+      工具会按顺序处理文件中的每个条目。
     command: "xsstrike.py --seeds {{seeds_file}}"
 
   # === ADVANCED TESTING ===
-  - title: xsstrike - blind XSS testing
+  - title: xsstrike - 盲 XSS 测试
     desc: |
-      Injects blind XSS payloads into every parameter of every discovered form during a crawl. 
-      Blind XSS occurs when the payload is stored and executed in a different context, such as an admin dashboard or log viewer. 
-      You must configure your callback/interactsh URL in the core/config.py file before running this.
+      在爬取期间将盲 XSS payload 注入发现的每个表单的每个参数。当 payload 被存储并在不同上下文中执行（如管理仪表盘或日志查看器）时，就会发生盲 XSS。
+      运行前你必须在 core/config.py 文件中配置回调/interactsh URL。
     command: "xsstrike.py -u \"{{url}}\" --crawl --blind"
 
-  - title: xsstrike - WAF and filter fuzzing
+  - title: xsstrike - WAF 和过滤器模糊测试
     desc: |
-      Uses the built-in fuzzer to test Web Application Firewalls (WAF) and complex filters. 
-      This mode is intentionally slow because it uses random delays to avoid triggering rate-limiting or IP bans. 
-      It is highly effective at identifying which characters or keywords are blocked by security mechanisms.
+      使用内置模糊器测试 Web 应用防火墙（WAF）和复杂过滤器。此模式故意较慢，因为它使用随机延迟以避免触发限速或 IP 封禁。
+      它在识别哪些字符或关键字被安全机制拦截方面非常有效。
     command: "xsstrike.py -u \"{{url}}\" --fuzzer"
 
-  - title: xsstrike - skip DOM scanning
+  - title: xsstrike - 跳过 DOM 扫描
     desc: |
-      Skips the DOM-based XSS scanning phase to speed up the overall execution. 
-      Use this when you are only interested in reflected XSS or when the target environment has heavy client-side scripts that slow down analysis. 
-      It is helpful for quick triage of large-scale targets.
+      跳过基于 DOM 的 XSS 扫描阶段以加快整体执行。当你只对反射型 XSS 感兴趣，或目标环境有大量客户端脚本拖慢分析时使用。
+      它有助于对大规模目标进行快速分诊。
     command: "xsstrike.py -u \"{{url}}\" --skip-dom"
 
   # === EVASION AND PERFORMANCE ===
-  - title: xsstrike - multi-threaded crawling
+  - title: xsstrike - 多线程爬取
     desc: |
-      Specifies the number of concurrent threads to use while crawling and testing. 
-      Increasing threads speeds up the scan significantly but might overwhelm small servers or trigger security alerts. 
-      Use with caution and monitor the target's response for potential downtime.
+      指定爬取和测试期间使用的并发线程数。增加线程可显著加快扫描，但可能压垮小型服务器或触发安全告警。
+      请谨慎使用并监控目标响应，防止潜在停机。
     command: "xsstrike.py -u \"{{url}}\" --crawl -t {{threads|10}}"
 
-  - title: xsstrike - stealth scan with delay
+  - title: xsstrike - 带延迟的隐蔽扫描
     desc: |
-      Adds a specified delay between HTTP requests to bypass rate limits and remain stealthy. 
-      This is recommended when scanning production environments or sites with aggressive security monitoring. 
-      The delay value is in seconds.
+      在 HTTP 请求之间添加指定延迟，以绕过限速并保持隐蔽。扫描生产环境或具有激进安全监控的站点时推荐使用。
+      延迟值以秒为单位。
     command: "xsstrike.py -u \"{{url}}\" -d {{delay|2}}"
 
-  - title: xsstrike - custom headers and cookies
+  - title: xsstrike - 自定义请求头和 Cookie
     desc: |
-      Adds custom HTTP headers or authentication cookies to the outgoing requests. 
-      This is necessary for scanning pages that are behind a login or require specific User-Agents. 
-      Separate multiple headers using the \n newline character.
+      向出站请求添加自定义 HTTP 请求头或认证 Cookie。扫描登录墙后或需要特定 User-Agent 的页面时是必需的。
+      使用 \n 换行符分隔多个请求头。
     command: "xsstrike.py -u \"{{url}}\" --headers \"{{headers|Cookie: session=xyz}}\""
 
-  - title: xsstrike - proxy configuration
+  - title: xsstrike - 代理配置
     desc: |
-      Routes all traffic through a specified proxy server. 
-      This is useful for anonymizing your IP address or for intercepting traffic in tools like Burp Suite for further manual analysis. 
-      Proxies should be pre-configured in the core/config.py file for best results.
+      将所有流量路由到指定代理服务器。这对于匿名化你的 IP 地址或在 Burp Suite 等工具中拦截流量进行进一步手动分析很有用。
+      为获得最佳效果，应在 core/config.py 文件中预先配置代理。
     command: "xsstrike.py -u \"{{url}}\" --proxy"
 
   # === CUSTOMIZATION ===
-  - title: xsstrike - brute force payload file
+  - title: xsstrike - 暴力 payload 文件
     desc: |
-      Loads a list of custom payloads from a local file and tests them against the target. 
-      In this mode, XSStrike skips its intelligent analysis and simply tries every entry in the list. 
-      This is useful when you have a specific bypass payload that you want to verify across multiple parameters.
+      从本地文件加载自定义 payload 列表，并对目标进行测试。在此模式下 XSStrike 跳过其智能分析，简单地尝试列表中的每个条目。
+      当你有一个想跨多个参数验证的特定绕过 payload 时很有用。
     command: "xsstrike.py -u \"{{url}}\" -f {{payload_file}}"
 
-  - title: xsstrike - payload encoding
+  - title: xsstrike - payload 编码
     desc: |
-      Automatically encodes the generated payloads to bypass basic signature-based filters. 
-      Currently supports base64 encoding which can be useful against specific WAF configurations. 
-      It helps in testing if the application decodes input before processing it.
+      自动对生成的 payload 进行编码，以绕过基础基于签名的过滤器。目前支持 base64 编码，这对特定 WAF 配置有用。
+      它有助于测试应用是否在处理输入前先解码。
     command: "xsstrike.py -u \"{{url}}\" -e {{encoding|base64}}"

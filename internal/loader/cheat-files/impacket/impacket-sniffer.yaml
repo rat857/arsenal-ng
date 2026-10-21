@@ -3,61 +3,61 @@ tags: [network, sniffer, security, pentest, traffic-analysis, credentials, impac
 
 actions:
   # === BASIC USAGE ===
-  - title: impacket-sniffer - live interface sniffing
+  - title: impacket-sniffer - 实时接口嗅探
     desc: |
-      Captures and decodes network packets on a specified network interface in real-time. 
-      This is the primary way to monitor local network traffic for sensitive protocol communications like SMB, LDAP, and MSSQL. 
-      It is highly effective for identifying plaintext credentials or NTLM hashes being transmitted across the segment. 
-      Requires root or administrative privileges to put the network interface into promiscuous mode.
+      在指定网络接口上实时捕获并解码网络数据包。
+      这是监控本地网络流量中敏感协议通信（如 SMB、LDAP 和 MSSQL）的主要方式。
+      它对于识别在网段中传输的明文凭据或 NTLM 哈希非常有效。
+      需要 root 或管理员权限才能将网络接口置于混杂模式。
     command: "impacket-sniffer -i {{interface|eth0}}"
 
-  - title: impacket-sniffer - verbose packet analysis
+  - title: impacket-sniffer - 详细数据包分析
     desc: |
-      Enables verbose output mode to provide more granular details about the captured packets. 
-      This mode displays additional protocol headers and negotiation flags that are typically hidden in the default view. 
-      It is particularly useful for troubleshooting connection issues or performing deep dive security audits of network traffic. 
-      Use this when the standard output does not provide enough context for a specific protocol exchange.
+      启用详细输出模式，提供有关捕获数据包的更细粒度详细信息。
+      此模式会显示默认视图中通常隐藏的额外协议头和协商标志。
+      它特别适合排查连接问题或对网络流量进行深入安全审计。
+      当标准输出无法为特定协议交换提供足够上下文时使用。
     command: "impacket-sniffer -i {{interface|eth0}} -v"
 
   # === FILTERING AND FORMATTING ===
-  - title: impacket-sniffer - protocol specific filtering
+  - title: impacket-sniffer - 按协议过滤
     desc: |
-      Filters the sniffer output to only display traffic associated with a specific protocol. 
-      This helps reduce noise in busy network environments, allowing the user to focus on high-value targets like SMB or database traffic. 
-      Commonly used protocol filters include SMB, MSSQL, MYSQL, and LDAP. 
-      This is essential during penetration tests when you are looking for specific lateral movement or authentication attempts.
+      过滤嗅探器输出，仅显示与特定协议相关的流量。
+      这有助于在繁忙的网络环境中降低噪音，让用户专注于 SMB 或数据库流量等高价值目标。
+      常用的协议过滤器包括 SMB、MSSQL、MYSQL 和 LDAP。
+      在渗透测试中查找特定横向移动或身份验证尝试时，这是必不可少的。
     command: "impacket-sniffer -i {{interface|eth0}} -p {{protocol|SMB}}"
 
-  - title: impacket-sniffer - hex and ascii dumping
+  - title: impacket-sniffer - 十六进制和 ASCII 转储
     desc: |
-      Displays the raw hex and ASCII representation of every packet captured on the wire. 
-      This is critical for analyzing custom or unknown protocols that the tool might not have a built-in decoder for. 
-      It allows the researcher to manually inspect packet payloads for sensitive data or exploit patterns. 
-      Be aware that this produces a large amount of output, which can be difficult to read in high-traffic scenarios.
+      显示线路上捕获的每个数据包的原始十六进制和 ASCII 表示形式。
+      这对于分析工具可能没有内置解码器的自定义或未知协议至关重要。
+      它允许研究人员手动检查数据包载荷中的敏感数据或利用模式。
+      请注意，这会产生大量输出，在高流量场景下可能难以阅读。
     command: "impacket-sniffer -i {{interface|eth0}} -e"
 
   # === FILE OPERATIONS ===
-  - title: impacket-sniffer - read from pcap file
+  - title: impacket-sniffer - 从 PCAP 文件读取
     desc: |
-      Analyzes and decodes network traffic from a previously saved PCAP file instead of a live interface. 
-      This is ideal for offline forensic analysis or when you have captured traffic from a remote system using tools like tcpdump. 
-      The tool will apply its protocol decoders to the file content, highlighting credentials and session info. 
-      It allows for repeatable analysis without needing to stay connected to the target network.
+      分析并解码来自先前保存的 PCAP 文件的网络流量，而非实时接口。
+      这对于离线取证分析，或当你使用 tcpdump 等工具从远程系统捕获流量时非常理想。
+      该工具会将其协议解码器应用于文件内容，突出显示凭据和会话信息。
+      它允许在无需保持与目标网络连接的情况下进行可重复分析。
     command: "impacket-sniffer -f {{pcap_file}}"
 
-  - title: impacket-sniffer - write capture to file
+  - title: impacket-sniffer - 将捕获写入文件
     desc: |
-      Saves the captured live network traffic directly into a PCAP file for future inspection. 
-      This allows you to use the tool's live decoding features while simultaneously creating a permanent record for Wireshark analysis. 
-      It is a best practice during engagements to keep logs of the traffic you have monitored for reporting purposes. 
-      Ensure the destination directory has enough disk space to handle potentially large capture files.
+      将捕获的实时网络流量直接保存到 PCAP 文件中，以便日后检查。
+      这允许你使用工具的实时解码功能，同时为 Wireshark 分析创建永久记录。
+      在评估期间，保留你所监控流量的日志是报告目的的最佳实践。
+      确保目标目录有足够的磁盘空间来处理可能很大的捕获文件。
     command: "impacket-sniffer -i {{interface|eth0}} -w {{output_file|capture.pcap}}"
 
   # === ADVANCED SCENARIOS ===
-  - title: impacket-sniffer - filtered pcap analysis
+  - title: impacket-sniffer - 过滤的 PCAP 分析
     desc: |
-      Combines file reading and protocol filtering to analyze specific traffic within a large capture file. 
-      This speeds up the analysis process significantly by ignoring irrelevant packets in the trace. 
-      It is the most efficient way to extract credentials from a long-running packet capture session. 
-      Useful for security operations centers (SOC) when investigating a specific alert from a recorded timeframe.
+      结合文件读取和协议过滤，分析大型捕获文件中的特定流量。
+      通过忽略跟踪中不相关的数据包，显著加快分析过程。
+      这是从长时间数据包捕获会话中提取凭据的最有效方式。
+      对于安全运营中心（SOC）调查记录时间段内的特定告警很有用。
     command: "impacket-sniffer -f {{pcap_file}} -p {{protocol|MSSQL}}"

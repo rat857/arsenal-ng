@@ -3,68 +3,59 @@ tags: [network, pentest, enumeration, netbios, reconnaissance, scanner]
 
 actions:
   # === ENUMERATION AND SCANNING ===
-  - title: nbtscan - basic network scan
+  - title: nbtscan - 基础网络扫描
     desc: |
-      Scans a specified range of IP addresses for NetBIOS information. 
-      It identifies NetBIOS names, IP addresses, and MAC addresses for hosts responding on the local network. 
-      This is the standard way to identify Windows-based machines and their associated workgroups or domains during the reconnaissance phase.
+      扫描指定 IP 地址范围的 NetBIOS 信息。它识别本地网络上响应主机的 NetBIOS 名称、IP 地址和 MAC 地址。
+      这是侦察阶段识别基于 Windows 的机器及其关联工作组或域的标准方式。
     command: "nbtscan {{target_range}}"
 
-  - title: nbtscan - verbose service enumeration
+  - title: nbtscan - 详细服务枚举
     desc: |
-      Performs a detailed scan to list all NetBIOS names received from each host. 
-      When combined with the -h flag, it translates hex service codes into human-readable descriptions like 'Workstation' or 'File Server'. 
-      This provides essential insight into the specific roles and services running on a target machine.
+      执行详细扫描，列出从每台主机收到的所有 NetBIOS 名称。结合 -h 标志时，它会将十六进制服务代码翻译为 Workstation 或 File Server 等人类可读描述。
+      这提供对目标机器上特定角色和服务的重要洞察。
     command: "nbtscan -v -h {{target}}"
 
-  - title: nbtscan - scan range using dash notation
+  - title: nbtscan - 使用短横线表示法扫描范围
     desc: |
-      Scans a specific range of IP addresses defined by a start and end address. 
-      This is useful when you want to target a specific subset of a network without scanning the entire subnet. 
-      The results will include the NetBIOS name, user, and MAC address for every responding host in that range.
+      扫描由起始和结束地址定义的特定 IP 地址范围。当你想针对网络的特定子集而不扫描整个子网时很有用。
+      结果将包含该范围内每个响应主机的 NetBIOS 名称、用户和 MAC 地址。
     command: "nbtscan {{start_ip}}-{{end_ip}}"
 
   # === ADVANCED CONFIGURATION ===
-  - title: nbtscan - win95 compatibility scan
+  - title: nbtscan - Win95 兼容扫描
     desc: |
-      Forces the scan to originate from the local UDP port 137, which is the standard NetBIOS Name Service port. 
-      This option is required for scanning older Windows 95 boxes as they typically only respond to queries from this specific port. 
-      Note that you usually need root or administrative privileges to bind to port 137 on Unix-like systems.
+      强制扫描从本地 UDP 端口 137 发起，这是标准 NetBIOS 名称服务端口。扫描较旧的 Windows 95 机器时需要此选项，因为它们通常只响应来自此特定端口的查询。
+      注意在类 Unix 系统上绑定端口 137 通常需要 root 或管理权限。
     command: "sudo nbtscan -r {{target_range}}"
 
-  - title: nbtscan - adjusted performance and retransmits
+  - title: nbtscan - 调整性能与重传
     desc: |
-      Modifies the timeout and the number of retransmission attempts for each query. 
-      Increasing these values is helpful when scanning high-latency networks or segments with packet loss where hosts might be slow to respond. 
-      Lowering the timeout can significantly speed up scans on fast, reliable local networks.
+      修改每次查询的超时和重传次数。扫描高延迟网络或存在丢包的网段时，主机可能响应缓慢，提高这些值会有帮助。
+      在快速可靠的局域网上降低超时可以显著加快扫描。
     command: "nbtscan -t {{timeout_ms|1000}} -m {{retransmits|2}} {{target_range}}"
 
   # === OUTPUT FORMATTING ===
-  - title: nbtscan - script-friendly output
+  - title: nbtscan - 脚本友好输出
     desc: |
-      Formats the scan results using a specific character as a field separator, making the output easy to parse. 
-      It suppresses banners and column headers, which is ideal for piping the data into other tools like grep, awk, or custom automation scripts. 
-      This allows for the seamless integration of NetBIOS data into larger security reporting pipelines.
+      使用特定字符作为字段分隔符格式化扫描结果，使输出易于解析。它会抑制横幅和列标题，非常适合将数据管道传给 grep、awk 或自定义自动化脚本。
+      这允许将 NetBIOS 数据无缝集成到更大的安全报告流水线中。
     command: "nbtscan -s {{separator|:}} {{target_range}}"
 
-  - title: nbtscan - generate hosts file format
+  - title: nbtscan - 生成 hosts 文件格式
     desc: |
-      Outputs the discovered host information in the standard /etc/hosts file format. 
-      This can be useful for quickly populating a local name resolution file during a penetration test. 
-      It maps the discovered IP addresses directly to their NetBIOS names for easier navigation.
+      以标准 /etc/hosts 文件格式输出发现的主机信息。这在渗透测试期间快速填充本地名称解析文件时很有用。
+      它将发现的 IP 地址直接映射到其 NetBIOS 名称，便于导航。
     command: "nbtscan -e {{target_range}}"
 
-  - title: nbtscan - generate lmhosts format
+  - title: nbtscan - 生成 lmhosts 格式
     desc: |
-      Produces output in the LMHOSTS format, which is a legacy Windows name resolution format. 
-      This is useful for environments that still rely on or interact with legacy NetBIOS name resolution mechanisms. 
-      The resulting list can be saved to a file to assist Windows systems in finding specific hosts without DNS.
+      以 LMHOSTS 格式生成输出，这是一种遗留的 Windows 名称解析格式。对仍依赖或与遗留 NetBIOS 名称解析机制交互的环境很有用。
+      生成的列表可保存到文件，帮助 Windows 系统在没有 DNS 的情况下找到特定主机。
     command: "nbtscan -l {{target_range}}"
 
   # === INPUT MANAGEMENT ===
-  - title: nbtscan - scan targets from file
+  - title: nbtscan - 从文件扫描目标
     desc: |
-      Reads a list of target IP addresses or network ranges from a specified text file. 
-      This feature is invaluable when you have already identified relevant targets via other tools and want to perform a batch NetBIOS scan. 
-      The file should contain one IP address or CIDR range per line.
+      从指定文本文件读取目标 IP 地址或网络范围列表。当你已通过其他工具识别出相关目标并想执行批量 NetBIOS 扫描时，此功能非常宝贵。
+      文件每行应包含一个 IP 地址或 CIDR 范围。
     command: "nbtscan -f {{input_file}}"

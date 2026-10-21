@@ -3,93 +3,93 @@ tags: [android, reverse-engineering, security, pentest, mobile, exploitation, de
 
 actions:
   # === DECODING ACTIONS ===
-  - title: apktool - decode apk file
+  - title: apktool - 反编译 APK 文件
     desc: |
-      This command is used to disassemble an Android APK file into its nearly original form, including resources and smali code. 
-      It is the primary step for static analysis or modifying an application's behavior before re-building. 
-      The tool will create a folder containing the AndroidManifest.xml, assets, resources, and smali folders. 
-      Note that this does not produce Java source code, but rather smali (an assembly-like representation of dex).
+      该命令用于将 Android APK 文件反汇编为接近原始的形式，包括资源与 smali 代码。
+      它是在重新构建之前进行静态分析或修改应用行为的主要步骤。
+      工具会创建一个包含 AndroidManifest.xml、assets、resources 与 smali 文件夹的目录。
+      注意这不会生成 Java 源代码，而是 smali（dex 的一种类汇编表示）。
     command: "apktool d {{apk_file}}"
 
-  - title: apktool - decode to specific directory
+  - title: apktool - 反编译到指定目录
     desc: |
-      Use this command when you want to specify a destination folder for the decoded files instead of the default directory name. 
-      This is particularly useful for organizing multiple projects or preventing the tool from using the default folder name derived from the APK. 
-      If the destination directory already exists, you may need to add the force flag to overwrite it. 
-      It ensures all resources and source files are extracted to the path provided by the user.
+      当你需要为反编译文件指定目标文件夹、而非使用默认目录名时使用此命令。
+      这对于组织多个项目或防止工具使用从 APK 派生的默认文件夹名特别有用。
+      如果目标目录已存在，可能需要添加 force 标志来覆盖它。
+      它确保所有资源与源文件都解压到用户提供的路径。
     command: "apktool d {{apk_file}} -o {{output_directory}}"
 
-  - title: apktool - decode without resources
+  - title: apktool - 不反编译资源
     desc: |
-      This option prevents the tool from decoding the resources (like layouts, strings, and drawables) and keeps them in their compiled "resources.arsc" format. 
-      It is significantly faster than a full decode and is used when the analyst is only interested in examining the smali code or the manifest. 
-      This approach helps avoid common resource disassembly errors that occur in heavily obfuscated or non-standard APKs. 
-      Use this if you do not plan on modifying UI elements or XML resource values.
+      该选项阻止工具反编译资源（如布局、字符串与可绘制对象），使其保持编译后的 "resources.arsc" 格式。
+      它比完整反编译快得多，适用于分析人员只关心检查 smali 代码或清单文件的场景。
+      此方法有助于避免在重度混淆或非标准 APK 中出现的常见资源反汇编错误。
+      如果你不打算修改 UI 元素或 XML 资源值，请使用此选项。
     command: "apktool d -r {{apk_file}}"
 
-  - title: apktool - decode without sources
+  - title: apktool - 不反编译源码
     desc: |
-      This command skips the disassembly of the "classes.dex" file into smali files, focusing only on the resources. 
-      It is ideal when your primary goal is to extract assets, images, or analyze the application's UI structure and XML configurations. 
-      By skipping the source code translation, the process completes much faster and results in a smaller output directory. 
-      This is often used for UI/UX research or asset extraction where the underlying logic is not required.
+      该命令跳过将 "classes.dex" 文件反汇编为 smali 文件，仅聚焦于资源。
+      当你的主要目标是提取资源、图片或分析应用的 UI 结构与 XML 配置时，它是理想选择。
+      由于跳过源代码转换，处理速度更快，输出目录也更小。
+      它常用于 UI/UX 研究或资源提取，这些场景不需要底层逻辑。
     command: "apktool d -s {{apk_file}}"
 
-  - title: apktool - force delete destination during decode
+  - title: apktool - 反编译时强制删除目标目录
     desc: |
-      Forces the deletion of the destination directory before starting the decoding process. 
-      This is useful in automated scripts or repetitive testing environments where an existing output folder would otherwise cause the tool to stop. 
-      Be careful when using this flag as it will permanently delete any previous modifications in the target folder. 
-      It ensures a clean state for the new disassembly process.
+      在开始反编译前强制删除目标目录。
+      这在自动化脚本或重复测试环境中很有用，否则已存在的输出文件夹会导致工具停止。
+      使用此标志时请小心，因为它会永久删除目标文件夹中任何先前的修改。
+      它确保为新的反汇编过程提供干净的状态。
     command: "apktool d -f {{apk_file}} -o {{output_directory}}"
 
   # === BUILDING ACTIONS ===
-  - title: apktool - build apk from directory
+  - title: apktool - 从目录构建 APK
     desc: |
-      After making modifications to the decoded files, this command reassembles the directory back into an APK file. 
-      It processes the smali code and compiles the resources back into the binary format required by Android. 
-      The resulting APK is usually placed in a "dist" folder inside the project directory unless an output path is specified. 
-      Remember that the resulting APK will be unsigned and unaligned; it must be signed with a tool like jarsigner or apksigner before it can be installed on a device.
+      在对反编译文件进行修改后，此命令将目录重新组装为 APK 文件。
+      它处理 smali 代码并将资源重新编译为 Android 所需的二进制格式。
+      除非指定输出路径，生成的 APK 通常放在项目目录内的 "dist" 文件夹中。
+      请记住生成的 APK 未签名且未对齐；安装到设备前必须使用 jarsigner 或 apksigner 等工具签名。
     command: "apktool b {{project_folder}}"
 
-  - title: apktool - build apk with custom output name
+  - title: apktool - 使用自定义输出名构建 APK
     desc: |
-      This command builds the project directory into an APK and allows you to specify the exact name and path of the resulting file. 
-      It streamlines the workflow by avoiding the need to look into the "dist" folder and manually renaming the file. 
-      This is standard practice when creating "modded" versions of an application. 
-      Ensure that the project folder contains a valid "apktool.yml" file, which is generated during the initial decoding.
+      此命令将项目目录构建为 APK，并允许你指定生成文件的确切名称与路径。
+      它通过避免查看 "dist" 文件夹并手动重命名文件来简化工作流。
+      这是创建应用“修改版”的标准做法。
+      请确保项目文件夹包含有效的 "apktool.yml" 文件，该文件在初始反编译时生成。
     command: "apktool b {{project_folder}} -o {{output_apk|modified.apk}}"
 
   # === FRAMEWORK MANAGEMENT ===
-  - title: apktool - install framework
+  - title: apktool - 安装框架
     desc: |
-      Certain system applications depend on specific framework files provided by device manufacturers (e.g., Samsung, LG, or Huawei). 
-      This command installs the necessary "framework-res.apk" into the local Apktool repository so that dependent apps can be decoded and built correctly. 
-      Without installing the correct vendor framework, decoding system apps often leads to resource resolution errors or "Resource ID" missing exceptions. 
-      The framework files are typically found in "/system/framework/" on the physical Android device.
+      某些系统应用依赖设备制造商（如 Samsung、LG 或 Huawei）提供的特定框架文件。
+      该命令将必要的 "framework-res.apk" 安装到本地 Apktool 仓库中，使依赖应用能被正确反编译与构建。
+      未安装正确的厂商框架时，反编译系统应用常导致资源解析错误或 "Resource ID" 缺失异常。
+      框架文件通常位于物理 Android 设备的 "/system/framework/" 目录中。
     command: "apktool if {{framework_apk}}"
 
-  - title: apktool - install framework with custom path
+  - title: apktool - 使用自定义路径安装框架
     desc: |
-      Installs a framework file into a specific directory instead of the default system-wide Apktool folder. 
-      This is useful for users who do not have write permissions to the default folder or want to maintain separate framework environments for different projects. 
-      When decoding or building later, you must provide the same path using the -p flag to ensure Apktool finds the installed framework. 
-      It provides better isolation for complex reverse engineering environments.
+      将框架文件安装到特定目录，而非默认的全系统 Apktool 文件夹。
+      这对于对默认文件夹无写权限、或希望为不同项目维护独立框架环境的用户很有用。
+      之后反编译或构建时，必须使用 -p 标志提供相同路径，以确保 Apktool 找到已安装的框架。
+      它为复杂的逆向工程环境提供了更好的隔离。
     command: "apktool if {{framework_apk}} -p {{custom_framework_path}}"
 
   # === ADVANCED OPTIONS ===
-  - title: apktool - use custom framework path for decoding
+  - title: apktool - 反编译时使用自定义框架路径
     desc: |
-      Instructs Apktool to look for framework files in a specific directory during the decoding process. 
-      This is used in conjunction with frameworks previously installed via the "if" command with a custom path. 
-      It is essential when working on multiple Android versions or vendor-specific apps that require isolated environments. 
-      Failure to point to the correct framework path will result in failed resource disassembly.
+      指示 Apktool 在反编译过程中到特定目录查找框架文件。
+      它与之前通过 "if" 命令以自定义路径安装的框架配合使用。
+      在需要隔离环境的多个 Android 版本或厂商特定应用上工作时至关重要。
+      未能指向正确的框架路径将导致资源反汇编失败。
     command: "apktool d -p {{custom_framework_path}} {{apk_file}}"
 
-  - title: apktool - show version info
+  - title: apktool - 显示版本信息
     desc: |
-      Displays the current version of Apktool along with its internal components like smali and baksmali versions. 
-      This is important for troubleshooting compatibility issues, as different versions of Apktool may handle newer Android features differently. 
-      Always check the version when reporting bugs or following specific tutorials online. 
-      It helps ensure that your environment matches the requirements for the APK you are targeting.
+      显示 Apktool 的当前版本及其内部组件（如 smali 与 baksmali）的版本。
+      这对于排查兼容性问题很重要，因为不同版本的 Apktool 处理新 Android 特性的方式可能不同。
+      报告错误或遵循网上的特定教程时，请务必检查版本。
+      它有助于确保你的环境与目标 APK 的要求匹配。
     command: "apktool -version"

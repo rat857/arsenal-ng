@@ -3,84 +3,54 @@ tags: [system, archive, compression, utility, files, linux]
 
 actions:
 # === BASIC DECOMPRESSION ===
- - title: gunzip - basic decompression
+ - title: gunzip - 基础解压
    desc: |
-     Decompress a gzip file and replace it with the uncompressed version. This is the 
-     standard use case when you want to extract a single file for immediate use. 
-     By default, the original .gz file is deleted after successful extraction to save 
-     disk space.
+     解压 gzip 文件并将其替换为未压缩版本。当你想要提取单个文件以供立即使用时，这是标准用例。默认情况下，成功提取后会删除原始 .gz 文件以节省磁盘空间。
    command: "gunzip {{file_name}}"
 
- - title: gunzip - decompress and keep original
+ - title: gunzip - 解压并保留原文件
    desc: |
-     Use the keep flag to prevent the tool from deleting the source archive after extraction. 
-     This is useful when you need to maintain a backup or share the compressed file 
-     later with other users. It ensures that both the original .gz archive and the 
-     newly extracted file exist on the storage.
+     使用 keep 参数防止工具在提取后删除源压缩包。当你需要保留备份或稍后与其他用户共享压缩文件时非常有用。它确保原始 .gz 压缩包和新提取的文件都存在于存储中。
    command: "gunzip -k {{file_name}}"
 
- - title: gunzip - verbose decompression
+ - title: gunzip - 详细解压
    desc: |
-     Extract a file while displaying the name and percentage reduction for each file processed. 
-     This provides visual feedback during the extraction process, which is helpful for 
-     tracking progress on large files. It allows the user to see exactly what is 
-     happening in real-time.
+     提取文件，同时显示每个已处理文件的名称和压缩百分比。这在提取过程中提供视觉反馈，有助于跟踪大文件的进度。它允许用户实时查看正在发生的具体操作。
    command: "gunzip -v {{file_name}}"
 
 # === INSPECTION AND TESTING ===
- - title: gunzip - list compressed file info
+ - title: gunzip - 列出压缩文件信息
    desc: |
-     Display detailed information about the compressed file without actually extracting it. 
-     The output includes the compressed size, uncompressed size, compression ratio, 
-     and the original file name. This is a safe way to inspect a file's contents 
-     before committing to a full decompression.
+     显示压缩文件的详细信息，而不实际提取它。输出包括压缩后大小、未压缩大小、压缩率和原始文件名。这是在决定完整解压之前安全检查文件内容的方式。
    command: "gunzip -l {{file_name}}"
 
- - title: gunzip - test file integrity
+ - title: gunzip - 测试文件完整性
    desc: |
-     Check the validity of a compressed file to ensure it has not been corrupted during 
-     transfer or storage. This command performs a trial decompression and verifies the 
-     internal checksums of the gzip archive. It does not produce any output files, 
-     making it ideal for verifying large downloads or backups.
+     检查压缩文件的有效性，确保它在传输或存储过程中未损坏。此命令执行试解压并验证 gzip 压缩包的内部校验和。它不产生任何输出文件，非常适合验证大型下载或备份。
    command: "gunzip -t {{file_name}}"
 
 # === ADVANCED OPERATIONS ===
- - title: gunzip - decompress to stdout
+ - title: gunzip - 解压到标准输出
    desc: |
-     Extract the contents of a gzip file directly to the terminal or redirect it to a pipe. 
-     This allows you to process the data with other tools like grep, awk, or sed without 
-     writing the full file to disk first. The original compressed file remains 
-     untouched when using this option.
+     将 gzip 文件的内容直接提取到终端或重定向到管道。这允许你使用 grep、awk 或 sed 等其他工具处理数据，而无需先将完整文件写入磁盘。使用此选项时原始压缩文件保持不变。
    command: "gunzip -c {{file_name}}"
 
- - title: gunzip - recursive decompression
+ - title: gunzip - 递归解压
    desc: |
-     Traverse a directory structure and automatically decompress every .gz file found 
-     within it and its subdirectories. This is highly efficient for bulk processing 
-     log files or large datasets spread across multiple folders. Note that this will 
-     replace all .gz files with uncompressed versions unless combined with other flags.
+     遍历目录结构，自动解压其中及其子目录中找到的每个 .gz 文件。对于批量处理分布在多个文件夹中的日志文件或大型数据集非常高效。请注意，除非结合其他参数，否则会将所有 .gz 文件替换为未压缩版本。
    command: "gunzip -r {{directory_path}}"
 
- - title: gunzip - force overwrite
+ - title: gunzip - 强制覆盖
    desc: |
-     Overwrite existing files in the destination without prompting the user for confirmation. 
-     This is essential for automated scripts or batch jobs where user interaction is 
-     not possible. It also allows decompressing files that have multiple hard links 
-     or files that do not follow standard naming conventions.
+     覆盖目标中的现有文件，而不提示用户确认。对于不可能进行用户交互的自动化脚本或批处理作业至关重要。它还允许解压具有多个硬链接的文件或不符合标准命名约定的文件。
    command: "gunzip -f {{file_name}}"
 
- - title: gunzip - specify custom suffix
+ - title: gunzip - 指定自定义后缀
    desc: |
-     Decompress files that use a non-standard suffix instead of the default .gz extension. 
-     Use this when working with specialized backup systems or custom applications 
-     that rename compressed files for organizational purposes. It allows the tool to 
-     recognize and process these specific files correctly.
+     解压使用非标准后缀而非默认 .gz 扩展名的文件。当处理为组织目的重命名压缩文件的专用备份系统或自定义应用时使用。它允许工具正确识别并处理这些特定文件。
    command: "gunzip -S {{suffix|.ext}} {{file_name}}"
 
- - title: gunzip - restore original name and timestamp
+ - title: gunzip - 还原原始名称和时间戳
    desc: |
-     Restore the original file name and time stamp if they were saved within the 
-     compressed file header. This is the default behavior, but explicitly setting it 
-     ensures that file metadata is preserved during the extraction process. It is 
-     useful for maintaining historical accuracy of logs or source code files.
+     如果原始文件名和时间戳保存在压缩文件头中，则将其还原。这是默认行为，但显式设置可确保在提取过程中保留文件元数据。对于保持日志或源码文件的历史准确性非常有用。
    command: "gunzip -N {{file_name}}"

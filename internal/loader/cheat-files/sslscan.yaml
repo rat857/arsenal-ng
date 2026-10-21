@@ -3,112 +3,112 @@ tags: [network, security, pentest, enumeration, ssl, tls, web]
 
 actions:
   # === BASIC USAGE ===
-  - title: sslscan - basic scan
+  - title: sslscan - 基础扫描
     desc: |
-      Perform a standard scan against a target host to identify supported SSL/TLS protocols and ciphers.
-      This is the most common way to start an assessment of a server's transport layer security.
-      The output provides a clear overview of preferred ciphers and potential weaknesses in the configuration.
+      对目标主机执行标准扫描，以识别受支持的 SSL/TLS 协议和加密套件。
+      这是开始评估服务器传输层安全性的最常见方式。
+      输出提供关于首选加密套件和配置中潜在弱点的清晰概览。
     command: "sslscan {{target}}"
 
-  - title: sslscan - scan specific port
+  - title: sslscan - 扫描特定端口
     desc: |
-      Scan a target on a specific port number by appending it to the hostname or IP.
-      Use this when the service you are testing (like a management interface or database) is not running on the default port 443.
-      This is essential for identifying SSL/TLS configurations on services like 8443 (Alt-HTTPS) or 2381 (HP Insight Management).
+      通过将端口号附加到主机名或 IP 来扫描特定端口上的目标。
+      当你测试的服务（如管理接口或数据库）未运行在默认端口 443 上时使用。
+      这对于识别 8443（Alt-HTTPS）或 2381（HP Insight Management）等服务上的 SSL/TLS 配置至关重要。
     command: "sslscan {{target}}:{{port|443}}"
 
-  - title: sslscan - scan multiple targets
+  - title: sslscan - 扫描多个目标
     desc: |
-      Read a list of targets from a text file and perform scans on all of them sequentially.
-      The input file should contain one host per line, and can optionally include port numbers (e.g., 192.168.1.1:443).
-      This is highly effective for large-scale network audits where you need to check the security posture of an entire subnet or domain list.
+      从文本文件读取目标列表，并依次对所有目标执行扫描。
+      输入文件应每行一个主机，并且可以可选地包含端口号（例如 192.168.1.1:443）。
+      这对于需要检查整个子网或域名列表安全状况的大规模网络审计非常有效。
     command: "sslscan --targets={{file|targets.txt}}"
 
   # === PROTOCOL & CIPHER ENUMERATION ===
-  - title: sslscan - check specific TLS version
+  - title: sslscan - 检查特定 TLS 版本
     desc: |
-      Force the tool to only check for a specific version of the TLS protocol, such as TLS 1.2 or 1.3.
-      This is useful for compliance testing when you need to verify that a server has successfully disabled older, insecure protocols like TLS 1.0 or 1.1.
-      It helps in debugging specific connection issues related to protocol version mismatch.
+      强制工具仅检查特定版本的 TLS 协议，如 TLS 1.2 或 1.3。
+      当你需要验证服务器已成功禁用 TLS 1.0 或 1.1 等较旧不安全协议时，这对于合规性测试很有用。
+      它有助于调试与协议版本不匹配相关的特定连接问题。
     command: "sslscan --tls{{version|12}} {{target}}"
 
-  - title: sslscan - list all supported TLS versions
+  - title: sslscan - 列出所有受支持的 TLS 版本
     desc: |
-      Instruct sslscan to check for all versions of the TLS protocol (1.0, 1.1, 1.2, and 1.3).
-      This ensures that the scan covers the entire modern TLS spectrum while ignoring legacy SSLv2 and SSLv3 protocols.
-      It is a good balance for modern security audits focused on current standards.
+      指示 sslscan 检查所有版本的 TLS 协议（1.0、1.1、1.2 和 1.3）。
+      这确保扫描覆盖整个现代 TLS 范围，同时忽略遗留的 SSLv2 和 SSLv3 协议。
+      对于关注当前标准的现代安全审计来说，这是一个良好的平衡。
     command: "sslscan --tlsall {{target}}"
 
-  - title: sslscan - show IANA cipher names
+  - title: sslscan - 显示 IANA 加密套件名称
     desc: |
-      Display cipher suite names using the IANA/RFC naming convention instead of the default OpenSSL names.
-      This is particularly helpful when comparing results with official documentation, RFCs, or other security tools like Nmap.
-      Standardizing the names makes it easier to document findings in professional penetration testing reports.
+      使用 IANA/RFC 命名约定显示加密套件名称，而不是默认的 OpenSSL 名称。
+      在将结果与官方文档、RFC 或其他安全工具（如 Nmap）进行比较时特别有帮助。
+      标准化名称使在专业渗透测试报告中记录发现更容易。
     command: "sslscan --iana-names {{target}}"
 
   # === CERTIFICATE ANALYSIS ===
-  - title: sslscan - show full certificate chain
+  - title: sslscan - 显示完整证书链
     desc: |
-      Retrieve and display detailed information for every certificate in the server's trust chain.
-      This includes the root CA, intermediate certificates, and the leaf certificate.
-      Use this to identify issues with chain-of-trust, expired intermediates, or weak signature algorithms used by the CA.
+      获取并显示服务器信任链中每个证书的详细信息。
+      这包括根 CA、中间证书和叶子证书。
+      用它来识别信任链问题、过期的中间证书或 CA 使用的弱签名算法。
     command: "sslscan --show-certificates {{target}}"
 
-  - title: sslscan - client certificate authentication
+  - title: sslscan - 客户端证书认证
     desc: |
-      Provide a client certificate and private key to the server for mutual TLS (mTLS) authentication.
-      This allows you to scan the SSL/TLS configuration of services that require a valid client certificate to establish a connection.
-      The file should be in PEM or ASN1 format; ensure you have the appropriate permissions to read the key file.
+      向服务器提供客户端证书和私钥以进行双向 TLS（mTLS）认证。
+      这允许你扫描需要有效客户端证书才能建立连接的服务的 SSL/TLS 配置。
+      文件应为 PEM 或 ASN1 格式；确保你有适当权限读取密钥文件。
     command: "sslscan --certs={{cert_file|client.pem}} --pk={{key_file|client.key}} {{target}}"
 
   # === VULNERABILITY & SPECIAL CHECKS ===
-  - title: sslscan - check for Heartbleed and Renegotiation
+  - title: sslscan - 检查 Heartbleed 和重协商
     desc: |
-      Scan the target specifically for the Heartbleed vulnerability (CVE-2014-0160) and secure/insecure TLS renegotiation support.
-      While these checks are often enabled by default, this command ensures the audit covers these critical flaws.
-      Finding these vulnerabilities can lead to immediate server compromise or session hijacking, making them high-priority items.
+      专门针对 Heartbleed 漏洞（CVE-2014-0160）以及安全/不安全 TLS 重协商支持扫描目标。
+      虽然这些检查通常默认启用，但此命令确保审计覆盖这些严重缺陷。
+      发现这些漏洞可能导致立即的服务器入侵或会话劫持，使其成为高优先级项目。
     command: "sslscan {{target}}"
 
-  - title: sslscan - scan RDP services
+  - title: sslscan - 扫描 RDP 服务
     desc: |
-      Send a Remote Desktop Protocol (RDP) preamble before initiating the SSL/TLS scan.
-      Standard SSL scanners often fail on RDP ports (default 3389) because they don't understand the initial protocol handshake.
-      This flag allows sslscan to correctly identify the encryption used for RDP sessions on Windows servers.
+      在启动 SSL/TLS 扫描之前发送远程桌面协议（RDP）前导码。
+      标准 SSL 扫描器通常在 RDP 端口（默认 3389）上失败，因为它们不理解初始协议握手。
+      此标志允许 sslscan 正确识别 Windows 服务器上 RDP 会话使用的加密。
     command: "sslscan --rdp {{target}}:{{port|3389}}"
 
   # === SERVICE SPECIFIC (STARTTLS) ===
-  - title: sslscan - SMTP STARTTLS scan
+  - title: sslscan - SMTP STARTTLS 扫描
     desc: |
-      Perform a scan on an SMTP mail server using the STARTTLS command to upgrade a cleartext connection to a secure one.
-      This is necessary because SMTP usually starts on port 25 or 587 without encryption and negotiates TLS later.
-      Failing to use this flag on an SMTP server will result in a failed scan because the tool won't initiate the handshake correctly.
+      对 SMTP 邮件服务器执行扫描，使用 STARTTLS 命令将明文连接升级为安全连接。
+      这是必要的，因为 SMTP 通常从 25 或 587 端口开始且无加密，稍后才协商 TLS。
+      在 SMTP 服务器上未使用此标志会导致扫描失败，因为工具无法正确发起握手。
     command: "sslscan --starttls-smtp {{target}}:{{port|25}}"
 
-  - title: sslscan - MySQL STARTTLS scan
+  - title: sslscan - MySQL STARTTLS 扫描
     desc: |
-      Initiate a TLS scan on a MySQL database server by performing the database-specific STARTTLS handshake.
-      Many database configurations allow or require encrypted connections but do not use standard SSL ports.
-      This action helps verify if database traffic is encrypted and if the ciphers used meet security requirements.
+      通过执行数据库特定的 STARTTLS 握手，在 MySQL 数据库服务器上发起 TLS 扫描。
+      许多数据库配置允许或要求加密连接，但不使用标准 SSL 端口。
+      此操作有助于验证数据库流量是否加密，以及使用的加密套件是否满足安全要求。
     command: "sslscan --starttls-mysql {{target}}:{{port|3306}}"
 
   # === ADVANCED & OUTPUT ===
-  - title: sslscan - output to XML file
+  - title: sslscan - 输出到 XML 文件
     desc: |
-      Save the complete results of the scan into an XML formatted file for automated processing or archival.
-      This is useful for integrating sslscan into automated CI/CD pipelines or vulnerability management systems.
-      You can also use '-' as the filename to output the raw XML directly to the terminal.
+      将扫描的完整结果保存为 XML 格式文件，用于自动化处理或归档。
+      这对于将 sslscan 集成到自动化 CI/CD 流水线或漏洞管理系统很有用。
+      你也可以使用 - 作为文件名，将原始 XML 直接输出到终端。
     command: "sslscan --xml={{output_file|results.xml}} {{target}}"
 
-  - title: sslscan - SNI support
+  - title: sslscan - SNI 支持
     desc: |
-      Specify a Server Name Indication (SNI) hostname to be sent during the TLS handshake.
-      This is crucial when scanning servers that host multiple virtual domains on a single IP address (Virtual Hosting).
-      Without providing the correct SNI name, the server might present the wrong certificate or refuse the connection entirely.
+      指定在 TLS 握手期间发送的服务器名称指示（SNI）主机名。
+      在扫描在单个 IP 地址上托管多个虚拟域（虚拟主机）的服务器时至关重要。
+      不提供正确的 SNI 名称，服务器可能呈现错误的证书或完全拒绝连接。
     command: "sslscan --sni-name={{hostname}} {{target}}"
 
-  - title: sslscan - disable color output
+  - title: sslscan - 禁用彩色输出
     desc: |
-      Run the scan without any ANSI color codes in the output.
-      This is helpful when you are piping the output to other text processing tools like grep, awk, or saving to a log file for documentation.
-      It prevents the "garbage" characters from appearing in plain text files.
+      运行扫描时不带任何 ANSI 颜色代码。
+      当你将输出管道传给 grep、awk 等其他文本处理工具或保存到日志文件进行文档记录时很有帮助。
+      它可以防止纯文本文件中出现「乱码」字符。
     command: "sslscan --no-colour {{target}}"

@@ -4,78 +4,78 @@ tags: [network, enumeration, security, pentest, monitoring, snmp]
 actions:
 # === BASIC ENUMERATION (SNMP v1/v2c) ===
 
- - title: snmpwalk - basic walk v2c
+ - title: snmpwalk - 基础 v2c 遍历
    desc: |
-     Perform a recursive SNMP query starting from the root OID using SNMP version 2c. 
-     This is the most common method to enumerate system information, network interfaces, and running processes on a device. 
-     Ensure you have the correct community string, as 'public' is the most frequent default but may be restricted or disabled.
+     使用 SNMP 版本 2c 从根 OID 开始执行递归 SNMP 查询。
+     这是枚举设备系统信息、网络接口和运行进程的最常见方法。
+     确保你拥有正确的团体字符串，因为 public 是最常见的默认值，但可能被限制或禁用。
    command: "snmpwalk -v 2c -c {{community|public}} {{target}}"
 
- - title: snmpwalk - basic walk v1
+ - title: snmpwalk - 基础 v1 遍历
    desc: |
-     Execute an SNMP walk using version 1 protocol. 
-     Use this command for legacy devices that do not support the newer v2c or v3 features. 
-     While less efficient than v2c, it is often successful on older industrial or networking hardware during reconnaissance.
+     使用版本 1 协议执行 SNMP 遍历。
+     对于不支持较新 v2c 或 v3 功能的遗留设备使用此命令。
+     虽然效率不如 v2c，但在侦察期间对较旧的工业或网络硬件通常能成功。
    command: "snmpwalk -v 1 -c {{community|public}} {{target}}"
 
- - title: snmpwalk - numerical OIDs
+ - title: snmpwalk - 数字 OID
    desc: |
-     Display the output using numerical OIDs instead of translating them to human-readable names. 
-     This is useful when the local system lacks the necessary MIB files to translate the data. 
-     It provides a raw look at the data structure, which is essential for scripting or manual OID analysis.
+     使用数字 OID 显示输出，而不是将它们转换为人类可读的名称。
+     当本地系统缺少转换数据所需的 MIB 文件时很有用。
+     它提供数据结构的原始视图，这对脚本编写或手动 OID 分析至关重要。
    command: "snmpwalk -v 2c -c {{community|public}} -n {{target}}"
 
 # === SNMP VERSION 3 (AUTHENTICATED) ===
 
- - title: snmpwalk - v3 authentication without privacy
+ - title: snmpwalk - v3 认证（无隐私）
    desc: |
-     Query a target using SNMPv3 with the authNoPriv security level. 
-     This level provides identity verification through a username and an authentication passphrase but does not encrypt the data. 
-     It is typically used in environments that require user accountability without the CPU overhead of full encryption.
+     使用 authNoPriv 安全级别查询目标。
+     此级别通过用户名和认证口令提供身份验证，但不加密数据。
+     它通常用于需要用户问责但不承担完整加密 CPU 开销的环境。
    command: "snmpwalk -v 3 -l authNoPriv -u {{username}} -a {{auth_proto|SHA}} -A {{auth_passphrase}} {{target}}"
 
- - title: snmpwalk - v3 authentication and privacy
+ - title: snmpwalk - v3 认证和隐私
    desc: |
-     Query a target using the highest security level (authPriv) available in SNMPv3. 
-     This ensures that the SNMP traffic is protected against both spoofing and eavesdropping by using both authentication and encryption. 
-     You must specify the authentication protocol (MD5/SHA) and the privacy protocol (DES/AES) along with their respective passwords.
+     使用 SNMPv3 中可用的最高安全级别（authPriv）查询目标。
+     通过同时使用认证和加密，确保 SNMP 流量免受欺骗和窃听。
+     你必须指定认证协议（MD5/SHA）和隐私协议（DES/AES）及其各自的口令。
    command: "snmpwalk -v 3 -l authPriv -u {{username}} -a {{auth_proto|SHA}} -A {{auth_passphrase}} -x {{priv_proto|AES}} -X {{priv_passphrase}} {{target}}"
 
 # === TARGETED QUERIES AND MIB HANDLING ===
 
- - title: snmpwalk - walk specific OID
+ - title: snmpwalk - 遍历特定 OID
    desc: |
-     Start the SNMP walk from a specific OID branch instead of the entire tree. 
-     This is highly efficient when you are only interested in a specific category of data, such as interface statistics or process lists. 
-     It reduces the time taken to complete the walk and minimizes unnecessary network traffic to the target agent.
+     从特定 OID 分支开始 SNMP 遍历，而不是整个树。
+     当你只对特定类别的数据（如接口统计或进程列表）感兴趣时，这非常高效。
+     它减少了完成遍历所需的时间，并最小化发往目标代理的不必要网络流量。
    command: "snmpwalk -v 2c -c {{community|public}} {{target}} {{oid}}"
 
- - title: snmpwalk - load all MIBs
+ - title: snmpwalk - 加载所有 MIB
    desc: |
-     Force the tool to load all available MIB files stored in the system directories during the walk. 
-     This ensures that the output contains human-readable labels for as many objects as possible. 
-     Use this when the standard output contains too many numerical strings that are difficult to interpret manually.
+     在遍历期间强制工具加载系统目录中所有可用的 MIB 文件。
+     这确保输出包含尽可能多的对象的人类可读标签。
+     当标准输出包含太多难以手动解释的数字字符串时使用。
    command: "snmpwalk -v 2c -c {{community|public}} -m ALL {{target}}"
 
- - title: snmpwalk - enumerate system information
+ - title: snmpwalk - 枚举系统信息
    desc: |
-     Specifically target the system MIB group (OID 1.3.6.1.2.1.1) to gather basic host details. 
-     The resulting output usually includes the device description, system uptime, administrator contact, and the hostname. 
-     This is a standard first step in fingerprinting an unknown network device via SNMP.
+     专门针对系统 MIB 组（OID 1.3.6.1.2.1.1）以收集基本主机详情。
+     结果输出通常包括设备描述、系统运行时间、管理员联系人和主机名。
+     这是通过 SNMP 对未知网络设备进行指纹识别的标准第一步。
    command: "snmpwalk -v 2c -c {{community|public}} {{target}} 1.3.6.1.2.1.1"
 
 # === OUTPUT FORMATTING ===
 
- - title: snmpwalk - quick print format
+ - title: snmpwalk - 快速打印格式
    desc: |
-     Format the output for easier parsing by removing unnecessary information from the display. 
-     Using the -Oq flag strips away the OID type and other metadata, leaving a cleaner 'OID = value' format. 
-     This is particularly helpful when you intend to pipe the output into other command-line tools like grep, awk, or sed.
+     通过从显示中移除不必要的信息来格式化输出，以便于解析。
+     使用 -Oq 标志剥离 OID 类型和其他元数据，留下更干净的 OID = value 格式。
+     当你打算将输出管道传给 grep、awk 或 sed 等其他命令行工具时，这特别有帮助。
    command: "snmpwalk -v 2c -c {{community|public}} -Oq {{target}}"
 
- - title: snmpwalk - hexadecimal string output
+ - title: snmpwalk - 十六进制字符串输出
    desc: |
-     Force all string values to be displayed in hexadecimal format. 
-     This is useful when the agent returns non-printable characters or data that is misinterpreted as standard ASCII. 
-     It is often used when debugging custom MIBs or examining binary data embedded in SNMP strings.
+     强制所有字符串值以十六进制格式显示。
+     当代理返回不可打印字符或被误解为标准 ASCII 的数据时很有用。
+     它常用于调试自定义 MIB 或检查嵌入在 SNMP 字符串中的二进制数据。
    command: "snmpwalk -v 2c -c {{community|public}} -Ox {{target}}"

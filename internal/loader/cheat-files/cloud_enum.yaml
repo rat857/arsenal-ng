@@ -3,76 +3,76 @@ tags: [cloud, osint, enumeration, aws, azure, gcp, security, pentest]
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: cloud_enum - basic keyword enumeration
+  - title: cloud_enum - 基础关键字枚举
     desc: |
-      Perform a standard scan across AWS, Azure, and GCP using a single keyword.
-      The tool will automatically apply default mutations to find common naming conventions for buckets and services.
-      This is the primary method for discovering publicly accessible storage and apps belonging to a specific company.
-      It is highly effective for initial OSINT and footprinting phases during a penetration test.
+      使用单个关键字在 AWS、Azure 与 GCP 上执行标准扫描。
+      工具会自动应用默认变体，查找存储桶与服务的常见命名约定。
+      这是发现属于特定公司的公开可访问存储与应用的主要方法。
+      它在渗透测试的初始 OSINT 与足迹收集阶段非常有效。
     command: "cloud_enum -k {{keyword}}"
 
-  - title: cloud_enum - multiple keyword scan
+  - title: cloud_enum - 多关键字扫描
     desc: |
-      Search for multiple keywords or brand names in a single execution.
-      This is useful when an organization uses different names for its subsidiaries or specific project identifiers.
-      Combining keywords into one command helps streamline the reconnaissance process and provides a consolidated view.
-      Ensure you use the -k flag for each unique keyword you wish to target.
+      在单次执行中搜索多个关键字或品牌名。
+      当组织为其子公司或特定项目标识符使用不同名称时很有用。
+      将关键字组合到一条命令中有助于简化侦察过程并提供整合视图。
+      请确保为你希望定位的每个唯一关键字使用 -k 标志。
     command: "cloud_enum -k {{keyword1}} -k {{keyword2}} -k {{keyword3}}"
 
-  - title: cloud_enum - enumeration using a keyword file
+  - title: cloud_enum - 使用关键字文件枚举
     desc: |
-      Read a list of keywords from a text file to perform bulk cloud enumeration.
-      This approach is ideal when dealing with large-scale targets or lists of subdomains harvested from other tools.
-      The input file should contain one keyword per line for the tool to process correctly.
-      It automates the search for a vast array of potential assets without manual input for each keyword.
+      从文本文件读取关键字列表以执行批量云枚举。
+      当处理大规模目标或从其他工具收集的子域列表时，此方式很理想。
+      输入文件应每行一个关键字，以便工具正确处理。
+      它自动搜索大量潜在资产，而无需为每个关键字手动输入。
     command: "cloud_enum -kf {{keyfile_path}}"
 
   # === ADVANCED CONFIGURATION ===
-  - title: cloud_enum - quick scan without mutations
+  - title: cloud_enum - 无变体的快速扫描
     desc: |
-      Disable all keyword mutations and second-level brute-forcing to perform a rapid check.
-      This is useful when you have the exact name of a resource and want to verify its existence and accessibility quickly.
-      It significantly reduces the number of requests sent to cloud providers, making the scan very fast.
-      Note that this will likely miss resources that follow non-standard naming patterns or use common suffixes.
+      禁用所有关键字变体与二级暴力破解，以执行快速检查。
+      当你拥有资源的准确名称、并想快速验证其存在与可访问性时很有用。
+      它显著减少发送到云服务商的请求数量，使扫描非常快。
+      注意这可能会漏掉遵循非标准命名模式或使用常见后缀的资源。
     command: "cloud_enum -k {{keyword}} -qs"
 
-  - title: cloud_enum - high performance multi-threaded scan
+  - title: cloud_enum - 高性能多线程扫描
     desc: |
-      Increase the number of threads used for HTTP brute-forcing to speed up the discovery process.
-      The default is set to 5 threads, but increasing this can yield faster results on high-bandwidth connections.
-      Be cautious as setting the thread count too high may trigger rate-limiting from cloud providers like AWS or Azure.
-      Monitoring the output for errors or timeouts is recommended when using high thread values.
+      增加用于 HTTP 暴力破解的线程数，以加快发现过程。
+      默认为 5 个线程，但在高带宽连接上增加线程可产生更快结果。
+      请谨慎，线程数过高可能触发 AWS 或 Azure 等云服务商的限速。
+      使用高线程值时，建议监控输出中的错误或超时。
     command: "cloud_enum -k {{keyword}} -t {{threads|20}}"
 
-  - title: cloud_enum - custom mutation and brute-force lists
+  - title: cloud_enum - 自定义变体与暴力破解列表
     desc: |
-      Specify custom files for keyword mutations and Azure container brute-forcing.
-      Using a targeted wordlist instead of the default fuzzing file can significantly increase the success rate for specific industries.
-      The -m flag handles general mutations, while -b is specifically used for the second-level brute-forcing of Azure resources.
-      This is a powerful feature for advanced users who have developed their own specialized cloud resource wordlists.
+      为关键字变体与 Azure 容器暴力破解指定自定义文件。
+      使用定向字典而非默认模糊测试文件可显著提高特定行业的成功率。
+      -m 标志处理常规变体，而 -b 专门用于 Azure 资源的二级暴力破解。
+      这是为已开发自有专用云资源字典的高级用户准备的强大特性。
     command: "cloud_enum -k {{keyword}} -m {{mutation_file}} -b {{brute_file}}"
 
   # === FILTERING AND OUTPUT ===
-  - title: cloud_enum - targeted provider scan
+  - title: cloud_enum - 定向服务商扫描
     desc: |
-      Focus the enumeration on a specific cloud provider by disabling the others.
-      This command is useful when you already know the target's primary infrastructure and want to avoid unnecessary noise.
-      Disabling providers like AWS or Azure saves time and reduces the number of outgoing requests during the engagement.
-      You can mix and match these flags to scan exactly the environments you are interested in.
+      通过禁用其他服务商，将枚举聚焦在特定云服务商上。
+      当你已了解目标的主要基础设施、并想避免不必要噪音时，此命令很有用。
+      禁用 AWS 或 Azure 等服务商可节省时间并减少任务期间的出站请求。
+      你可以组合这些标志，精确扫描你感兴趣的环境。
     command: "cloud_enum -k {{keyword}} --disable-aws --disable-azure"
 
-  - title: cloud_enum - detailed logging to file
+  - title: cloud_enum - 详细日志记录到文件
     desc: |
-      Save the discovery results to a log file in a structured format like JSON or CSV.
-      Logging is essential for documentation and for feeding the discovered assets into other automated tools.
-      The tool appends found items to the specified file, ensuring that previous results are not accidentally overwritten.
-      This allows for long-running scans to be recorded safely for later analysis or reporting.
+      将发现结果保存到 JSON 或 CSV 等结构化格式的日志文件中。
+      日志记录对于文档化以及将发现的资产输入其他自动化工具至关重要。
+      工具会将找到的项目追加到指定文件，确保之前的结果不会被意外覆盖。
+      这使长时间运行的扫描能够被安全记录，以供后续分析或报告。
     command: "cloud_enum -k {{keyword}} -l {{logfile|results.json}} -f {{format|json}}"
 
-  - title: cloud_enum - custom nameserver configuration
+  - title: cloud_enum - 自定义名称服务器配置
     desc: |
-      Specify a custom DNS server to be used for the brute-force and discovery process.
-      This can be useful to bypass local DNS filtering or to use specialized DNS providers that may offer better performance.
-      Changing the nameserver can also help in scenarios where local DNS resolvers are rate-limiting rapid queries.
-      Ensure the provided nameserver is reliable to prevent false negatives during the enumeration phase.
+      指定用于暴力破解与发现过程的自定义 DNS 服务器。
+      这对于绕过本地 DNS 过滤或使用可能提供更好性能的专用 DNS 提供商很有用。
+      当本地 DNS 解析器对快速查询限速时，更改名称服务器也有帮助。
+      请确保提供的名称服务器可靠，以防止枚举阶段出现漏报。
     command: "cloud_enum -k {{keyword}} -ns {{nameserver|1.1.1.1}}"

@@ -3,126 +3,96 @@ tags: [network, web, security, transfer, api, pentest, debugging, enumeration]
 
 actions:
 # === BASIC OPERATIONS ===
- - title: curl - simple GET request
+ - title: curl - 简单 GET 请求
    desc: |
-     Performs a standard HTTP GET request to the specified URL. 
-     This is the most common way to fetch resources and verify if a web server is responding. 
-     The output is printed directly to the standard output (terminal). 
-     It is often used for quick connectivity checks or inspecting raw HTML/JSON responses.
+     对指定 URL 执行标准的 HTTP GET 请求。
+     这是获取资源并验证 Web 服务器是否响应的最常用方式，输出直接打印到标准输出（终端）。
    command: "curl {{url}}"
 
- - title: curl - save output to a file
+ - title: curl - 保存输出到文件
    desc: |
-     Downloads the content from the URL and saves it into a local file. 
-     The -o flag allows you to specify a custom filename for the saved content. 
-     This is essential when downloading binaries, scripts, or large datasets that shouldn't be printed to the terminal. 
-     Ensure you have write permissions in the directory where you are saving the file.
+     从 URL 下载内容并保存到本地文件。
+     -o 标志允许你为保存的内容指定自定义文件名，下载二进制文件、脚本或大型数据集时必不可少。
    command: "curl -o {{filename|output.txt}} {{url}}"
 
- - title: curl - display response headers
+ - title: curl - 显示响应头
    desc: |
-     Fetches the URL and displays only the HTTP response headers. 
-     This is highly useful for debugging server configurations, identifying the web server software, and checking cookies or redirect locations. 
-     Using -I triggers a HEAD request, which is faster as it does not download the body content. 
-     It is a primary step in web reconnaissance to find potential vulnerabilities in header configurations.
+     获取 URL 并仅显示 HTTP 响应头。
+     对调试服务器配置、识别 Web 服务器软件以及检查 Cookie 或重定向位置非常有用，-I 会触发 HEAD 请求，速度更快。
    command: "curl -I {{url}}"
 
- - title: curl - verbose output for debugging
+ - title: curl - 详细输出调试
    desc: |
-     Enables verbose mode to show the entire request and response flow. 
-     It displays the handshake, headers sent by curl, and the headers received from the server. 
-     Lines starting with '>' indicate data sent, while '<' indicates data received. 
-     Use this when a request is failing and you need to see exactly what curl is doing under the hood.
+     启用详细模式，显示完整的请求和响应流程。
+     会展示握手、curl 发送的请求头以及从服务器接收的响应头，以 > 开头表示发送的数据，以 < 开头表示接收的数据。
    command: "curl -v {{url}}"
 
 # === DATA TRANSFER & METHODS ===
- - title: curl - send POST request with data
+ - title: curl - 携带数据发送 POST 请求
    desc: |
-     Sends an HTTP POST request with specific form data to the server. 
-     The -d flag automatically sets the Content-Type to application/x-www-form-urlencoded. 
-     This is typically used for submitting web forms or login credentials. 
-     You can use multiple -d flags to send multiple key-value pairs in a single request.
+     向服务器发送携带特定表单数据的 HTTP POST 请求。
+     -d 标志会自动将 Content-Type 设置为 application/x-www-form-urlencoded，常用于提交 Web 表单或登录凭据。
    command: "curl -d \"{{key1}}={{value1}}\" -d \"{{key2}}={{value2}}\" {{url}}"
 
- - title: curl - send JSON data in POST
+ - title: curl - 在 POST 中发送 JSON 数据
    desc: |
-     Sends a POST request with a raw JSON payload. 
-     You must manually set the 'Content-Type: application/json' header for the server to parse the data correctly. 
-     This is the standard way to interact with modern RESTful APIs. 
-     Be careful with shell quoting when writing the JSON string directly in the terminal.
+     发送携带原始 JSON 载荷的 POST 请求。
+     你必须手动设置 Content-Type: application/json 请求头，服务器才能正确解析数据，这是与现代 RESTful API 交互的标准方式。
    command: "curl -X POST -H \"Content-Type: application/json\" -d '{{json_data|{\"key\":\"value\"}}}' {{url}}"
 
- - title: curl - upload a file
+ - title: curl - 上传文件
    desc: |
-     Uploads a local file to the destination server using the -T flag. 
-     This typically uses the PUT method or specific protocols supported by the server like FTP or SFTP. 
-     It is commonly used for transferring logs, backups, or exploit payloads to a target system. 
-     Note that the remote server must be configured to accept file uploads at that specific path.
+     使用 -T 标志将本地文件上传到目标服务器。
+     这通常使用 PUT 方法，或 FTP、SFTP 等服务器支持的协议，常用于传输日志、备份或攻击载荷到目标系统。
    command: "curl -T {{local_file}} {{url}}"
 
 # === AUTHENTICATION & HEADERS ===
- - title: curl - basic authentication
+ - title: curl - 基本认证
    desc: |
-     Authenticates against a server using the HTTP Basic Authentication scheme. 
-     The -u flag takes a username and password separated by a colon. 
-     Curl handles the Base64 encoding of these credentials automatically. 
-     Be aware that Basic Auth is insecure over HTTP as credentials are sent in plain text; always use HTTPS.
+     使用 HTTP Basic Authentication 方案对服务器进行认证。
+     -u 标志接受以冒号分隔的用户名和密码，curl 会自动对这些凭据进行 Base64 编码，请注意 Basic Auth 在 HTTP 下不安全，应始终使用 HTTPS。
    command: "curl -u {{username}}:{{password}} {{url}}"
 
- - title: curl - send custom headers
+ - title: curl - 发送自定义请求头
    desc: |
-     Adds a custom header to the outgoing HTTP request. 
-     This is frequently used to provide API keys, Bearer tokens, or to bypass simple security filters. 
-     You can add multiple headers by repeating the -H flag. 
-     It is essential for testing how a server reacts to non-standard or missing headers.
+     为发出的 HTTP 请求添加自定义请求头。
+     常用于提供 API 密钥、Bearer 令牌或绕过简单的安全过滤，可通过重复 -H 标志添加多个请求头。
    command: "curl -H \"{{header_name}}: {{header_value}}\" {{url}}"
 
- - title: curl - set custom User-Agent
+ - title: curl - 设置自定义 User-Agent
    desc: |
-     Overrides the default curl User-Agent string with a custom one. 
-     Many web applications block the 'curl' User-Agent to prevent automated scraping or bot activity. 
-     Setting this to a common browser string (like Chrome or Firefox) can help bypass such restrictions. 
-     This is a standard technique used during the initial stages of web application testing.
+     用自定义字符串覆盖默认的 curl User-Agent。
+     许多 Web 应用会屏蔽 curl 的 User-Agent 以防止自动化抓取或机器人活动，将其设置为常见浏览器字符串可帮助绕过此类限制。
    command: "curl -A \"{{user_agent|Mozilla/5.0 (Windows NT 10.0; Win64; x64)}}\" {{url}}"
 
 # === SECURITY & PROXIES ===
- - title: curl - ignore SSL certificate errors
+ - title: curl - 忽略 SSL 证书错误
    desc: |
-     Allows curl to connect to servers with invalid or self-signed SSL certificates. 
-     The -k (or --insecure) flag bypasses the certificate verification process entirely. 
-     This is useful for testing internal development servers or legacy systems. 
-     Warning: This makes the connection vulnerable to Man-in-the-Middle (MITM) attacks; use with caution.
+     允许 curl 连接到证书无效或自签名的服务器。
+     -k（或 --insecure）标志会完全跳过证书验证过程，适合测试内部开发服务器或遗留系统，但会使连接易受中间人（MITM）攻击。
    command: "curl -k {{url}}"
 
- - title: curl - use a proxy server
+ - title: curl - 使用代理服务器
    desc: |
-     Routes the entire request through a specified proxy server. 
-     This is vital for capturing traffic in tools like Burp Suite, OWASP ZAP, or for anonymizing the source IP. 
-     The proxy can be HTTP, HTTPS, or SOCKS. 
-     Ensure the proxy address and port are correct, otherwise, the connection will time out.
+     将整个请求经由指定代理服务器转发。
+     这对在 Burp Suite、OWASP ZAP 等工具中捕获流量或匿名化源 IP 至关重要，代理可为 HTTP、HTTPS 或 SOCKS。
    command: "curl -x {{proxy_proto|http}}://{{proxy_host}}:{{proxy_port|8080}} {{url}}"
 
- - title: curl - use cookies from a file
+ - title: curl - 使用文件中的 Cookie
    desc: |
-     Sends cookies stored in a file along with the request. 
-     The -b flag reads cookies from the specified file, while -c can be used to write received cookies back to a file. 
-     This is necessary for maintaining sessions in multi-step web interactions. 
-     The file format should be either Netscape cookie format or simple "name=value" pairs.
+     随请求发送存储在文件中的 Cookie。
+     -b 标志从指定文件读取 Cookie，-c 可用于将收到的 Cookie 写回文件，在多步骤 Web 交互中维护会话时必不可少。
    command: "curl -b {{cookie_file|cookies.txt}} {{url}}"
 
 # === ADVANCED ===
- - title: curl - follow redirects
+ - title: curl - 跟随重定向
    desc: |
-     Instructs curl to follow HTTP 3xx redirects automatically. 
-     By default, curl shows the redirect page content or headers but does not move to the new location. 
-     The -L flag ensures you reach the final destination of a shortened or redirected URL. 
-     This is critical when testing URLs that use load balancers or authentication redirects.
+     指示 curl 自动跟随 HTTP 3xx 重定向。
+     默认情况下 curl 只显示重定向页面内容或响应头而不会跳转，-L 标志可确保你到达缩短或重定向 URL 的最终目的地。
    command: "curl -L {{url}}"
 
- - title: curl - limit rate of download
+ - title: curl - 限制下载速率
    desc: |
-     Limits the speed of the data transfer to a specified rate. 
-     The rate can be specified in bytes, kilobytes (k), or megabytes (m). 
-     This is useful to prevent curl from consuming all available bandwidth on a network. 
-     It is often used when downloading large files in production environments or over slow connections.
+     将数据传输速度限制为指定速率。
+     速率可用字节、千字节（k）或兆字节（m）指定，可防止 curl 占用网络上的全部可用带宽。
    command: "curl --limit-rate {{rate|100k}} {{url}}"

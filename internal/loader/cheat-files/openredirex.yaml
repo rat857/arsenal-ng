@@ -3,46 +3,40 @@ tags: [web, security, pentest, open-redirection, scanner, bug-bounty, enumeratio
 
 actions:
   # === BASIC USAGE ===
-  - title: openredirex - basic scan with default payloads
+  - title: openredirex - 使用默认 Payload 的基础扫描
     desc: |
-      This command performs a basic scan for open redirection vulnerabilities by reading a list of URLs from a file. 
-      It automatically identifies parameters in the URLs and replaces them with a hardcoded list of common redirection payloads. 
-      This is the most frequent entry point for testing a large list of endpoints discovered during the reconnaissance phase.
+      此命令通过从文件读取 URL 列表来执行开放重定向漏洞的基础扫描。它自动识别 URL 中的参数，并用硬编码的常见重定向 payload 列表替换它们。
+      这是测试侦察阶段发现的大量端点列表最常见的入口。
     command: "cat {{url_list}} | openredirex"
 
-  - title: openredirex - scan using a custom payload file
+  - title: openredirex - 使用自定义 Payload 文件扫描
     desc: |
-      Use this command when you have a specific list of payloads, such as those designed to bypass certain filters or WAFs. 
-      The tool will read each line from your provided payload file and inject it into the target URLs. 
-      This is highly recommended for more advanced testing where the default payload list might be insufficient.
+      当你有特定的 payload 列表（如旨在绕过某些过滤器或 WAF 的 payload）时使用此命令。工具会读取你所提供 payload 文件的每一行，并将其注入目标 URL。
+      在默认 payload 列表可能不足的更高级测试中强烈推荐。
     command: "cat {{url_list}} | openredirex -p {{payload_file}}"
 
   # === CONFIGURATION & OPTIMIZATION ===
-  - title: openredirex - scan with a custom keyword
+  - title: openredirex - 使用自定义关键字扫描
     desc: |
-      By default, the tool looks for the string 'FUZZ' within the provided URLs to determine where to inject payloads. 
-      If your URLs use a different placeholder or if you want to target a specific parameter name, use this flag to define it. 
-      This ensures that the injection occurs exactly where you intend it to, providing better control over the testing process.
+      默认情况下，工具在提供的 URL 中查找字符串 FUZZ 来确定注入 payload 的位置。若你的 URL 使用不同的占位符，或想针对特定参数名，使用此标志定义它。
+      这确保注入恰好发生在你希望的位置，从而更好地控制测试过程。
     command: "cat {{url_list}} | openredirex -k {{keyword|FUZZ}}"
 
-  - title: openredirex - adjust concurrency for performance
+  - title: openredirex - 调整并发以优化性能
     desc: |
-      This flag controls the number of concurrent tasks the script runs, which directly impacts the speed of the scan. 
-      Increasing the concurrency can drastically reduce the time needed to scan thousands of URLs, but it may also trigger rate limits. 
-      The default value is 100, but you should adjust it based on the stability and speed of the target server.
+      此标志控制脚本运行的并发任务数，直接影响扫描速度。增加并发可大幅减少扫描数千 URL 所需的时间，但也可能触发速率限制。
+      默认值为 100，但应根据目标服务器的稳定性和速度进行调整。
     command: "cat {{url_list}} | openredirex -c {{concurrency|50}}"
 
   # === ADVANCED WORKFLOWS ===
-  - title: openredirex - full custom scan configuration
+  - title: openredirex - 完整自定义扫描配置
     desc: |
-      Combine multiple flags to execute a highly tailored scan against your target list. 
-      This example sets a custom payload file, a specific keyword for injection, and a defined concurrency level simultaneously. 
-      This is the ideal approach for professional security assessments and bug bounty hunting on large-scale infrastructures.
+      组合多个标志对目标列表执行高度定制的扫描。此示例同时设置自定义 payload 文件、特定注入关键字和确定的并发级别。
+      这是针对大规模基础设施的专业安全评估和漏洞赏金的理想方法。
     command: "cat {{url_list}} | openredirex -p {{payload_file}} -k {{keyword|FUZZ}} -c {{concurrency|100}}"
 
-  - title: openredirex - integration with url discovery tools
+  - title: openredirex - 与 URL 发现工具集成
     desc: |
-      This command demonstrates how to pipe output from discovery tools like 'waybackurls' directly into the scanner. 
-      It filters the discovered URLs and immediately starts checking them for open redirection vulnerabilities. 
-      Note that you may need to ensure the URLs contain the appropriate keyword or parameters before piping them.
+      此命令演示如何将 waybackurls 等发现工具的输出直接管道到扫描器。它过滤发现的 URL，并立即开始检查它们是否存在开放重定向漏洞。
+      注意在管道前可能需要确保 URL 包含适当的关键字或参数。
     command: "waybackurls {{domain}} | grep '=' | openredirex -c {{concurrency|100}}"

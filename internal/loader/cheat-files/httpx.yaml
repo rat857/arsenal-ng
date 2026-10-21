@@ -3,112 +3,82 @@ tags: [network, web, scanner, security, pentest, enumeration, reconnaissance]
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: httpx - basic target probing
+  - title: httpx - 基础目标探测
     desc: |
-      Performs a basic HTTP probe on a single target to check for live web services. 
-      This is the simplest way to verify if a host is running a web server on default ports. 
-      It returns the URL of the active service if a successful connection is established.
+      对单个目标执行基础 HTTP 探测，以检查活跃的 Web 服务。这是验证主机是否在默认端口上运行 Web 服务器的最简单方式。如果连接成功，它返回活跃服务的 URL。
     command: "httpx -u {{target}}"
 
-  - title: httpx - bulk enumeration with status and title
+  - title: httpx - 带状态码和标题的批量枚举
     desc: |
-      Probes a list of hosts and displays the HTTP status code, page title, and web server information. 
-      This is highly effective for large-scale reconnaissance to quickly identify interesting targets. 
-      The status codes help distinguish between accessible pages, redirects, and unauthorized areas.
+      探测主机列表，并显示 HTTP 状态码、页面标题和 Web 服务器信息。对于大规模侦察以快速识别有趣的目标非常有效。状态码有助于区分可访问页面、重定向和未授权区域。
     command: "httpx -l {{list_file|subdomains.txt}} -sc -title -server"
 
-  - title: httpx - technology and content analysis
+  - title: httpx - 技术与内容分析
     desc: |
-      Probes targets to detect the underlying technology stack, content length, and response time. 
-      The technology detection (Wappalyzer-based) is crucial for identifying CMS, frameworks, or specific libraries. 
-      Content length help in identifying outliers or unique pages across many subdomains.
+      探测目标以检测底层技术栈、内容长度和响应时间。技术检测（基于 Wappalyzer）对于识别 CMS、框架或特定库至关重要。内容长度有助于识别众多子域名中的异常或独特页面。
     command: "httpx -l {{list_file|subdomains.txt}} -td -cl -rt"
 
   # === FILTERING AND MATCHING ===
-  - title: httpx - match specific status codes
+  - title: httpx - 匹配特定状态码
     desc: |
-      Filters the output to only show results that match the specified HTTP status codes. 
-      This is useful when looking specifically for successful logins (200), redirects (302), or forbidden areas (403). 
-      Multiple codes can be provided as a comma-separated list.
+      过滤输出，仅显示与指定 HTTP 状态码匹配的结果。当专门寻找成功登录（200）、重定向（302）或禁止区域（403）时非常有用。多个状态码可以逗号分隔列表提供。
     command: "httpx -l {{list_file}} -mc {{status_codes|200,301,302}}"
 
-  - title: httpx - filter out common error pages
+  - title: httpx - 过滤常见错误页面
     desc: |
-      Excludes specific status codes from the results to reduce noise during large scans. 
-      Commonly used to hide 404 Not Found or 403 Forbidden pages when they are not relevant to the current task. 
-      This keeps the terminal output clean and focused on valid web assets.
+      从结果中排除特定状态码，以减少大规模扫描中的噪音。常用于在与当前任务无关时隐藏 404 未找到或 403 禁止页面。这使终端输出保持干净并聚焦于有效的 Web 资产。
     command: "httpx -l {{list_file}} -fc {{filter_codes|404,400}}"
 
-  - title: httpx - search for specific strings in body
+  - title: httpx - 搜索响应体中的特定字符串
     desc: |
-      Matches responses that contain a specific string or keyword in the body of the page. 
-      This is extremely powerful for finding sensitive keywords like "admin", "dashboard", or "internal". 
-      Be aware that this increases processing time as the full body must be inspected.
+      匹配页面正文中包含特定字符串或关键字的响应。这对于查找 admin、dashboard 或 internal 等敏感关键字极其强大。请注意这会增加处理时间，因为必须检查完整正文。
     command: "httpx -l {{list_file}} -ms {{search_string|admin}}"
 
   # === ADVANCED PROBING ===
-  - title: httpx - custom port and path probing
+  - title: httpx - 自定义端口和路径探测
     desc: |
-      Probes specific ports and paths for a given list of targets using Nmap-style syntax. 
-      This allows for the discovery of administrative panels or hidden APIs located on non-standard ports. 
-      Ensure you use the correct protocol prefix if you are targeting specific port ranges.
+      使用 Nmap 风格语法探测目标列表的特定端口和路径。这允许发现位于非标准端口上的管理面板或隐藏 API。如果针对特定端口范围，请确保使用正确的协议前缀。
     command: "httpx -l {{list_file}} -p {{ports|80,443,8080,8443}} -path {{paths|/admin,/api/v1}}"
 
-  - title: httpx - headless screenshots
+  - title: httpx - 无头截图
     desc: |
-      Captures visual screenshots of the targeted web pages using a headless browser. 
-      This provides a visual confirmation of the content, making it easier to identify login forms or parking pages. 
-      Note that this requires more system resources and may require a local Chrome installation with the -system-chrome flag.
+      使用无头浏览器捕获目标网页的可视化截图。这提供内容的视觉确认，便于识别登录表单或停放页面。请注意这需要更多系统资源，并可能需要使用 -system-chrome 参数安装本地 Chrome。
     command: "httpx -l {{list_file}} -ss -system-chrome -srd {{output_dir|screenshots}}"
 
-  - title: httpx - CDN and WAF detection
+  - title: httpx - CDN 和 WAF 检测
     desc: |
-      Identifies if a target is behind a Content Delivery Network (CDN) or a Web Application Firewall (WAF). 
-      This information is vital for determining the feasibility of certain attacks or bypasses. 
-      The results help in mapping the infrastructure and understanding the security perimeter of the target.
+      识别目标是否位于内容分发网络（CDN）或 Web 应用防火墙（WAF）之后。此信息对于判断某些攻击或绕过手段的可行性至关重要。结果有助于绘制基础设施并了解目标的安全边界。
     command: "httpx -l {{list_file}} -cdn -ip -asn"
 
   # === FILE OPERATIONS & OUTPUT ===
-  - title: httpx - comprehensive JSON output
+  - title: httpx - 综合 JSON 输出
     desc: |
-      Exports all probe results including full request and response headers into a JSON Lines format. 
-      This format is ideal for further automated processing or for importing into databases. 
-      Including the full response data allows for offline analysis without re-sending packets to the target.
+      将所有探测结果（包括完整请求和响应头）导出为 JSON Lines 格式。此格式非常适合进一步自动化处理或导入数据库。包含完整响应数据允许离线分析而无需重新向目标发送数据包。
     command: "httpx -l {{list_file}} -json -o {{output_file|results.json}} -irr"
 
-  - title: httpx - store raw responses
+  - title: httpx - 存储原始响应
     desc: |
-      Saves the actual HTTP response bodies into a specified directory for manual inspection. 
-      This is particularly useful when you need to grep through local files for sensitive data later. 
-      Be cautious about disk space when running this against thousands of large targets.
+      将实际 HTTP 响应体保存到指定目录以供手动检查。当之后需要通过 grep 在本地文件中查找敏感数据时特别有用。针对数千个大型目标运行时要小心磁盘空间。
     command: "httpx -l {{list_file}} -sr -srd {{response_dir|saved_responses}}"
 
   # === NETWORK & INFRASTRUCTURE ===
-  - title: httpx - Favicon hash extraction
+  - title: httpx - Favicon 哈希提取
     desc: |
-      Calculates the MurmurHash3 (mmh3) of the target's favicon.ico file. 
-      Favicon hashes are used by security researchers to identify related assets across different IP ranges via Shodan or Censys. 
-      This is a key technique in infrastructure mapping and tracking organizational footprints.
+      计算目标 favicon.ico 文件的 MurmurHash3（mmh3）哈希。安全研究人员使用 Favicon 哈希通过 Shodan 或 Censys 在不同 IP 范围内识别相关资产。这是基础设施映射和追踪组织足迹的关键技术。
     command: "httpx -l {{list_file}} -favicon"
 
-  - title: httpx - TLS/SSL data grabbing
+  - title: httpx - TLS/SSL 数据抓取
     desc: |
-      Extracts detailed information from the TLS/SSL certificates of the targets. 
-      It can reveal Subject Alternative Names (SANs), which often contain previously undiscovered subdomains. 
-      This probe is essential for understanding the certificate authority and expiration dates of web assets.
+      从目标的 TLS/SSL 证书中提取详细信息。它可以揭示主题备用名称（SAN），其中通常包含之前未发现的子域名。此探测对于了解 Web 资产的证书颁发机构和到期日期至关重要。
     command: "httpx -l {{list_file}} -tls-grab -jarm"
 
-  - title: httpx - follow redirects
+  - title: httpx - 跟随重定向
     desc: |
-      Instructs the tool to follow HTTP redirects and report the final destination URL. 
-      By default, httpx may only report the initial 301/302 response; this flag shows where the user actually ends up. 
-      You can limit the number of redirects to prevent infinite loops using the -maxr flag.
+      指示工具跟随 HTTP 重定向并报告最终目标 URL。默认情况下 httpx 可能只报告初始的 301/302 响应；此参数显示用户最终到达的位置。你可以使用 -maxr 参数限制重定向次数以防止无限循环。
     command: "httpx -l {{list_file}} -fr -maxr {{max_redirects|5}}"
 
   # === OPTIMIZATIONS ===
-  - title: httpx - rate limited stealth scan
+  - title: httpx - 限速隐蔽扫描
     desc: |
-      Controls the speed of the scan by limiting the number of requests per second. 
-      This is useful for avoiding rate limits, WAF blocks, or overwhelming small servers. 
-      Adjusting threads and rate-limit ensures a balance between speed and reliability.
+      通过限制每秒请求数来控制扫描速度。这对于避免限流、WAF 拦截或压垮小型服务器非常有用。调整线程和限速可确保速度与可靠性之间的平衡。
     command: "httpx -l {{list_file}} -t {{threads|20}} -rl {{rate_limit|50}}"

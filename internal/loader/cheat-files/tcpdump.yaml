@@ -4,106 +4,92 @@ tags: [network, sniffer, security, pentest, troubleshooting, packets, forensics]
 actions:
 # === BASIC CAPTURE ===
 
- - title: tcpdump - list interfaces
+ - title: tcpdump - 列出网络接口
    desc: |
-     Lists all available network interfaces that tcpdump can capture on. 
-     This is usually the first step to identify which interface (e.g., eth0, wlan0, lo) you need to monitor.
-     The output also indicates whether an interface is up or running.
+     列出 tcpdump 可以捕获流量的所有可用网络接口。这通常是确定需要监控哪个接口（如 eth0、wlan0、lo）的第一步。
+     输出还会指示接口是否处于启用或运行状态。
    command: "tcpdump -D"
 
- - title: tcpdump - basic live capture
+ - title: tcpdump - 基础实时抓包
    desc: |
-     Starts a live capture on a specified interface without resolving hostnames.
-     The -n flag prevents DNS lookups, which speeds up the display and reduces overhead during high traffic.
-     Use 'any' as the interface to listen on all active interfaces simultaneously, though this may require root privileges.
+     在指定接口上启动实时抓包，不解析主机名。-n 参数可防止 DNS 查询，从而加快显示速度并降低高流量时的开销。
+     使用 any 作为接口可同时监听所有活动接口，但这可能需要 root 权限。
    command: "tcpdump -i {{interface|any}} -n"
 
- - title: tcpdump - capture and save to file
+ - title: tcpdump - 抓包并保存到文件
    desc: |
-     Captures packets from an interface and saves them to a raw pcap file.
-     This file can later be analyzed using tools like Wireshark or read back into tcpdump.
-     Ensure the user has write permissions in the target directory and monitor disk space for high-volume traffic.
+     从接口捕获数据包并保存为原始 pcap 文件。该文件之后可以用 Wireshark 等工具分析，或读回 tcpdump。
+     确保用户在目标目录有写权限，并在高流量时监控磁盘空间。
    command: "tcpdump -i {{interface|any}} -w {{output_file|capture.pcap}}"
 
- - title: tcpdump - read from pcap file
+ - title: tcpdump - 从 pcap 文件读取
    desc: |
-     Reads and displays the contents of a previously saved pcap file.
-     You can apply additional filters while reading the file to isolate specific traffic without re-capturing.
-     This is standard practice for forensic analysis and offline network debugging.
+     读取并显示先前保存的 pcap 文件内容。读取文件时你可以应用额外的过滤器来隔离特定流量，而无需重新抓包。
+     这是取证分析和离线网络调试的标准做法。
    command: "tcpdump -r {{input_file|capture.pcap}}"
 
 # === FILTERING OPTIONS ===
 
- - title: tcpdump - filter by host
+ - title: tcpdump - 按主机过滤
    desc: |
-     Filters traffic to show only packets where the source or destination matches the specified IP address.
-     This is essential for focusing on a single target machine during a penetration test or investigation.
-     You can further specify 'src host' or 'dst host' to narrow down the direction of the traffic.
+     过滤流量，仅显示源或目的匹配指定 IP 地址的数据包。在渗透测试或调查期间专注于单个目标机器时必不可少。
+     你可以进一步指定 src host 或 dst host 来缩小流量方向。
    command: "tcpdump -i {{interface|any}} host {{target_ip}}"
 
- - title: tcpdump - filter by port
+ - title: tcpdump - 按端口过滤
    desc: |
-     Captures traffic flowing through a specific port number.
-     Useful for monitoring specific services like HTTP (80), HTTPS (443), or SSH (22).
-     If the service uses both TCP and UDP, this filter will capture both unless a protocol is specified.
+     捕获流经特定端口号的流量。适用于监控 HTTP（80）、HTTPS（443）或 SSH（22）等特定服务。
+     如果服务同时使用 TCP 和 UDP，除非指定协议，否则该过滤器会同时捕获两者。
    command: "tcpdump -i {{interface|any}} port {{port_number|80}}"
 
- - title: tcpdump - filter by network range
+ - title: tcpdump - 按网段过滤
    desc: |
-     Captures traffic for an entire subnet using CIDR notation.
-     This is helpful for monitoring traffic within a specific VLAN or organizational department.
-     It captures any packet where the source or destination IP falls within the defined network range.
+     使用 CIDR 表示法捕获整个子网的流量。这有助于监控特定 VLAN 或组织部门内的流量。
+     它会捕获源或目的 IP 落在所定义网络范围内的任何数据包。
    command: "tcpdump -i {{interface|any}} net {{network_range|192.168.1.0/24}}"
 
- - title: tcpdump - protocol specific filter (ICMP)
+ - title: tcpdump - 协议特定过滤器（ICMP）
    desc: |
-     Isolates ICMP packets, such as Ping requests (Echo Request) and replies.
-     This is the go-to command for diagnosing connectivity issues and observing network discovery attempts.
-     It helps identify if a host is alive or if a firewall is blocking specific diagnostic traffic.
+     隔离 ICMP 数据包，例如 Ping 请求（Echo Request）和回复。这是诊断连通性问题以及观察网络发现尝试的首选命令。
+     它有助于识别主机是否存活，或防火墙是否拦截特定诊断流量。
    command: "tcpdump -i {{interface|any}} icmp"
 
 # === PAYLOAD & VERBOSITY ===
 
- - title: tcpdump - display ASCII and Hex payload
+ - title: tcpdump - 显示 ASCII 和 Hex 载荷
    desc: |
-     Displays the packet contents in both Hexadecimal and ASCII formats.
-     The -X flag is invaluable for inspecting unencrypted application-layer data like HTTP headers or telnet commands.
-     Use -s 0 to ensure the entire packet is captured (no truncation) regardless of its size.
+     以十六进制和 ASCII 两种格式显示数据包内容。-X 参数对于检查未加密的应用层数据（如 HTTP 请求头或 telnet 命令）非常宝贵。
+     使用 -s 0 可确保捕获完整数据包（不截断），无论其大小如何。
    command: "tcpdump -i {{interface|any}} -X -s 0"
 
- - title: tcpdump - show ASCII only
+ - title: tcpdump - 仅显示 ASCII
    desc: |
-     Prints the packet payload in ASCII format only.
-     This is particularly useful for quickly reading plain-text protocols like HTTP, SMTP, or POP3 directly in the terminal.
-     It provides a cleaner view than the hex dump when you are only interested in string-based data.
+     仅以 ASCII 格式打印数据包载荷。这对于在终端中直接快速读取 HTTP、SMTP 或 POP3 等纯文本协议特别有用。
+     当你只对基于字符串的数据感兴趣时，它比十六进制转储提供更清晰的视图。
    command: "tcpdump -i {{interface|any}} -A"
 
- - title: tcpdump - increased verbosity
+ - title: tcpdump - 提高详细程度
    desc: |
-     Increases the amount of detail shown for each packet, such as TTL, ID, and length.
-     You can use multiple 'v's (e.g., -vv or -vvv) for even more exhaustive protocol decoding and information.
-     Higher verbosity levels are useful for deep packet inspection but can result in very noisy output.
+     增加每个数据包显示的详细信息量，如 TTL、ID 和长度。你可以使用多个 v（如 -vv 或 -vvv）获得更详尽的协议解码和信息。
+     更高的详细程度适用于深度数据包检查，但输出可能非常嘈杂。
    command: "tcpdump -i {{interface|any}} -vv"
 
 # === ADVANCED FILTERS ===
 
- - title: tcpdump - filter TCP SYN packets
+ - title: tcpdump - 过滤 TCP SYN 数据包
    desc: |
-     Filters for TCP packets that have only the SYN flag set.
-     This is used to identify the start of new TCP connections and is very effective for detecting port scanning activity.
-     The command uses bitwise operations on the TCP header flags field to isolate the SYN bit.
+     过滤仅设置了 SYN 标志的 TCP 数据包。这用于识别新 TCP 连接的开始，对检测端口扫描活动非常有效。
+     该命令使用 TCP 头标志字段的位运算来隔离 SYN 位。
    command: "tcpdump -i {{interface|any}} 'tcp[tcpflags] & (tcp-syn) != 0'"
 
- - title: tcpdump - complex logical filtering
+ - title: tcpdump - 复杂逻辑过滤
    desc: |
-     Combines multiple filters using logical operators like 'and', 'or', and 'not'.
-     In this example, it captures traffic for a specific host that is NOT on port 22 (SSH).
-     Using quotes is mandatory to prevent the shell from misinterpreting special characters or parentheses.
+     使用 and、or 和 not 等逻辑运算符组合多个过滤器。在此示例中，它捕获特定主机且不在 22 端口（SSH）上的流量。
+     必须使用引号，以防止 Shell 误解特殊字符或括号。
    command: "tcpdump -i {{interface|any}} 'host {{target_ip}} and not port {{exclude_port|22}}'"
 
- - title: tcpdump - capture specific packet count
+ - title: tcpdump - 捕获指定数量数据包
    desc: |
-     Tells tcpdump to exit automatically after capturing a predefined number of packets.
-     This is useful for scripted environments or quick checks where you don't want the process to run indefinitely.
-     It helps prevent log files from growing excessively large during a brief observation.
+     让 tcpdump 在捕获预定数量的数据包后自动退出。这适用于脚本化环境或快速检查，你不希望进程无限运行。
+     它有助于防止日志文件在短暂观察期间增长过大。
    command: "tcpdump -i {{interface|any}} -c {{count|100}}"

@@ -3,97 +3,84 @@ tags: [vulnerability-scanner, wordpress, security, pentest, enumeration, exploit
 
 actions:
 # === BASIC OPERATIONS ===
- - title: wpscan - basic scan
+ - title: wpscan - 基础扫描
    desc: |
-     Performs a non-intrusive basic scan of the target WordPress site. 
-     This command identifies the web server, headers, and basic WordPress version information. 
-     It is the standard starting point for any WordPress security assessment to gather initial reconnaissance data.
+     对目标 WordPress 站点执行非侵入式基础扫描。此命令识别 Web 服务器、请求头和基础 WordPress 版本信息。
+     它是任何 WordPress 安全评估收集初步侦察数据的标准起点。
    command: "wpscan --url {{url}}"
 
- - title: wpscan - update database
+ - title: wpscan - 更新数据库
    desc: |
-     Updates the local WPScan vulnerability database to the latest version.
-     Regular updates ensure that the scanner can detect the most recently discovered vulnerabilities in plugins and themes.
-     It is highly recommended to run this before starting any new penetration test.
+     将本地 WPScan 漏洞数据库更新到最新版本。定期更新可确保扫描器能检测插件和主题中最新发现的漏洞。
+     强烈建议在开始任何新的渗透测试前运行此命令。
    command: "wpscan --update"
 
 # === ENUMERATION ===
- - title: wpscan - enumerate vulnerable plugins
+ - title: wpscan - 枚举易受攻击的插件
    desc: |
-     Scans the target site specifically for plugins that have known security vulnerabilities.
-     This is more efficient than scanning for all plugins and focuses directly on potential entry points.
-     The tool checks the detected versions against its database to flag specific CVEs.
+     专门扫描目标站点中已知存在安全漏洞的插件。这比扫描所有插件更高效，直接聚焦潜在入口点。
+     工具将检测到的版本与数据库比对，标记具体 CVE。
    command: "wpscan --url {{url}} -e vp"
 
- - title: wpscan - enumerate all plugins (aggressive)
+ - title: wpscan - 枚举所有插件（激进）
    desc: |
-     Attempts to discover all plugins installed on the target, not just vulnerable ones.
-     Using the aggressive detection mode will perform more requests to identify hidden or less common plugins.
-     Be aware that this may be louder in web server logs and could be blocked by WAFs.
+     尝试发现目标上安装的所有插件，而不仅是易受攻击的插件。使用激进检测模式会执行更多请求，以识别隐藏或不太常见的插件。
+     注意这在 Web 服务器日志中可能更明显，且可能被 WAF 拦截。
    command: "wpscan --url {{url}} -e ap --plugins-detection {{mode|aggressive}}"
 
- - title: wpscan - enumerate users
+ - title: wpscan - 枚举用户
    desc: |
-     Identifies valid WordPress usernames by scanning various author archives and API endpoints.
-     Knowing valid usernames is a critical prerequisite for performing targeted password attacks later.
-     By default, it checks a range of user IDs, usually starting from 1 to 10.
+     通过扫描各种作者归档和 API 端点识别有效的 WordPress 用户名。了解有效用户名是后续执行针对性密码攻击的关键前提。
+     默认情况下它检查一定范围的用户 ID，通常从 1 到 10。
    command: "wpscan --url {{url}} -e u"
 
- - title: wpscan - enumerate themes and backups
+ - title: wpscan - 枚举主题和备份
    desc: |
-     Checks for vulnerable themes, timthumb files, and sensitive configuration backups.
-     Finding backup files (like wp-config.php.bak) can lead to full database credential disclosure.
-     This command combines multiple enumeration flags for a more comprehensive structural scan.
+     检查易受攻击的主题、timthumb 文件和敏感配置备份。找到备份文件（如 wp-config.php.bak）可能导致完整数据库凭据泄露。
+     此命令组合多个枚举参数，进行更全面的结构扫描。
    command: "wpscan --url {{url}} -e vt,tt,cb,dbe"
 
 # === AUTHENTICATION ATTACKS ===
- - title: wpscan - password brute force
+ - title: wpscan - 密码暴力破解
    desc: |
-     Performs a password dictionary attack against the specified usernames.
-     You must provide a path to a wordlist containing potential passwords.
-     Note that frequent login attempts may trigger account lockouts or security plugin blocks (like Wordfence).
+     对指定用户名执行密码字典攻击。你必须提供包含潜在密码的字典路径。
+     注意频繁登录尝试可能触发账户锁定或安全插件拦截（如 Wordfence）。
    command: "wpscan --url {{url}} -U {{usernames|admin}} -P {{wordlist_path|/usr/share/wordlists/rockyou.txt}}"
 
- - title: wpscan - xmlrpc multicall attack
+ - title: wpscan - XML-RPC 多调用攻击
    desc: |
-     Uses the XML-RPC multicall method to attempt hundreds of password combinations in a single HTTP request.
-     This method is significantly faster than standard wp-login attacks and can often bypass simple rate limiting.
-     It only works if the target's xmlrpc.php file is enabled and not restricted.
+     使用 XML-RPC multicall 方法在单个 HTTP 请求中尝试数百个密码组合。此方法比标准 wp-login 攻击快得多，通常可以绕过简单限速。
+     仅当目标的 xmlrpc.php 文件启用且未受限时有效。
    command: "wpscan --url {{url}} --password-attack xmlrpc-multicall -U {{username|admin}} -P {{wordlist_path}}"
 
 # === ADVANCED CONFIGURATION ===
- - title: wpscan - scan with api token
+ - title: wpscan - 使用 API 令牌扫描
    desc: |
-     Executes a scan while utilizing a WPScan API token to show detailed vulnerability data.
-     Without an API token, the scanner will identify versions but won't provide specific vulnerability descriptions or links.
-     You can obtain a free or paid token from the official wpscan.com website.
+     使用 WPScan API 令牌执行扫描，显示详细的漏洞数据。没有 API 令牌时扫描器会识别版本，但不会提供具体的漏洞描述或链接。
+     你可以从官方 wpscan.com 网站获取免费或付费令牌。
    command: "wpscan --url {{url}} --api-token {{your_api_token}}"
 
- - title: wpscan - stealthy scan
+ - title: wpscan - 隐蔽扫描
    desc: |
-     Runs a scan using settings designed to minimize the footprint and avoid detection.
-     It uses a random user-agent and passive detection modes to stay under the radar of basic monitoring.
-     This is an alias for using several stealth-related flags simultaneously.
+     使用旨在最大限度减少足迹并避免检测的设置运行扫描。它使用随机 User-Agent 和被动检测模式，以避开基础监控的视线。
+     这是同时使用多个隐蔽相关参数的别名。
    command: "wpscan --url {{url}} --stealthy"
 
- - title: wpscan - use proxy and custom headers
+ - title: wpscan - 使用代理和自定义请求头
    desc: |
-     Routes all scan traffic through a specified proxy server and adds custom HTTP headers.
-     This is useful for bypassing IP-based restrictions or testing the site from a specific geographical location.
-     Adding custom headers can also help in bypassing certain WAF configurations or identifying internal routes.
+     将所有扫描流量路由到指定代理服务器，并添加自定义 HTTP 请求头。这对于绕过基于 IP 的限制或从特定地理位置测试站点很有用。
+     添加自定义请求头还可以帮助绕过某些 WAF 配置或识别内部路由。
    command: "wpscan --url {{url}} --proxy {{proxy_proto_ip_port|http://127.0.0.1:8080}} --headers '{{header_name|X-Forwarded-For}}: {{header_value|127.0.0.1}}'"
 
- - title: wpscan - custom content directory
+ - title: wpscan - 自定义内容目录
    desc: |
-     Specifies custom paths for the wp-content or plugins directories if the target uses a non-standard structure.
-     Many security-conscious WordPress installations rename these folders to avoid automated discovery.
-     Manually providing these paths allows WPScan to function correctly on hardened targets.
+     如果目标使用非标准结构，指定 wp-content 或 plugins 目录的自定义路径。许多注重安全的 WordPress 安装会重命名这些文件夹以避免自动发现。
+     手动提供这些路径可使 WPScan 在加固目标上正常工作。
    command: "wpscan --url {{url}} --wp-content-dir {{content_dir|wp-content}} --wp-plugins-dir {{plugins_dir|wp-content/plugins}}"
 
 # === OUTPUT ===
- - title: wpscan - save results to file
+ - title: wpscan - 将结果保存到文件
    desc: |
-     Saves the entire scan output into a file for later analysis or reporting.
-     The JSON format is particularly useful if you intend to parse the results with other automated tools or scripts.
-     Standard CLI format is also available for human-readable reports.
+     将完整扫描输出保存到文件，供后续分析或报告。如果你打算用其他自动化工具或脚本解析结果，JSON 格式特别有用。
+     标准 CLI 格式也可用于人类可读报告。
    command: "wpscan --url {{url}} -o {{output_file|results.json}} -f {{format|json}}"

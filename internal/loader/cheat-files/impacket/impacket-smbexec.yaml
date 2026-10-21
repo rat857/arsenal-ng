@@ -4,86 +4,86 @@ tags: [network, security, pentest, exploitation, authentication, smb, impacket, 
 actions:
 # === AUTHENTICATION METHODS ===
 
- - title: impacket-smbexec - password authentication
+ - title: impacket-smbexec - 密码身份验证
    desc: |
-     Establishes a semi-interactive shell on the target system using standard cleartext credentials. 
-     This approach is useful when you have obtained a valid username and password through phishing or credential harvesting. 
-     The tool creates a temporary service on the target host to execute commands and returns the output to the console. 
-     Note that this method triggers service creation events (Event ID 7045), which are often monitored by SOC teams.
+     使用标准明文凭据在目标系统上建立半交互式 shell。
+     当你通过钓鱼或凭据收集获得有效的用户名和密码时，此方法很有用。
+     该工具在目标主机上创建临时服务来执行命令，并将输出返回到控制台。
+     请注意，此方法会触发服务创建事件（事件 ID 7045），SOC 团队通常会监控这些事件。
    command: "impacket-smbexec {{domain|.}}/{{username}}:{{password}}@{{target}}"
 
- - title: impacket-smbexec - pass-the-hash (PtH)
+ - title: impacket-smbexec - 传递哈希（PtH）
    desc: |
-     Authenticates to the remote system using NTLM hashes instead of a plaintext password. 
-     This is the primary method used in post-exploitation after extracting hashes from the SAM database or NTDS.dit. 
-     The hash must be provided in the format LMHASH:NTHASH. 
-     If the LM hash is not available, you can use a placeholder of 32 zeros (aad3b435b51404eeaad3b435b51404ee).
+     使用 NTLM 哈希而非明文密码对远程系统进行身份验证。
+     这是从 SAM 数据库或 NTDS.dit 提取哈希后的主要后利用方法。
+     哈希必须以 LMHASH:NTHASH 格式提供。
+     如果 LM 哈希不可用，可使用 32 个零作为占位符（aad3b435b51404eeaad3b435b51404ee）。
    command: "impacket-smbexec -hashes {{hash}} {{domain|.}}/{{username}}@{{target}}"
 
- - title: impacket-smbexec - kerberos authentication
+ - title: impacket-smbexec - Kerberos 身份验证
    desc: |
-     Uses Kerberos tickets for authentication instead of NTLM, which is often preferred in modern Active Directory environments. 
-     To use this, you must have a valid Kerberos ticket in your cache (KRB5CCNAME) and ensure you are targeting the FQDN rather than the IP address. 
-     The -no-pass flag tells the tool not to prompt for a password and instead rely on the existing ticket. 
-     Specifying the -dc-ip is often necessary if the attacker machine cannot resolve the domain controller via DNS.
+     使用 Kerberos 票据而非 NTLM 进行身份验证，这在现代 Active Directory 环境中通常更受青睐。
+     要使用此方法，你必须在缓存（KRB5CCNAME）中拥有有效的 Kerberos 票据，并确保目标是 FQDN 而非 IP 地址。
+     -no-pass 标志告诉工具不提示输入密码，而是依赖现有票据。
+     如果攻击机无法通过 DNS 解析域控制器，通常需要指定 -dc-ip。
    command: "impacket-smbexec -k -no-pass -dc-ip {{dc_ip}} {{domain}}/{{username}}@{{target_fqdn}}"
 
- - title: impacket-smbexec - aes key authentication
+ - title: impacket-smbexec - AES 密钥身份验证
    desc: |
-     Authenticates using a Kerberos AES key (128 or 256 bits) instead of a password or hash. 
-     This method is used when you have intercepted or extracted an account's AES key during an assessment. 
-     Like other Kerberos methods, this requires targeting the machine by its hostname/FQDN and having proper time synchronization with the DC. 
-     It is a stealthier alternative to NTLM authentication in environments where NTLM is restricted.
+     使用 Kerberos AES 密钥（128 或 256 位）而非密码或哈希进行身份验证。
+     当你在评估期间拦截或提取到帐户的 AES 密钥时使用此方法。
+     与其他 Kerberos 方法一样，这需要通过主机名/FQDN 定位目标机器，并与 DC 保持正确的时间同步。
+     在限制 NTLM 的环境中，它是比 NTLM 身份验证更隐蔽的替代方案。
    command: "impacket-smbexec -aesKey {{hex_key}} {{domain}}/{{username}}@{{target_fqdn}}"
 
 # === EXECUTION & SHELL CONFIGURATION ===
 
- - title: impacket-smbexec - shell type selection (powershell)
+ - title: impacket-smbexec - shell 类型选择（PowerShell）
    desc: |
-     Changes the command interpreter from the default 'cmd.exe' to 'powershell.exe'. 
-     This is highly beneficial when you need to run complex PowerShell scripts or access .NET functionality directly. 
-     Using PowerShell can sometimes bypass simple EDR rules that look for suspicious 'cmd /c' executions. 
-     However, be aware that PowerShell execution is heavily logged if Script Block Logging or Transcription is enabled.
+     将命令解释器从默认的“cmd.exe”更改为“powershell.exe”。
+     当你需要运行复杂的 PowerShell 脚本或直接访问 .NET 功能时，这非常有用。
+     使用 PowerShell 有时可以绕过查找可疑“cmd /c”执行的简单 EDR 规则。
+     但请注意，如果启用了脚本块日志记录或转录，PowerShell 执行会被大量记录。
    command: "impacket-smbexec -shell-type {{shell|powershell}} {{target}}"
 
- - title: impacket-smbexec - custom service name
+ - title: impacket-smbexec - 自定义服务名称
    desc: |
-     Specifies a custom name for the service created on the remote machine. 
-     By default, impacket uses a randomized string which can be a signature for security products. 
-     Choosing a name like 'WindowsUpdate' or 'AppMgmt' can help the service blend in with legitimate Windows services. 
-     This is a simple but effective technique to avoid detection by automated scanning tools that look for default Impacket patterns.
+     为在远程机器上创建的服务指定自定义名称。
+     默认情况下，impacket 使用随机字符串，这可能成为安全产品的特征。
+     选择“WindowsUpdate”或“AppMgmt”等名称有助于该服务与合法 Windows 服务融为一体。
+     这是避免被查找默认 Impacket 特征的自动化扫描工具检测到的简单而有效的技术。
    command: "impacket-smbexec -service-name {{service_name|AppMgmt}} {{target}}"
 
- - title: impacket-smbexec - server mode for output
+ - title: impacket-smbexec - 用于输出的服务器模式
    desc: |
-     Switches the tool to 'SERVER' mode, which creates a local SMB server on the attacker's machine to capture command output. 
-     This is the alternative to 'SHARE' mode, which writes output to a file on the target's C$ share. 
-     Server mode is extremely useful when the target's C$ share is not accessible or if there is a local firewall preventing the tool from reading files. 
-     Warning: You must run this as root/sudo on your local machine because it needs to bind to port 445.
+     将工具切换到“SERVER”模式，在攻击者机器上创建本地 SMB 服务器以捕获命令输出。
+     这是“SHARE”模式的替代方案，后者将输出写入目标 C$ 共享上的文件。
+     当目标的 C$ 共享不可访问，或本地防火墙阻止工具读取文件时，服务器模式极其有用。
+     警告：你必须在本地机器上以 root/sudo 运行，因为它需要绑定 445 端口。
    command: "impacket-smbexec -mode SERVER {{target}}"
 
 # === ADVANCED NETWORK CONFIGURATION ===
 
- - title: impacket-smbexec - custom smb port
+ - title: impacket-smbexec - 自定义 SMB 端口
    desc: |
-     Connects to the SMB service on a non-standard port instead of the default 445. 
-     This is useful in scenarios where port forwarding, SSH tunneling, or non-standard configurations are in place. 
-     If you have tunneled SMB through a jump box, you might be pointing this at '127.0.0.1' on a custom local port. 
-     Ensure the remote end is actually listening for SMB traffic on the specified port.
+     在非标准端口而非默认的 445 上连接 SMB 服务。
+     在存在端口转发、SSH 隧道或非标准配置的场景中很有用。
+     如果你已通过跳板机隧道化 SMB，可能会将其指向自定义本地端口上的“127.0.0.1”。
+     确保远端确实在指定端口上监听 SMB 流量。
    command: "impacket-smbexec -port {{port|445}} {{target}}"
 
- - title: impacket-smbexec - custom output share
+ - title: impacket-smbexec - 自定义输出共享
    desc: |
-     Specifies a different share to be used for storing command output during execution. 
-     The default is the C$ share, but if that share is disabled or the user lacks permissions, you can specify others like ADMIN$. 
-     The tool needs to be able to write the output file to this share and then read it back to display the results. 
-     If no writable shares are available, consider switching to '-mode SERVER'.
+     指定用于在执行期间存储命令输出的不同共享。
+     默认是 C$ 共享，但如果该共享被禁用或用户缺少权限，你可以指定 ADMIN$ 等其他共享。
+     工具需要能够将输出文件写入该共享，然后读回以显示结果。
+     如果没有可写共享可用，请考虑切换到“-mode SERVER”。
    command: "impacket-smbexec -share {{share|ADMIN$}} {{target}}"
 
- - title: impacket-smbexec - debug and timestamping
+ - title: impacket-smbexec - 调试和时间戳
    desc: |
-     Enables debug output and adds timestamps to the log entries for better troubleshooting and reporting. 
-     The -debug flag provides verbose information about the SMB connection, authentication handshake, and service creation. 
-     The -ts flag is helpful for documentation purposes during a penetration test to track exactly when actions were performed. 
-     Use this if you are encountering connection issues or authentication failures to see the underlying error codes.
+     启用调试输出并为日志条目添加时间戳，以便更好地排查问题和记录。
+     -debug 标志提供有关 SMB 连接、身份验证握手和服务创建的详细信息。
+     -ts 标志在渗透测试期间有助于文档记录，可准确跟踪操作执行的时间。
+     当你遇到连接问题或身份验证失败时，使用此选项查看底层错误代码。
    command: "impacket-smbexec -debug -ts {{target}}"

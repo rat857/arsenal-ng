@@ -4,140 +4,108 @@ tags: [mobile, security, android, ios, pentest, exploration, frida, hooking]
 actions:
   # === SETUP AND PATCHING ===
 
- - title: objection - patch android apk
+ - title: objection - 修补 Android APK
    desc: |
-     Patches a target Android APK with the Frida gadget library. This process is essential for performing
-     runtime analysis on non-rooted Android devices by embedding the frida-agent directly into the app.
-     The command decompiles the APK, injects the library, modifies the manifest to load the library, and rebuilds it.
-     Ensure you have the necessary dependencies like apktool and jarsigner installed in your path.
+     使用 Frida gadget 库修补目标 Android APK。此过程通过将 frida-agent 直接嵌入应用，对未 root 的 Android 设备执行运行时分析至关重要。
+     该命令会反编译 APK、注入库、修改清单以加载库，然后重新打包。确保你的 PATH 中已安装 apktool 和 jarsigner 等必要依赖。
    command: "objection patchapk --source {{apk_path|base.apk}}"
 
- - title: objection - patch ios ipa
+ - title: objection - 修补 iOS IPA
    desc: |
-     Patches an iOS IPA file with the FridaGadget dylib for instrumentation on non-jailbroken devices.
-     This command automates the process of unpacking the IPA, injecting the dylib, and providing instructions for resigning.
-     It is a critical step for black-box testing of iOS applications where jailbreaking is not an option.
-     Note that a valid mobileprovision and code-signing identity are required for the app to run on a physical device.
+     使用 FridaGadget dylib 修补 iOS IPA 文件，用于未越狱设备上的插桩。此命令自动完成解包 IPA、注入 dylib 并提供重签名说明的过程。
+     这是无法越狱时对 iOS 应用进行黑盒测试的关键步骤。注意应用要在真机上运行需要有效的 mobileprovision 和代码签名身份。
    command: "objection patchipa --source {{ipa_path|app.ipa}} --codesign-signature {{signature_id|ABC123XYZ}}"
 
  # === SESSION MANAGEMENT ===
 
- - title: objection - start exploration session
+ - title: objection - 启动探索会话
    desc: |
-     Starts a new exploration session by connecting to a patched application running on a USB device.
-     This is the most common way to enter the interactive REPL where you can run various runtime commands.
-     If the application was patched with a specific name, use the -n flag to specify the target.
-     Execution of the application will typically be paused at startup until this command is executed.
+     通过连接到 USB 设备上运行的已修补应用来启动新的探索会话。这是进入交互式 REPL 的最常见方式，你可以在其中运行各种运行时命令。
+     若应用以特定名称修补，使用 -n 标志指定目标。应用执行通常会在启动时暂停，直到此命令执行。
    command: "objection -n {{gadget_name|Gadget}} start"
 
- - title: objection - connect to remote device
+ - title: objection - 连接远程设备
    desc: |
-     Connects to an objection session over a network connection instead of the default USB.
-     This is useful when the mobile device is reachable via IP, such as over Wi-Fi or within a lab environment.
-     By default, it tries to connect to 127.0.0.1:27042 unless a custom host and port are provided.
-     Ensure that the frida-server or gadget is configured to listen on the specified network interface.
+     通过网络连接而非默认的 USB 连接到 objection 会话。当移动设备可通过 IP 访问（如通过 Wi-Fi 或在实验环境中）时很有用。
+     默认情况下它尝试连接 127.0.0.1:27042，除非提供自定义主机和端口。确保 frida-server 或 gadget 配置为在指定网络接口上监听。
    command: "objection --network --host {{ip_address}} --port {{port|27042}} explore"
 
- - title: objection - spawn application
+ - title: objection - 启动应用
    desc: |
-     Spawns the target application instead of attaching to an already running process.
-     Spawning is necessary when you need to instrument the application from the very first instruction,
-     such as bypassing early-stage jailbreak detection or SSL pinning checks.
-     The --no-pause flag can be added if you don't want the process to wait for your manual resume command.
+     启动目标应用，而不是附加到已运行的进程。当你需要从第一条指令开始插桩应用时（如绕过早期越狱检测或 SSL pinning 检查），启动是必要的。
+     若不想进程等待你手动恢复命令，可添加 --no-pause 标志。
    command: "objection -g {{package_name}} explore --spawn"
 
  # === FILESYSTEM AND ENVIRONMENT ===
 
- - title: objection - list environment information
+ - title: objection - 列出环境信息
    desc: |
-     Displays the application's environment variables and important directory paths.
-     On iOS, this shows paths like the Documents, Library, and Caches directories within the app sandbox.
-     On Android, it reveals the files directory, cache directory, and external storage paths.
-     This is a fundamental reconnaissance step to locate where the application stores sensitive data or configuration files.
+     显示应用的环境变量和重要目录路径。在 iOS 上，这显示应用沙盒内的 Documents、Library 和 Caches 等目录路径。
+     在 Android 上，它揭示 files 目录、cache 目录和外部存储路径。这是定位应用存储敏感数据或配置文件位置的基础侦察步骤。
    command: "env"
 
- - title: objection - browse filesystem
+ - title: objection - 浏览文件系统
    desc: |
-     Lists the files and directories in the current working directory of the application sandbox.
-     It provides metadata such as permissions, file sizes, and ownership details, similar to a standard Unix ls command.
-     This command is used to navigate the app's internal storage and identify interesting files for extraction.
-     You can use 'cd' to move between directories discovered via this command.
+     列出应用沙盒当前工作目录中的文件和目录。它提供权限、文件大小和所有权等元数据，类似于标准 Unix 的 ls 命令。
+     此命令用于导航应用内部存储并识别值得提取的有趣文件。你可以用 cd 在此命令发现的目录之间移动。
    command: "ls"
 
- - title: objection - download file
+ - title: objection - 下载文件
    desc: |
-     Downloads a file from the mobile device's filesystem to your local machine for offline analysis.
-     This is commonly used to extract SQLite databases, Plist configuration files, or cached images.
-     The first argument is the remote file path on the device, and the second is the local destination name.
-     Ensure you have read permissions for the target file within the application's sandbox context.
+     将文件从移动设备文件系统下载到本地机器进行离线分析。常用于提取 SQLite 数据库、Plist 配置文件或缓存图像。
+     第一个参数是设备上的远程文件路径，第二个是本地目标名称。确保你在应用沙盒上下文中对目标文件有读取权限。
    command: "filesystem download {{remote_file}} {{local_destination}}"
 
  # === IOS SPECIFIC ACTIONS ===
 
- - title: objection - read ios plist
+ - title: objection - 读取 iOS Plist
    desc: |
-     Parses and displays the contents of an iOS Property List (Plist) file directly in the REPL.
-     Plists are frequently used on iOS to store application settings, user preferences, and sometimes sensitive credentials.
-     This command saves the step of downloading the file and using an external viewer to see its contents.
-     It can handle both XML and Binary Plist formats automatically.
+     直接在 REPL 中解析并显示 iOS 属性列表（Plist）文件的内容。iOS 上常用 Plist 存储应用设置、用户偏好，有时还有敏感凭据。
+     此命令省去了下载文件并使用外部查看器查看其内容的步骤。它可以自动处理 XML 和二进制 Plist 格式。
    command: "ios plist cat {{plist_file|Info.plist}}"
 
- - title: objection - bypass ios ssl pinning
+ - title: objection - 绕过 iOS SSL Pinning
    desc: |
-     Attempts to disable SSL pinning on iOS by hooking common networking libraries like Alamofire or AFNetworking.
-     This is a vital command for intercepting HTTPS traffic using tools like Burp Suite or OWASP ZAP.
-     It works by dynamically modifying the return values of certificate validation methods at runtime.
-     Note that custom pinning implementations might require manual hooking if this automated script fails.
+     通过 hook Alamofire 或 AFNetworking 等常见网络库，尝试在 iOS 上禁用 SSL pinning。这是使用 Burp Suite 或 OWASP ZAP 等工具拦截 HTTPS 流量的关键命令。
+     它通过在运行时动态修改证书验证方法的返回值来工作。注意若自动脚本失败，自定义 pinning 实现可能需要手动 hook。
    command: "ios sslpinning disable"
 
- - title: objection - dump ios keychain
+ - title: objection - 转储 iOS Keychain
    desc: |
-     Dumps the contents of the iOS Keychain that the application has access to.
-     The Keychain is the standard secure storage for passwords, keys, and certificates on Apple devices.
-     This command allows you to see what secrets the app is persisting between sessions or sharing across the ecosystem.
-     Be aware that this only shows entries accessible to the specific application's entitlement group.
+     转储应用可访问的 iOS Keychain 内容。Keychain 是 Apple 设备上密码、密钥和证书的标准安全存储。
+     此命令让你看到应用在会话之间持久保存或跨生态系统共享的机密。注意它只显示特定应用授权组可访问的条目。
    command: "ios keychain dump"
 
  # === ANDROID SPECIFIC ACTIONS ===
 
- - title: objection - list android activities
+ - title: objection - 列出 Android Activity
    desc: |
-     Enumerates all of the Activities declared in the Android application's manifest.
-     Activities represent the different screens or entry points within an Android app.
-     Finding unexported or hidden activities can lead to the discovery of administrative panels or bypassed authentication logic.
-     The output provides the full class names required for launching intents or setting hooks.
+     枚举 Android 应用清单中声明的所有 Activity。Activity 代表 Android 应用中的不同屏幕或入口点。
+     发现未导出或隐藏的 Activity 可能导致发现管理面板或被绕过的认证逻辑。输出提供启动 Intent 或设置 hook 所需的完整类名。
    command: "android hooking list activities"
 
- - title: objection - launch android activity
+ - title: objection - 启动 Android Activity
    desc: |
-     Forces the application to launch a specific Activity using an Android Intent.
-     This can be used to access screens that are otherwise locked behind login screens or complex workflows.
-     It is a powerful technique for testing how an Activity handles unexpected states or malformed intent data.
-     Use the full class name obtained from the 'list activities' command as the target.
+     使用 Android Intent 强制应用启动特定 Activity。可用于访问原本被登录屏幕或复杂工作流锁定的屏幕。
+     这是测试 Activity 如何处理意外状态或畸形 Intent 数据的强大技术。使用从 list activities 命令获取的完整类名作为目标。
    command: "android intent launch_activity {{activity_class}}"
 
- - title: objection - bypass android ssl pinning
+ - title: objection - 绕过 Android SSL Pinning
    desc: |
-     Injects a script to disable various SSL pinning implementations on Android.
-     It targets common libraries such as OkHttp3, trust managers, and several vendor-specific classes.
-     This allows the tester to proxy the application's network traffic through a local intercepting proxy.
-     Successful bypass usually requires the device to have a trusted CA certificate from the proxy installed in its user store.
+     注入脚本以禁用 Android 上的各种 SSL pinning 实现。它针对 OkHttp3、信任管理器以及多个厂商特定类等常见库。
+     这允许测试人员通过本地拦截代理转发应用的网络流量。成功绕过通常要求设备已在其用户存储中安装代理的可信 CA 证书。
    command: "android sslpinning disable"
 
  # === DATABASE ANALYSIS ===
 
- - title: objection - connect to sqlite database
+ - title: objection - 连接 SQLite 数据库
    desc: |
-     Connects to a SQLite database file found within the application's filesystem.
-     Once connected, objection provides a subset of SQL commands to explore the database structure and data.
-     It actually downloads a temporary copy of the database to perform queries, making it safe for the live file.
-     This is highly effective for auditing local data storage and finding sensitive user information.
+     连接到应用文件系统中的 SQLite 数据库文件。连接后，objection 提供 SQL 命令的子集来探索数据库结构和数据。
+     它实际上会下载数据库的临时副本执行查询，对原文件安全。这对审计本地数据存储和查找敏感用户信息非常有效。
    command: "sqlite connect {{database_file|data.sqlite}}"
 
- - title: objection - execute sqlite query
+ - title: objection - 执行 SQLite 查询
    desc: |
-     Executes a raw SQL query against the currently connected SQLite database.
-     You must first run the 'sqlite connect' command before this feature becomes available in the session.
-     It is used to dump table contents, filter for specific records, or analyze the database schema.
-     Be careful when performing write operations as they may not be reflected back to the device depending on the session state.
+     对当前连接的 SQLite 数据库执行原始 SQL 查询。必须先运行 sqlite connect 命令，此功能才在会话中可用。
+     用于转储表内容、过滤特定记录或分析数据库 schema。执行写操作时要小心，因为根据会话状态它们可能不会反映回设备。
    command: "sqlite execute query {{sql_query|select * from users;}}"

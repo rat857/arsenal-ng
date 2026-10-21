@@ -4,46 +4,41 @@ tags: [active-directory, kerberos, security, pentest, enumeration, impacket, pac
 actions:
   # === AUTHENTICATION METHODS ===
 
-  - title: impacket-getPac - basic authentication with password
+  - title: impacket-getPac - 使用密码的基础认证
     desc: |
-      Retrieves the Privilege Attribute Certificate (PAC) of a target user by authenticating with a cleartext password. 
-      This command is used to examine the group memberships and security identifiers (SIDs) associated with a specific domain user. 
-      The tool requests a service ticket and extracts the PAC data provided by the Domain Controller. 
-      Ensure you have valid domain credentials before running this command.
+      通过明文密码认证来获取目标用户的特权属性证书（PAC）。
+      该命令用于检查与特定域用户关联的组成员关系和安全性标识符（SID）。
+      工具会请求服务票据并提取域控制器提供的 PAC 数据，运行前请确保拥有有效的域凭据。
     command: "impacket-getPac -targetUser {{target_user}} {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-getPac - authentication with NTLM hashes
+  - title: impacket-getPac - 使用 NTLM 哈希认证
     desc: |
-      Performs PAC retrieval using NTLM hashes for authentication instead of a cleartext password. 
-      This is a common technique in post-exploitation scenarios known as Pass-the-Hash (PtH). 
-      It allows an attacker or auditor to enumerate user details without knowing the actual password. 
-      If the LM hash is unknown, use the standard null provider string (32 zeros).
+      使用 NTLM 哈希而非明文密码进行认证以执行 PAC 获取。
+      这是后渗透场景中称为 Pass-the-Hash（PtH）的常见技术。
+      允许攻击者或审计人员在不知道实际密码的情况下枚举用户详情，LM 哈希未知时使用标准空提供程序字符串（32 个零）。
     command: "impacket-getPac -targetUser {{target_user}} -hashes {{hash}} {{domain}}/{{username}}"
 
-  - title: impacket-getPac - interactive password prompt
+  - title: impacket-getPac - 交互式密码提示
     desc: |
-      Prompts the user to enter the password interactively rather than providing it on the command line. 
-      This is a more secure method of execution as it prevents the password from being stored in the shell history file (e.g., .bash_history). 
-      The tool will behave identically to the basic authentication method once the password is provided. 
-      Use this when operating in environments where command-line logging is strictly monitored.
+      交互式提示用户输入密码，而不是在命令行中提供。
+      这是更安全的执行方式，可避免密码被存储到 shell 历史文件（如 .bash_history）中。
+      提供密码后工具行为与基础认证相同，适用于命令行日志被严格监控的环境。
     command: "impacket-getPac -targetUser {{target_user}} {{domain}}/{{username}}"
 
   # === ADVANCED LOGGING AND TROUBLESHOOTING ===
 
-  - title: impacket-getPac - verbose debugging with timestamps
+  - title: impacket-getPac - 带时间戳的详细调试
     desc: |
-      Runs the PAC retrieval process with debug output enabled and timestamps added to every log entry. 
-      The debug flag provides detailed information about the Kerberos handshake and any errors encountered during the request. 
-      Timestamps are highly useful for incident response correlation and keeping track of activity logs. 
-      This is recommended when troubleshooting connectivity issues or non-standard Kerberos configurations.
+      启用调试输出运行 PAC 获取过程，并为每条日志添加时间戳。
+      调试标志提供 Kerberos 握手及请求期间所遇错误的详细信息。
+      时间戳对于事件响应关联和跟踪活动日志非常有用，排查连接问题或非标准 Kerberos 配置时推荐使用。
     command: "impacket-getPac -debug -ts -targetUser {{target_user}} {{domain}}/{{username}}:{{password}}"
 
   # === SPECIALIZED TARGETING ===
 
-  - title: impacket-getPac - retrieve administrator PAC
+  - title: impacket-getPac - 获取管理员 PAC
     desc: |
-      Specifically targets the built-in Administrator account to retrieve its PAC information. 
-      Retrieving the PAC of high-privileged users can help identify sensitive group memberships or custom SIDs. 
-      The requester must still provide valid domain credentials to initiate the Kerberos request. 
-      Be aware that requesting PACs for sensitive accounts may trigger alerts in environments with robust identity monitoring.
+      专门针对内置 Administrator 账户获取其 PAC 信息。
+      获取高权限用户的 PAC 有助于识别敏感组成员关系或自定义 SID。
+      请求者仍需提供有效的域凭据以发起 Kerberos 请求，请注意为敏感账户请求 PAC 可能触发身份监控告警。
     command: "impacket-getPac -targetUser {{target_admin|Administrator}} {{domain}}/{{username}}:{{password}}"

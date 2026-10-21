@@ -3,70 +3,83 @@ tags: [reconnaissance, web, security, pentest, enumeration, osint, scanner]
 
 actions:
   # === BASIC RECONNAISSANCE ===
-  - title: finalrecon - header information
+  - title: finalrecon - 响应头信息
     desc: |
-      Extracts HTTP header information from the target URL. This action is useful for identifying server versions, security headers, and potential technologies used by the web server. It provides a quick look at the server-side configuration and possible vulnerabilities like missing security headers.
+      从目标 URL 提取 HTTP 响应头信息。
+      此操作有助于识别服务器版本、安全响应头以及 Web 服务器可能使用的技术，可快速了解服务器端配置以及缺失安全响应头等潜在漏洞。
     command: "finalrecon --url {{target_url}} --headers"
 
-  - title: finalrecon - ssl/tls certificate info
+  - title: finalrecon - SSL/TLS 证书信息
     desc: |
-      Retrieves detailed SSL/TLS certificate information for the target. It displays validity dates, issuer details, subject names, and cipher suites supported by the server. Use this to verify certificate authenticity or check for expired and weak configurations that could lead to man-in-the-middle attacks.
+      检索目标的详细 SSL/TLS 证书信息。
+      显示有效期、签发者详细信息、主体名称以及服务器支持的密码套件，可用此验证证书真实性或检查过期及弱配置。
     command: "finalrecon --url {{target_url}} --sslinfo"
 
-  - title: finalrecon - whois lookup
+  - title: finalrecon - Whois 查询
     desc: |
-      Performs a WHOIS lookup for the target domain to gather administrative and registration data. This identifies domain owners, registration dates, expiry dates, and name server information. It is a fundamental step in OSINT for mapping the target's organizational structure and contact points.
+      对目标域名执行 WHOIS 查询以收集管理和注册数据。
+      可识别域名所有者、注册日期、到期日期和域名服务器信息，是 OSINT 中映射目标组织结构及联系点的基本步骤。
     command: "finalrecon --url {{target_url}} --whois"
 
   # === ENUMERATION & DISCOVERY ===
-  - title: finalrecon - dns enumeration
+  - title: finalrecon - DNS 枚举
     desc: |
-      Executes DNS enumeration to discover various DNS records associated with the target domain. It attempts to fetch A, AAAA, MX, TXT, and NS records to map out the target's infrastructure. This is critical for identifying mail servers, third-party service integrations, and IP ranges.
+      执行 DNS 枚举以发现与目标域名关联的各种 DNS 记录。
+      尝试获取 A、AAAA、MX、TXT 和 NS 记录以映射目标基础设施，对识别邮件服务器、第三方服务集成和 IP 范围至关重要。
     command: "finalrecon --url {{target_url}} --dns"
 
-  - title: finalrecon - subdomain enumeration
+  - title: finalrecon - 子域名枚举
     desc: |
-      Searches for subdomains associated with the main target domain using multiple sources. This expands the attack surface by identifying forgotten dev environments, staging servers, or administrative panels. Note that this process may take time depending on the number of passive sources being queried.
+      使用多个来源搜索与主目标域名关联的子域名。
+      通过识别被遗忘的开发环境、测试服务器或管理面板来扩大攻击面，注意此过程耗时取决于所查询被动来源的数量。
     command: "finalrecon --url {{target_url}} --sub"
 
-  - title: finalrecon - directory search
+  - title: finalrecon - 目录搜索
     desc: |
-      Brute-forces directories and files on the target web server using a specified wordlist. This helps in discovering hidden paths, sensitive configuration files, or unlinked backup folders. You can increase the thread count with the -dt flag to speed up the discovery process on robust targets.
+      使用指定字典暴力破解目标 Web 服务器上的目录和文件。
+      有助于发现隐藏路径、敏感配置文件或未链接的备份文件夹，可用 -dt 标志增加线程数以加快稳健目标上的发现进程。
     command: "finalrecon --url {{target_url}} --dir -w {{wordlist|/usr/share/wordlists/dirb/common.txt}} -dt {{threads|30}}"
 
-  - title: finalrecon - directory search with extensions
+  - title: finalrecon - 带扩展名的目录搜索
     desc: |
-      Performs a directory search while specifically looking for files with certain extensions. This is highly effective when searching for specific file types like .php, .txt, or .bak files that might contain source code or credentials. Ensure you provide a comma-separated list of extensions without leading dots.
+      执行目录搜索，同时专门查找具有特定扩展名的文件。
+      搜索可能包含源码或凭据的 .php、.txt 或 .bak 等特定文件类型时非常有效，确保提供不带前导点号的逗号分隔扩展名列表。
     command: "finalrecon --url {{target_url}} --dir -e {{extensions|php,txt,xml,zip,bak}}"
 
-  - title: finalrecon - web crawling
+  - title: finalrecon - Web 爬取
     desc: |
-      Crawls the target website to extract internal and external links found within the HTML. This helps map the site structure and discover potentially interesting endpoints or assets that are not immediately visible. It is an essential step for deeper manual analysis of the application logic.
+      爬取目标网站以提取 HTML 中的内部和外部链接。
+      有助于映射站点结构并发现不立即可见的有趣端点或资产，是深入手动分析应用逻辑的必要步骤。
     command: "finalrecon --url {{target_url}} --crawl"
 
-  - title: finalrecon - wayback machine urls
+  - title: finalrecon - Wayback Machine URL
     desc: |
-      Fetches archived URLs from the Wayback Machine for the specified target. This allows researchers to find old files, removed pages, and historical data that might still reside on the server or provide clues about past vulnerabilities. It is a non-intrusive way to perform extensive URL discovery.
+      从 Wayback Machine 获取指定目标的归档 URL。
+      让研究人员找到可能仍驻留在服务器上的旧文件、已删除页面和历史数据，或提供过去漏洞的线索，是一种非侵入式的广泛 URL 发现方式。
     command: "finalrecon --url {{target_url}} --wayback"
 
   # === INFRASTRUCTURE & FULL SCAN ===
-  - title: finalrecon - fast port scan
+  - title: finalrecon - 快速端口扫描
     desc: |
-      Performs a quick port scan on the target host to identify common open ports and services. This is useful for gaining a rapid overview of the target's network exposure before performing more detailed scans. Note that this is a basic scanner and may not replace specialized tools like Nmap for complex network environments.
+      对目标主机执行快速端口扫描，识别常见的开放端口和服务。
+      在执行更详细扫描之前快速了解目标网络暴露情况非常有用，注意这是基础扫描器，在复杂网络环境中可能无法取代 Nmap 等专用工具。
     command: "finalrecon --url {{target_url}} --ps -pt {{threads|50}}"
 
-  - title: finalrecon - full reconnaissance
+  - title: finalrecon - 完整侦察
     desc: |
-      Runs all available reconnaissance modules against the target in a single execution. This includes headers, SSL, WHOIS, DNS, subdomains, crawling, and directory searching. Use this when you want a comprehensive report on the target but be aware that it generates significant traffic and may trigger security alerts.
+      单次执行对目标运行所有可用的侦察模块。
+      包括响应头、SSL、WHOIS、DNS、子域名、爬取和目录搜索，当你想获得目标的全面报告时使用，但注意它会产生大量流量并可能触发安全告警。
     command: "finalrecon --url {{target_url}} --full"
 
   # === ADVANCED CONFIGURATIONS ===
-  - title: finalrecon - authenticated/api scan
+  - title: finalrecon - 认证/API 扫描
     desc: |
-      Runs reconnaissance modules while providing an API key for services that require authentication, such as Shodan. Adding an API key improves the depth and accuracy of the results for modules that rely on third-party data. Use the format 'service@key' to specify the provider and the token.
+      在运行侦察模块时为 Shodan 等需要认证的服务提供 API 密钥。
+      添加 API 密钥可提高依赖第三方数据的模块结果的深度和准确性，使用 service@key 格式指定提供商和令牌。
     command: "finalrecon --url {{target_url}} --full -k {{api_key|shodan@YOUR_KEY_HERE}}"
 
-  - title: finalrecon - export results to file
+  - title: finalrecon - 导出结果到文件
     desc: |
-      Executes a scan and exports the gathered information into a specific format for reporting. The default export format is 'txt', but other formats may be supported depending on the tool version. This is crucial for documentation and sharing findings with stakeholders or during a penetration testing engagement.
+      执行扫描并将收集到的信息导出为特定格式以供报告。
+      默认导出格式为 txt，但根据工具版本可能支持其他格式，对文档记录以及与利益相关者或在渗透测试任务中共享发现至关重要。
     command: "finalrecon --url {{target_url}} --full -o {{format|txt}} -cd {{output_dir|./recon_results}}"

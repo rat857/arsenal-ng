@@ -3,68 +3,59 @@ tags: [wordpress, scanner, security, pentest, enumeration, reconnaissance, vulne
 
 actions:
   # === MAINTENANCE ACTIONS ===
-  - title: wpprobe - update tool
+  - title: wpprobe - 更新工具
     desc: |
-      Update WPProbe to the latest available version from the source.
-      This ensures that you have the newest features, performance improvements, and bug fixes.
-      It is highly recommended to run this command before starting any new security assessment.
+      将 WPProbe 更新到来源提供的最新版本。这确保你拥有最新功能、性能改进和错误修复。
+      强烈建议在开始任何新的安全评估前运行此命令。
     command: "wpprobe update"
 
-  - title: wpprobe - update vulnerability database
+  - title: wpprobe - 更新漏洞数据库
     desc: |
-      Update the local Wordfence vulnerability database used for matching.
-      This database contains information about known vulnerabilities in WordPress plugins and themes.
-      Regularly updating this database is crucial for the tool's accuracy in identifying security risks.
+      更新用于匹配的本地 Wordfence 漏洞数据库。此数据库包含 WordPress 插件和主题中已知漏洞的信息。
+      定期更新此数据库对于工具识别安全风险的准确性至关重要。
     command: "wpprobe update-db"
 
   # === SCANNING MODES ===
-  - title: wpprobe - basic stealth scan
+  - title: wpprobe - 基础隐蔽扫描
     desc: |
-      Perform a basic scan on a single WordPress target using the default stealthy mode.
-      This mode attempts to identify plugins and themes without triggering aggressive security alerts.
-      It is the ideal starting point for initial reconnaissance when noise reduction is a priority.
+      使用默认隐蔽模式对单个 WordPress 目标执行基础扫描。此模式尝试在不触发激进安全告警的情况下识别插件和主题。
+      当降低噪声是优先事项时，它是初始侦察的理想起点。
     command: "wpprobe scan -u {{target_url}}"
 
-  - title: wpprobe - brute-force detection scan
+  - title: wpprobe - 暴力检测扫描
     desc: |
-      Execute a comprehensive scan using brute-force detection techniques.
-      This mode actively probes for a wide range of common plugins and themes to ensure maximum coverage.
-      Note that this method is noisier and more likely to be logged by the target server's web application firewall.
+      使用暴力检测技术执行全面扫描。此模式主动探测各种常见插件和主题，以确保最大覆盖。
+      注意此方法噪声更大，更可能被目标服务器的 Web 应用防火墙记录。
     command: "wpprobe scan -u {{target_url}} --mode bruteforce"
 
-  - title: wpprobe - hybrid mode scan
+  - title: wpprobe - 混合模式扫描
     desc: |
-      Scan a WordPress site using the hybrid mode for an optimal balance of speed and stealth.
-      The tool first attempts stealthy detection and then uses brute-force for the remaining unidentified components.
-      This is often the most effective way to get thorough results while minimizing unnecessary requests.
+      使用混合模式扫描 WordPress 站点，实现速度和隐蔽性的最佳平衡。工具先尝试隐蔽检测，然后对剩余未识别的组件使用暴力破解。
+      这通常是在尽量减少不必要请求的同时获得彻底结果的最有效方式。
     command: "wpprobe scan -u {{target_url}} --mode hybrid"
 
   # === ADVANCED SCANNING & OUTPUT ===
-  - title: wpprobe - scan with custom plugin list
+  - title: wpprobe - 使用自定义插件列表扫描
     desc: |
-      Utilize a custom text file containing a list of plugins for brute-force or hybrid scanning.
-      This is useful when you want to target specific plugins or use a proprietary wordlist tailored for a specific environment.
-      The file should contain one plugin slug per line for the scanner to process correctly.
+      使用包含插件列表的自定义文本文件进行暴力或混合扫描。当你想针对特定插件或使用为特定环境定制的专用字典时很有用。
+      文件应每行一个插件 slug，以便扫描器正确处理。
     command: "wpprobe scan -u {{target_url}} --mode {{mode|bruteforce}} --plugin-list {{plugin_list_path|plugins.txt}}"
 
-  - title: wpprobe - bulk scan from file
+  - title: wpprobe - 从文件批量扫描
     desc: |
-      Scan multiple targets simultaneously by providing a text file containing target URLs.
-      The tool can process these targets in parallel using multiple threads to significantly increase speed.
-      This is the preferred method for large-scale infrastructure audits or bug bounty hunting.
+      通过提供包含目标 URL 的文本文件同时扫描多个目标。工具可以使用多个线程并行处理这些目标，显著提高速度。
+      这是大规模基础设施审计或漏洞赏金狩猎的首选方法。
     command: "wpprobe scan -f {{targets_file|targets.txt}} -t {{threads|20}}"
 
-  - title: wpprobe - save results to file
+  - title: wpprobe - 将结果保存到文件
     desc: |
-      Export the discovery results to a structured file format such as JSON or CSV.
-      Saving results is essential for reporting purposes and for integrating findings into other security tools.
-      The tool automatically detects the desired format based on the file extension provided in the output path.
+      将发现结果导出为结构化文件格式，如 JSON 或 CSV。保存结果对于报告以及将发现集成到其他安全工具至关重要。
+      工具会根据输出路径中提供的文件扩展名自动检测所需格式。
     command: "wpprobe scan -u {{target_url}} -o {{output_file|results.json}}"
 
   # === CONNECTIVITY ===
-  - title: wpprobe - scan through proxy
+  - title: wpprobe - 通过代理扫描
     desc: |
-      Route all outgoing scan traffic through a specified HTTP or HTTPS proxy server.
-      This is useful for bypassing IP-based rate limiting or for monitoring the scanner's traffic through tools like Burp Suite.
-      If not specified, the tool will automatically check for standard environment proxy variables.
+      将所有出站扫描流量路由到指定的 HTTP 或 HTTPS 代理服务器。这对于绕过基于 IP 的限速或通过 Burp Suite 等工具监控扫描器流量很有用。
+      如果未指定，工具会自动检查标准环境代理变量。
     command: "wpprobe scan -u {{target_url}} --proxy {{proxy_url|http://127.0.0.1:8080}}"

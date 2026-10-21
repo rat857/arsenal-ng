@@ -3,93 +3,93 @@ tags: [web, security, pentest, vulnerability-scanner, request-smuggling, http2]
 
 actions:
   # === BASIC SCANS ===
-  - title: smugglex - basic scan
+  - title: smugglex - 基础扫描
     desc: |
-      Performs a standard HTTP request smuggling scan against a target URL.
-      This command executes all built-in checks including CL.TE, TE.CL, and HTTP/2 variants.
-      It is the recommended starting point for identifying potential smuggling vulnerabilities on a single target.
-      The tool will report vulnerabilities along with timing comparisons to confirm findings.
+      对目标 URL 执行标准 HTTP 请求走私扫描。
+      此命令执行所有内置检查，包括 CL.TE、TE.CL 和 HTTP/2 变体。
+      它是识别单个目标上潜在走私漏洞的推荐起点。
+      该工具会报告漏洞以及用于确认发现的时间对比。
     command: "smugglex {{url}}"
 
-  - title: smugglex - verbose scan with output
+  - title: smugglex - 带输出的详细扫描
     desc: |
-      Executes a detailed scan while displaying verbose information about requests and responses.
-      The results are saved into a JSON file which contains vulnerability details, payloads, and timing data.
-      Verbose mode is helpful for debugging timing issues or understanding why a specific payload failed.
-      Use this when you need to document findings for a technical report.
+      执行详细扫描，同时显示关于请求和响应的详细信息。
+      结果保存到 JSON 文件中，其中包含漏洞详情、载荷和时间数据。
+      详细模式有助于调试时序问题或理解特定载荷失败的原因。
+      当你需要为技术报告记录发现时使用。
     command: "smugglex {{url}} -v -o {{output_file|results.json}}"
 
   # === SCAN CONFIGURATION ===
-  - title: smugglex - run specific vulnerability checks
+  - title: smugglex - 运行特定漏洞检查
     desc: |
-      Limits the scan to specific types of smuggling attacks like CL.TE or TE.CL.
-      This is useful when you suspect a specific vulnerability or want to save time during a large engagement.
-      You can provide a comma-separated list of checks to run multiple specific tests simultaneously.
-      Available checks include cl-te, te-cl, te-te, h2c, and h2.
+      将扫描限制在 CL.TE 或 TE.CL 等特定类型的走私攻击。
+      当你怀疑特定漏洞或想在大型行动中节省时间时很有用。
+      你可以提供逗号分隔的检查列表，同时运行多个特定测试。
+      可用检查包括 cl-te、te-cl、te-te、h2c 和 h2。
     command: "smugglex {{url}} -c {{check_types|cl-te,te-cl}}"
 
-  - title: smugglex - scan for http/2 vulnerabilities
+  - title: smugglex - 扫描 HTTP/2 漏洞
     desc: |
-      Targets vulnerabilities specifically related to the HTTP/2 protocol.
-      It includes checks for h2c (cleartext) and h2 (protocol) smuggling with numerous combined payloads.
-      This is essential for modern web applications that utilize HTTP/2 front-ends for performance.
-      Many modern load balancers are susceptible to these specific protocol translation attacks.
+      针对与 HTTP/2 协议特别相关的漏洞。
+      它包括 h2c（明文）和 h2（协议）走私检查，以及大量组合载荷。
+      这对于利用 HTTP/2 前端的现代 Web 应用至关重要。
+      许多现代负载均衡器容易受到这些特定协议转换攻击的影响。
     command: "smugglex {{url}} -c h2c,h2"
 
-  - title: smugglex - authenticated scan with custom headers
+  - title: smugglex - 使用自定义头进行认证扫描
     desc: |
-      Includes custom HTTP headers in every request sent by the tool to the target.
-      This is particularly useful for authenticated scanning using Bearer tokens, API keys, or Session cookies.
-      Multiple headers can be added by repeating the flag to match the target's authentication requirements.
-      Ensure that the token used has enough privileges to reach the desired backend functionality.
+      在工具发送给目标的每个请求中包含自定义 HTTP 头。
+      这对于使用 Bearer 令牌、API 密钥或会话 Cookie 进行认证扫描特别有用。
+      可以通过重复该标志添加多个头，以满足目标的认证要求。
+      确保使用的令牌有足够权限到达所需的后端功能。
     command: "smugglex {{url}} -H \"{{header_name|Authorization}}: {{header_value}}\""
 
-  - title: smugglex - scan with custom timeout and method
+  - title: smugglex - 使用自定义超时和方法扫描
     desc: |
-      Sets a specific request timeout and changes the default HTTP method used for testing.
-      Increasing the timeout is often necessary for slow networks or when the server is under heavy load.
-      While POST is the default, some servers might only process smuggling payloads on GET or other methods.
-      Adjusting these settings helps reduce false negatives in non-standard environments.
+      设置特定的请求超时并更改测试使用的默认 HTTP 方法。
+      在慢速网络或服务器负载较重时，通常需要增加超时。
+      虽然 POST 是默认值，但某些服务器可能只在 GET 或其他方法上处理走私载荷。
+      在非标准环境中调整这些设置有助于减少漏报。
     command: "smugglex {{url}} -m {{method|POST}} -t {{timeout_seconds|30}}"
 
   # === ADVANCED TARGETING ===
-  - title: smugglex - virtual host testing
+  - title: smugglex - 虚拟主机测试
     desc: |
-      Tests for request smuggling on a specific IP address while setting a custom Host header.
-      This is valuable when the target is behind a load balancer or CDN that routes traffic based on the Host header.
-      It allows you to target internal virtual hosts that are not directly accessible via public DNS.
-      Crucial for internal infrastructure testing where multiple services share the same gateway IP.
+      在特定 IP 地址上测试请求走私，同时设置自定义 Host 头。
+      当目标位于基于 Host 头路由流量的负载均衡器或 CDN 之后时，这很有价值。
+      它允许你针对通过公共 DNS 无法直接访问的内部虚拟主机。
+      对于共享同一网关 IP 的多个服务的内部基础设施测试至关重要。
     command: "smugglex {{ip_address}} --vhost {{domain_name}}"
 
-  - title: smugglex - mass scan from pipeline
+  - title: smugglex - 从流水线批量扫描
     desc: |
-      Processes a list of URLs provided through standard input for large-scale automated scanning.
-      This allows seamless integration with other tools like subfinder or httpx for automated reconnaissance workflows.
-      Using the exit-first flag (-1) during mass scans can speed up the process by stopping at the first find.
-      It is highly efficient for scanning entire domains or large IP ranges discovered during recon.
+      处理通过标准输入提供的 URL 列表，用于大规模自动化扫描。
+      这允许与 subfinder 或 httpx 等其他工具无缝集成，用于自动化侦察工作流。
+      在批量扫描期间使用 exit-first 标志（-1）可以在首次发现时停止，从而加快过程。
+      对于扫描侦察期间发现的整个域名或大型 IP 范围非常高效。
     command: "cat {{url_list|urls.txt}} | smugglex -v -o {{output_file|results.json}}"
 
   # === EXPLOITATION & VERIFICATION ===
-  - title: smugglex - exploit for localhost access
+  - title: smugglex - 利用漏洞访问 localhost
     desc: |
-      Attempts to exploit a detected smuggling vulnerability to access services running on the server's localhost.
-      This simulates an SSRF-like attack that can bypass firewalls to reach internal-only management interfaces.
-      It should be used after a vulnerability is confirmed to demonstrate the actual business impact.
-      Be cautious as exploitation might disrupt the stability of the backend service.
+      尝试利用检测到的走私漏洞访问运行在服务器 localhost 上的服务。
+      这模拟了类似 SSRF 的攻击，可以绕过防火墙到达仅限内部的管理接口。
+      应在确认漏洞后使用，以证明实际业务影响。
+      请谨慎，因为利用可能破坏后端服务的稳定性。
     command: "smugglex {{url}} --exploit localhost-access"
 
-  - title: smugglex - exploit with custom internal ports
+  - title: smugglex - 使用自定义内部端口利用
     desc: |
-      Extends the localhost access exploit by targeting a specific list of internal ports on the remote host.
-      This is useful for probing for common internal services like SSH (22), databases (3306), or Redis (6379).
-      Use this to identify exactly what internal infrastructure is reachable through the smuggling tunnel.
-      Providing a custom list of ports allows for more targeted and stealthy internal reconnaissance.
+      通过针对远程主机上特定的内部端口列表来扩展 localhost 访问利用。
+      这对于探测常见内部服务很有用，如 SSH（22）、数据库（3306）或 Redis（6379）。
+      用它来准确识别通过走私隧道可到达的内部基础设施。
+      提供自定义端口列表可以实现更有针对性和隐蔽的内部侦察。
     command: "smugglex {{url}} --exploit localhost-access --exploit-ports {{ports|22,80,443,8080}}"
 
-  - title: smugglex - export vulnerable payloads for manual testing
+  - title: smugglex - 导出手动测试用的易受攻击载荷
     desc: |
-      Saves the exact raw HTTP requests that triggered a confirmed vulnerability into a specified directory.
-      This is a crucial step for manual verification in tools like Burp Suite Repeater or custom scripts.
-      Having the raw payload allows security researchers to fine-tune the attack for specific bypasses.
-      The exported files can be used as evidence in penetration testing reports.
+      将触发已确认漏洞的确切原始 HTTP 请求保存到指定目录。
+      这是在 Burp Suite Repeater 或自定义脚本中进行手动验证的关键步骤。
+      拥有原始载荷允许安全研究人员为特定绕过微调攻击。
+      导出的文件可以用作渗透测试报告中的证据。
     command: "smugglex {{url}} --export-payloads {{directory_path|./payloads}}"

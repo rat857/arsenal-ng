@@ -3,111 +3,85 @@ tags: [web, scanner, fuzzer, pentest, enumeration, security, reconnaissance]
 
 actions:
   # === DIRECTORY AND FILE ENUMERATION ===
-  - title: ffuf - basic directory discovery
+  - title: ffuf - 基本目录发现
     desc: |
-      Perform a basic directory brute-force attack against a target URL. 
-      The keyword 'FUZZ' is used as a placeholder in the URL where wordlist entries will be injected.
-      This is the most common entry point for web reconnaissance to find unlinked content.
-      Be aware that high thread counts might trigger rate limiting or Web Application Firewalls (WAF).
+      对目标 URL 执行基本的目录暴力破解攻击。
+      FUZZ 关键字用作 URL 中注入字典条目的占位符，这是 Web 侦察中查找未链接内容的最常见入口。
     command: "ffuf -u {{url}}/FUZZ -w {{wordlist|/usr/share/wordlists/dirb/common.txt}}"
 
-  - title: ffuf - file discovery with extensions
+  - title: ffuf - 带扩展名的文件发现
     desc: |
-      Search for specific files by appending a list of extensions to each wordlist entry.
-      The -e flag takes a comma-separated list of extensions like .php, .html, or .txt.
-      This is essential when looking for backup files (e.g., .bak, .old) or configuration files.
-      Ensure the FUZZ keyword is placed at the end of the path without an extension if you use -e.
+      通过为每个字典条目追加扩展名列表来搜索特定文件。
+      -e 标志接受 .php、.html 或 .txt 等逗号分隔的扩展名列表，查找备份文件（如 .bak、.old）或配置文件时至关重要。
     command: "ffuf -u {{url}}/FUZZ -w {{wordlist}} -e {{extensions|.php,.txt,.html,.bak}}"
 
-  - title: ffuf - recursive directory scanning
+  - title: ffuf - 递归目录扫描
     desc: |
-      Enable recursive scanning to automatically fuzz newly discovered directories.
-      The -recursion flag allows ffuf to start a new scan job for every directory it finds that matches the matchers.
-      You must define the maximum depth with -recursion-depth to prevent infinite loops.
-      Note that the URL must end with the FUZZ keyword for recursion to work properly.
+      启用递归扫描，自动对最新发现的目录进行模糊测试。
+      -recursion 标志允许 ffuf 为每个匹配匹配器的目录启动新的扫描任务，必须用 -recursion-depth 定义最大深度以防止无限循环。
     command: "ffuf -u {{url}}/FUZZ -w {{wordlist}} -recursion -recursion-depth {{depth|2}}"
 
   # === SUBDOMAIN AND VHOST DISCOVERY ===
-  - title: ffuf - virtual host (vhost) fuzzing
+  - title: ffuf - 虚拟主机（vhost）模糊测试
     desc: |
-      Fuzz the 'Host' header to identify virtual hosts configured on the target IP or domain.
-      This technique is vital for finding internal or hidden subdomains that don't have public DNS records.
-      Since most servers return a default page for invalid hosts, you should combine this with filtering (like -fs) to remove noise.
-      It helps in identifying development, staging, or administrative interfaces hosted on the same infrastructure.
+      模糊测试 Host 请求头以识别目标 IP 或域名上配置的虚拟主机。
+      此技术对查找没有公开 DNS 记录的内部或隐藏子域名至关重要，由于大多数服务器对无效主机返回默认页面，建议结合过滤（如 -fs）去除噪声。
     command: "ffuf -u http://{{target_ip}} -H \"Host: FUZZ.{{domain}}\" -w {{wordlist}}"
 
   # === PARAMETER AND DATA FUZZING ===
-  - title: ffuf - GET parameter fuzzing
+  - title: ffuf - GET 参数模糊测试
     desc: |
-      Discover hidden GET parameters by fuzzing the parameter names in the query string.
-      This is useful for finding administrative flags (e.g., ?debug=true) or undocumented API features.
-      The command matches all responses by default, so using auto-calibration (-ac) is recommended to filter out constant responses.
-      Parameter fuzzing can often lead to the discovery of vulnerabilities like IDOR, SQLi, or XSS.
+      通过模糊测试查询字符串中的参数名来发现隐藏的 GET 参数。
+      可用于查找管理标志（如 ?debug=true）或未公开的 API 功能，默认匹配所有响应，因此建议使用自动校准（-ac）过滤掉恒定响应。
     command: "ffuf -u {{url}}/page.php?FUZZ=1 -w {{wordlist}} -ac"
 
-  - title: ffuf - POST data fuzzing
+  - title: ffuf - POST 数据模糊测试
     desc: |
-      Fuzz data sent in the body of a POST request.
-      The -X flag specifies the HTTP method, and the -d flag contains the data with the FUZZ placeholder.
-      Commonly used for brute-forcing login forms, finding hidden API fields, or testing JSON inputs.
-      Remember to set the appropriate 'Content-Type' header if the application expects a specific format like JSON or XML.
+      模糊测试 POST 请求体中发送的数据。
+      -X 标志指定 HTTP 方法，-d 标志包含带 FUZZ 占位符的数据，常用于暴力破解登录表单、查找隐藏 API 字段或测试 JSON 输入。
     command: "ffuf -u {{url}} -X POST -d \"username=FUZZ&password=password123\" -w {{wordlist}} -H \"Content-Type: application/x-www-form-urlencoded\""
 
-  - title: ffuf - multiple wordlist fuzzing (Clusterbomb)
+  - title: ffuf - 多字典模糊测试（Clusterbomb）
     desc: |
-      Use multiple wordlists to fuzz multiple locations simultaneously using the 'clusterbomb' mode.
-      In this mode, ffuf tries every combination of all wordlists (Cartesian product).
-      Assign custom keywords to each wordlist using the colon syntax (e.g., -w list:KEYWORD).
-      This is extremely powerful for credential stuffing attacks or multi-parameter testing but generates a very high number of requests.
+      使用多个字典同时模糊测试多个位置，采用 clusterbomb 模式。
+      在此模式下，ffuf 尝试所有字典的每种组合（笛卡尔积），使用冒号语法为每个字典分配自定义关键字（如 -w list:KEYWORD）。
     command: "ffuf -w {{user_list}}:USER -w {{pass_list}}:PASS -u {{url}} -X POST -d \"user=USER&pass=PASS\" -mode clusterbomb"
 
   # === FILTERING AND MATCHING ===
-  - title: ffuf - filter by response size and code
+  - title: ffuf - 按响应大小和状态码过滤
     desc: |
-      Filter out specific response sizes and HTTP status codes to clean up the output.
-      The -fc flag filters status codes (e.g., 404, 403), while -fs filters based on the response content length.
-      Filtering is crucial when the server returns a standard length page for "Not Found" or "Unauthorized" errors.
-      You can provide comma-separated values or ranges (e.g., 100-200) to both flags.
+      过滤掉特定的响应大小和 HTTP 状态码以清理输出。
+      -fc 标志过滤状态码（如 404、403），-fs 按响应内容长度过滤，当服务器对未找到或未授权错误返回标准长度页面时，过滤至关重要。
     command: "ffuf -u {{url}}/FUZZ -w {{wordlist}} -fc 404,403 -fs {{size_to_ignore}}"
 
-  - title: ffuf - auto-calibration
+  - title: ffuf - 自动校准
     desc: |
-      Automatically calibrate filtering options based on the server's behavior.
-      The -ac flag sends a few initial requests to determine the standard response size and line count for non-existent pages.
-      It then automatically filters out these common patterns from your final results.
-      This is highly recommended for modern web applications that return "200 OK" for custom error pages.
+      根据服务器行为自动校准过滤选项。
+      -ac 标志发送少量初始请求以确定不存在页面的标准响应大小和行数，然后自动从最终结果中过滤这些常见模式，对返回 200 OK 自定义错误页的现代 Web 应用强烈推荐。
     command: "ffuf -u {{url}}/FUZZ -w {{wordlist}} -ac"
 
   # === AUTHENTICATION AND ADVANCED HTTP ===
-  - title: ffuf - authenticated fuzzing with cookies
+  - title: ffuf - 带 Cookie 的认证模糊测试
     desc: |
-      Perform fuzzing while maintaining a session by providing session cookies.
-      The -b flag allows you to pass cookie strings exactly as they appear in the browser's Request headers.
-      This is necessary for discovering directories or parameters that are only accessible to authenticated users.
-      Ensure your session token remains valid during the duration of the scan to avoid false negatives.
+      通过提供会话 Cookie 在维持会话的同时执行模糊测试。
+      -b 标志允许你按浏览器请求头中出现的原样传递 Cookie 字符串，对发现仅认证用户可访问的目录或参数必不可少。
     command: "ffuf -u {{url}}/FUZZ -w {{wordlist}} -b \"{{cookie_name}}={{value}}; {{session_id}}=xyz\""
 
-  - title: ffuf - using a raw request file
+  - title: ffuf - 使用原始请求文件
     desc: |
-      Import an entire HTTP request from a file, similar to the '-r' flag in SQLMap.
-      This is useful when dealing with complex requests involving many headers, cookies, and multi-line POST data.
-      Save the request from a proxy like Burp Suite, replace the target value with FUZZ, and point ffuf to it using -request.
-      You must also specify the protocol (http/https) using -request-proto if it differs from the default.
+      从文件导入整个 HTTP 请求，类似 SQLMap 的 -r 标志。
+      处理涉及许多请求头、Cookie 和多行 POST 数据的复杂请求时非常有用，从 Burp Suite 等代理保存请求，将目标值替换为 FUZZ，再用 -request 指向 ffuf。
     command: "ffuf -request {{request_file}} -request-proto http -w {{wordlist}}"
 
   # === OUTPUT AND PROXYING ===
-  - title: ffuf - saving output to file
+  - title: ffuf - 保存输出到文件
     desc: |
-      Save the scan results to a file in a structured format for later analysis.
-      The -o flag defines the output filename, and -of specifies the format (json, md, csv, html, or all).
-      JSON output is particularly useful for piping into other tools or custom scripts in a pipeline.
-      Using '-of all' will generate reports in every supported format simultaneously.
+      以结构化格式将扫描结果保存到文件以供日后分析。
+      -o 标志定义输出文件名，-of 指定格式（json、md、csv、html 或 all），JSON 输出在将结果管道传递到其他工具或自定义脚本时尤为有用。
     command: "ffuf -u {{url}}/FUZZ -w {{wordlist}} -o {{output_file}}.json -of json"
 
-  - title: ffuf - proxying through Burp Suite
+  - title: ffuf - 通过 Burp Suite 代理
     desc: |
-      Send all ffuf requests through a proxy like Burp Suite or OWASP ZAP.
-      This allows you to inspect the fuzzing traffic, use Burp's extensions, or log the requests for documentation.
-      Be careful when using high thread counts (-t) through a proxy as it can easily overwhelm the proxy application.
-      Use -replay-proxy instead of -x if you only want to send *matched* results to the proxy.
+      将所有 ffuf 请求经由 Burp Suite 或 OWASP ZAP 等代理发送。
+      这样你可以检查模糊测试流量、使用 Burp 扩展或将请求记录下来，通过代理使用高线程数（-t）时请小心，因为它可能压垮代理应用。
     command: "ffuf -u {{url}}/FUZZ -w {{wordlist}} -x http://127.0.0.1:8080"

@@ -3,119 +3,103 @@ tags: [kubernetes, devops, containers, orchestration, security, infrastructure, 
 
 actions:
   # === CONFIGURATION & CONTEXT ===
-  - title: kubectl - list contexts
+  - title: kubectl - 列出上下文
     desc: |
-      Lists all available cluster contexts stored in your local kubeconfig file. 
-      Use this to identify which clusters, users, and namespaces are currently configured for access. 
-      It is an essential first step to ensure you are targeting the correct environment before running destructive commands.
+      列出本地 kubeconfig 文件中存储的所有可用集群上下文。用它来识别当前配置了哪些集群、用户和命名空间可访问。
+      在执行破坏性命令前，这是确保你针对正确环境的第一步。
     command: "kubectl config get-contexts"
 
-  - title: kubectl - switch context
+  - title: kubectl - 切换上下文
     desc: |
-      Sets the current active context for all subsequent kubectl commands. 
-      This allows you to quickly jump between different clusters (e.g., from staging to production). 
-      Always verify your context after switching to prevent accidental modifications to the wrong cluster.
+      为后续所有 kubectl 命令设置当前活动上下文。这让你可以在不同集群之间快速切换（例如从 staging 到生产）。
+      切换后务必验证上下文，以防意外修改错误的集群。
     command: "kubectl config use-context {{context_name}}"
 
-  - title: kubectl - view cluster information
+  - title: kubectl - 查看集群信息
     desc: |
-      Displays the master and services addresses for the currently active cluster context. 
-      This is useful for verifying that the API server is reachable and for locating core services like CoreDNS or Metrics Server. 
-      Use this to troubleshoot initial connection issues with a new cluster.
+      显示当前活动集群上下文的 master 和服务地址。用于验证 API 服务器是否可达，并定位 CoreDNS 或 Metrics Server 等核心服务。
+      用它来排查新集群的初始连接问题。
     command: "kubectl cluster-info"
 
   # === ENUMERATION & INSPECTION ===
-  - title: kubectl - list all pods
+  - title: kubectl - 列出所有 Pod
     desc: |
-      Retrieves a list of all pods across every namespace in the cluster. 
-      This provides a high-level overview of all running workloads and their current health status. 
-      It is particularly useful for identifying unauthorized or suspicious pods during a security audit.
+      获取集群中所有命名空间内所有 Pod 的列表。这提供所有运行工作负载及其当前健康状态的高层概览。
+      在安全审计中特别有助于识别未授权或可疑的 Pod。
     command: "kubectl get pods --all-namespaces"
 
-  - title: kubectl - describe resource
+  - title: kubectl - 描述资源
     desc: |
-      Provides detailed information about a specific resource, including events, status, and configuration. 
-      Use this when a pod or service is failing to start to see the underlying error messages (e.g., ImagePullBackOff or CrashLoopBackOff). 
-      It reveals metadata like labels, annotations, and resource limits that are not shown in the standard list view.
+      提供特定资源的详细信息，包括事件、状态和配置。当 Pod 或服务启动失败时，用它查看底层错误信息（如 ImagePullBackOff 或 CrashLoopBackOff）。
+      它揭示标准列表视图中不显示的标签、注解和资源限制等元数据。
     command: "kubectl describe {{resource_type|pod}} {{resource_name}} -n {{namespace|default}}"
 
-  - title: kubectl - list API resources
+  - title: kubectl - 列出 API 资源
     desc: |
-      Prints the supported API resources on the server along with their shortnames and API groups. 
-      This is useful for discovery, especially when working with Custom Resource Definitions (CRDs). 
-      It helps users understand what objects they have permission to interact with within the cluster.
+      打印服务器上支持的 API 资源及其短名称和 API 组。这对发现很有用，尤其在使用自定义资源定义（CRD）时。
+      帮助用户了解他们在集群内有权交互的对象。
     command: "kubectl api-resources"
 
   # === TROUBLESHOOTING & INTERACTION ===
-  - title: kubectl - view container logs
+  - title: kubectl - 查看容器日志
     desc: |
-      Fetches the standard output and error logs from a specific container within a pod. 
-      This is the primary method for debugging application-level issues or monitoring application behavior. 
-      Adding the '-f' flag allows you to stream logs in real-time as they are generated.
+      获取 Pod 内特定容器的标准输出和错误日志。这是调试应用级问题或监控应用行为的主要方法。
+      添加 -f 标志可以实时流式查看日志。
     command: "kubectl logs {{pod_name}} -n {{namespace|default}} -c {{container_name|main}}"
 
-  - title: kubectl - execute shell in pod
+  - title: kubectl - 在 Pod 中执行 Shell
     desc: |
-      Opens an interactive terminal session inside a running container. 
-      This allows you to perform manual troubleshooting, check local files, or test network connectivity from within the cluster. 
-      Ensure you have the necessary RBAC permissions for 'pods/exec' before attempting this command.
+      在运行中的容器内打开交互式终端会话。这让你可以进行手动排查、检查本地文件或从集群内部测试网络连通性。
+      尝试此命令前确保你有 pods/exec 所需的 RBAC 权限。
     command: "kubectl exec -it {{pod_name}} -n {{namespace|default}} -- {{shell|/bin/bash}}"
 
-  - title: kubectl - port forwarding
+  - title: kubectl - 端口转发
     desc: |
-      Forwards one or more local ports to a specific pod or service. 
-      This allows you to access internal cluster services (like a database or web UI) from your local machine without exposing them to the public internet. 
-      The connection remains active only as long as the terminal process is running.
+      将一个或多个本地端口转发到特定 Pod 或服务。这让你可以从本机访问内部集群服务（如数据库或 Web UI），而无需将它们暴露到公网。
+      连接仅在终端进程运行期间保持活动。
     command: "kubectl port-forward {{resource_type|pod}}/{{resource_name}} {{local_port|8080}}:{{remote_port|80}} -n {{namespace|default}}"
 
-  - title: kubectl - copy files to/from pod
+  - title: kubectl - 与 Pod 之间复制文件
     desc: |
-      Facilitates the transfer of files and directories between your local filesystem and a container. 
-      This is useful for extracting logs that aren't sent to stdout or for injecting configuration files for testing. 
-      Note that the 'tar' binary must be present inside the container for this operation to succeed.
+      便于在本地文件系统和容器之间传输文件和目录。用于提取未发送到 stdout 的日志，或注入用于测试的配置文件。
+      注意容器内必须存在 tar 二进制文件，此操作才能成功。
     command: "kubectl cp {{source_path}} {{destination_path}} -n {{namespace|default}}"
 
   # === MANAGEMENT & OPERATIONS ===
-  - title: kubectl - apply configuration
+  - title: kubectl - 应用配置
     desc: |
-      Applies a configuration change to a resource defined in a YAML or JSON file. 
-      This follows a declarative approach, where Kubernetes manages the transition from the current state to the desired state. 
-      It is the standard way to deploy or update applications in a repeatable and version-controlled manner.
+      对 YAML 或 JSON 文件中定义的资源应用配置变更。这遵循声明式方法，由 Kubernetes 管理从当前状态到期望状态的过渡。
+      这是以可重复且受版本控制的方式部署或更新应用的标准方式。
     command: "kubectl apply -f {{file_path|manifest.yaml}}"
 
-  - title: kubectl - scale deployment
+  - title: kubectl - 扩缩 Deployment
     desc: |
-      Updates the number of replicas for a specific deployment, replica set, or stateful set. 
-      This is used to manually handle traffic spikes or to reduce resource consumption during off-peak hours. 
-      Scaling to zero can effectively stop a workload without deleting its configuration.
+      更新特定 Deployment、ReplicaSet 或 StatefulSet 的副本数。用于手动应对流量高峰，或在非高峰时段减少资源消耗。
+      缩到零可以在不删除配置的情况下有效停止工作负载。
     command: "kubectl scale deployment {{deployment_name}} --replicas={{count|3}} -n {{namespace|default}}"
 
   # === SECURITY & RBAC ===
-  - title: kubectl - check authorization
+  - title: kubectl - 检查授权
     desc: |
-      Checks if the current user or a specific service account can perform a given action. 
-      This is an invaluable tool for testing RBAC policies and ensuring the Principle of Least Privilege is followed. 
-      You can specify verbs like 'get', 'list', 'create', or 'delete' against any resource.
+      检查当前用户或特定服务账户是否可以执行给定操作。这是测试 RBAC 策略并确保遵循最小权限原则的宝贵工具。
+      你可以对任何资源指定 get、list、create 或 delete 等动词。
     command: "kubectl auth can-i {{verb|get}} {{resource|secrets}} -n {{namespace|default}}"
 
-  - title: kubectl - view secrets
+  - title: kubectl - 查看 Secret
     desc: |
-      Lists or retrieves the contents of Kubernetes secrets within a namespace. 
-      Secrets often contain sensitive data like API keys, database passwords, or TLS certificates. 
-      By default, values are base64 encoded and should be handled with extreme care to avoid data leaks.
+      列出或检索命名空间内 Kubernetes Secret 的内容。Secret 通常包含 API 密钥、数据库密码或 TLS 证书等敏感数据。
+      默认情况下值经过 base64 编码，应极其小心地处理以避免数据泄露。
     command: "kubectl get secret {{secret_name}} -n {{namespace|default}} -o yaml"
 
   # === ADVANCED TROUBLESHOOTING ===
-  - title: kubectl - debug pod
+  - title: kubectl - 调试 Pod
     desc: |
-      Creates an ephemeral container inside a running pod for troubleshooting. 
-      This is useful for debugging pods that do not have a shell or necessary tools installed in their base image. 
-      It allows you to inspect the file system and network of the target pod without restarting it.
+      在运行中的 Pod 内创建一个临时容器用于排查。这对于调试基础镜像中没有 shell 或必要工具的 Pod 很有用。
+      它让你无需重启即可检查目标 Pod 的文件系统和网络。
     command: "kubectl debug {{pod_name}} -it --image={{debug_image|busybox}} -n {{namespace|default}}"
 
-  - title: kubectl - resource monitoring
+  - title: kubectl - 资源监控
     desc: |
-      Provides a real-time view of CPU and memory usage for pods or nodes. 
-      This command requires the Metrics Server to be installed in the cluster. 
-      It helps identify "noisy neighbors" or workloads that are nearing their resource limits and might be throttled.
+      提供 Pod 或节点的 CPU 和内存使用实时视图。此命令要求集群中已安装 Metrics Server。
+      有助于识别吵闹邻居或接近资源限制、可能被限流的工作负载。
     command: "kubectl top {{resource_type|pod}} -n {{namespace|default}}"

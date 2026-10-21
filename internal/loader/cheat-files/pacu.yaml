@@ -3,85 +3,74 @@ tags: [cloud, security, pentest, aws, exploitation, enumeration, authentication]
 
 # === SESSION AND AUTHENTICATION ===
 actions:
- - title: pacu - create new session
+ - title: pacu - 创建新会话
    desc: |
-     This command initializes a brand new session within the Pacu framework. 
-     Sessions are used to isolate data, logs, and credentials between different engagements or environments. 
-     It is highly recommended to use unique session names for every new project to avoid data corruption.
+     此命令在 Pacu 框架内初始化一个全新会话。会话用于在不同测试任务或环境之间隔离数据、日志和凭据。
+     强烈建议为每个新项目使用唯一的会话名以避免数据损坏。
    command: "pacu --new-session {{session_name}}"
 
- - title: pacu - set credentials manually
+ - title: pacu - 手动设置凭据
    desc: |
-     This command allows you to manually input AWS credentials into the current session. 
-     You must provide an alias for the keys, the Access Key ID, the Secret Access Key, and optionally a Session Token. 
-     This is the most direct way to provide Pacu with the necessary permissions to interact with an AWS environment.
+     此命令允许你手动向当前会话输入 AWS 凭据。你必须提供密钥别名、Access Key ID、Secret Access Key，以及可选的 Session Token。
+     这是为 Pacu 提供与 AWS 环境交互所需权限的最直接方式。
    command: "pacu --set-keys {{alias}} {{access_key_id}} {{secret_access_key}} {{session_token|None}}"
 
- - title: pacu - import credentials from aws profile
+ - title: pacu - 从 AWS Profile 导入凭据
    desc: |
-     This command imports AWS credentials directly from your local AWS configuration files (~/.aws/credentials). 
-     It is useful when you have already configured profiles using the AWS CLI and want to use them within Pacu. 
-     Ensure the specified profile name exists in your local configuration before running this command.
+     此命令直接从本地 AWS 配置文件（~/.aws/credentials）导入 AWS 凭据。当你已使用 AWS CLI 配置了 profile 并想在 Pacu 中使用时很有用。
+     运行此命令前确保指定的 profile 名存在于本地配置中。
    command: "pacu --import-keys {{profile_name|default}}"
 
- - title: pacu - check current identity
+ - title: pacu - 检查当前身份
    desc: |
-     The whoami command displays details about the currently active IAM identity in the session. 
-     It verifies the credentials and returns the Account ID, User ARN, and the associated permissions if known. 
-     This should be the first command run after setting keys to ensure that the environment is reachable.
+     whoami 命令显示会话中当前活动的 IAM 身份的详细信息。它验证凭据并返回账户 ID、用户 ARN 以及已知的关联权限。
+     这应是设置密钥后运行的第一个命令，以确保环境可达。
    command: "pacu --whoami"
 
 # === ENUMERATION AND DISCOVERY ===
 
- - title: pacu - list all modules
+ - title: pacu - 列出所有模块
    desc: |
-     This command displays a complete list of all exploitation and enumeration modules available in Pacu. 
-     Modules are grouped by categories such as 'discovery', 'exploitation', 'persistence', and 'privesc'. 
-     Use this to find specific tools for the AWS services you are targeting during your assessment.
+     此命令显示 Pacu 中所有可用的利用和枚举模块的完整列表。模块按 discovery、exploitation、persistence 和 privesc 等类别分组。
+     用它为评估期间针对的 AWS 服务寻找特定工具。
    command: "pacu --list-modules"
 
- - title: pacu - get module information
+ - title: pacu - 获取模块信息
    desc: |
-     This command provides detailed documentation and usage instructions for a specific Pacu module. 
-     It explains what the module does, what permissions are required to run it, and what arguments it accepts. 
-     Reviewing module info is critical before running destructive or loud modules in a production environment.
+     此命令提供特定 Pacu 模块的详细文档和使用说明。它解释模块的功能、运行所需的权限以及接受的参数。
+     在生产环境运行破坏性或高调模块前查看模块信息至关重要。
    command: "pacu --module-name {{module_name}} --module-info"
 
- - title: pacu - set target regions
+ - title: pacu - 设置目标区域
    desc: |
-     This command restricts or expands the scope of the current session to specific AWS regions. 
-     You can provide a space-separated list of regions or use 'all' to target every available AWS region. 
-     Limiting regions can significantly speed up enumeration modules and reduce the number of API calls made.
+     此命令将当前会话的范围限制或扩展到特定 AWS 区域。你可以提供以空格分隔的区域列表，或使用 all 针对所有可用的 AWS 区域。
+     限制区域可以显著加快枚举模块并减少 API 调用次数。
    command: "pacu --set-regions {{regions|all}}"
 
 # === MODULE EXECUTION ===
 
- - title: pacu - execute a module
+ - title: pacu - 执行模块
    desc: |
-     This command triggers the execution of a specific module within the active session. 
-     It will use the credentials and regions previously configured to perform its tasks. 
-     Note that executing modules may trigger AWS CloudTrail alerts, so ensure you have authorization for the target account.
+     此命令在活动会话内触发特定模块的执行。它将使用之前配置的凭据和区域执行其任务。
+     注意执行模块可能触发 AWS CloudTrail 告警，因此确保你有目标账户的授权。
    command: "pacu --module-name {{module_name}} --exec"
 
- - title: pacu - execute module with specific arguments
+ - title: pacu - 使用特定参数执行模块
    desc: |
-     This command executes a module while passing custom arguments to modify its behavior. 
-     Arguments are passed as a single string and typically include parameters like specific regions, usernames, or resource IDs. 
-     This is the standard way to fine-tune module performance or target specific AWS resources.
+     此命令执行模块时传入自定义参数以修改其行为。参数以单个字符串传递，通常包括特定区域、用户名或资源 ID 等参数。
+     这是微调模块性能或针对特定 AWS 资源的标准方式。
    command: "pacu --module-name {{module_name}} --module-args '{{args|--regions us-east-1}}' --exec"
 
- - title: pacu - run in quiet mode
+ - title: pacu - 安静模式运行
    desc: |
-     This command starts Pacu without displaying the large ASCII banner at startup. 
-     It is useful for cleaner terminal output or when running Pacu in automated scripts or restricted shells. 
-     The functionality of the tool remains identical, but the initial visual clutter is removed.
+     此命令启动 Pacu 时不显示启动时的大型 ASCII 横幅。用于获得更干净的终端输出，或在自动化脚本或受限 shell 中运行 Pacu。
+     工具功能保持完全一致，只是移除了初始视觉杂乱。
    command: "pacu -q --session {{session_name}}"
 
 # === DATA MANAGEMENT ===
 
- - title: pacu - view session data
+ - title: pacu - 查看会话数据
    desc: |
-     This command retrieves and displays the data collected by modules for a specific AWS service. 
-     Pacu stores results in a local database, and this command allows you to query that database for previously found information. 
-     Use 'all' to see a summary of all data collected across all services in the current session.
+     此命令获取并显示模块为特定 AWS 服务收集的数据。Pacu 将结果存储在本地数据库中，此命令允许你查询该数据库以获取之前发现的信息。
+     使用 all 可查看当前会话中所有服务收集数据的摘要。
    command: "pacu --data {{service_name|all}}"

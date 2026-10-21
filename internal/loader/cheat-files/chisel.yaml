@@ -3,85 +3,75 @@ tags: [network, tunneling, pivoting, proxy, security, pentest, port-forwarding, 
 
 actions:
   # === SERVER CONFIGURATION ===
-  - title: chisel - basic server listener
+  - title: chisel - 基础服务器监听
     desc: |
-      Starts a basic Chisel server listening on a specific port. This command is 
-      typically run on the attacker's machine to receive connections from the victim. 
-      It creates the infrastructure for SSH-over-HTTP tunnels but does not allow 
-      reverse tunneling by default.
+      在特定端口上启动基础 Chisel 服务器监听。该命令通常
+      在攻击者机器上运行，以接收来自受害者的连接。
+      它为 SSH-over-HTTP 隧道创建基础设施，但默认不允许反向隧道。
     command: "chisel server --port {{listen_port|8080}}"
 
-  - title: chisel - server with reverse tunneling
+  - title: chisel - 带反向隧道的服务器
     desc: |
-      Starts a Chisel server that allows clients to request reverse port forwarding. 
-      The --reverse flag is essential for most penetration testing scenarios where 
-      the attacker needs to reach services inside a private network. It enables 
-      the client to establish a tunnel that points back to its own network.
+      启动允许客户端请求反向端口转发的 Chisel 服务器。
+      --reverse 标志对大多数渗透测试场景至关重要，在这些场景中
+      攻击者需要访问私有网络内部的服务。它使客户端能够建立指向自身网络的隧道。
     command: "chisel server --port {{listen_port|8080}} --reverse"
 
-  - title: chisel - authenticated server
+  - title: chisel - 带认证的服务器
     desc: |
-      Runs a Chisel server requiring a username and password for all incoming connections. 
-      This is a critical security measure when exposing the Chisel server to the public 
-      internet to prevent unauthorized pivoting. The format for credentials is 
-      user:pass, and multiple users can be specified.
+      运行要求所有传入连接提供用户名与密码的 Chisel 服务器。
+      当将 Chisel 服务器暴露到公共互联网时，这是一项关键安全措施，
+      可防止未授权的跳板访问。凭据格式为 user:pass，可指定多个用户。
     command: "chisel server --port {{listen_port|8080}} --auth {{user:pass}} --reverse"
 
   # === CLIENT TUNNELING ===
-  - title: chisel - local port forwarding
+  - title: chisel - 本地端口转发
     desc: |
-      Connects to a Chisel server and maps a local port on the client machine to 
-      a destination reachable by the server. Traffic sent to the client's local 
-      port will be tunneled through Chisel to the target address via the server. 
-      This is useful for bypassing outbound firewalls to reach specific services.
+      连接到 Chisel 服务器，并将客户端机器上的本地端口映射到
+      服务器可达的目的地。发送到客户端本地端口的流量将通过 Chisel
+      经服务器隧道传输到目标地址。这对于绕过出站防火墙以访问特定服务很有用。
     command: "chisel client {{server_ip}}:{{server_port}} {{local_port}}:{{remote_target}}:{{remote_port}}"
 
-  - title: chisel - remote port forwarding (reverse)
+  - title: chisel - 远程端口转发（反向）
     desc: |
-      Connects to a Chisel server and maps a port on the server machine back to 
-      a destination reachable by the client. This allows the attacker (server) 
-      to access services inside the victim's (client) network. Note that the 
-      server must be started with the --reverse flag for this to function.
+      连接到 Chisel 服务器，并将服务器机器上的端口映射回
+      客户端可达的目的地。这使攻击者（服务器）能够访问受害者（客户端）
+      网络内部的服务。注意服务器必须使用 --reverse 标志启动才能生效。
     command: "chisel client {{server_ip}}:{{server_port}} R:{{server_listen_port}}:{{target_addr}}:{{target_port}}"
 
   # === SOCKS PROXYING ===
-  - title: chisel - dynamic socks proxy
+  - title: chisel - 动态 SOCKS 代理
     desc: |
-      Sets up a SOCKS5 proxy on the client machine that tunnels traffic through 
-      the Chisel server. This allows the client to use any tool (like a browser 
-      or proxychains) to route traffic through the server's network location. 
-      The default SOCKS port used in Chisel's internal logic is 1080.
+      在客户端机器上设置 SOCKS5 代理，通过 Chisel 服务器隧道传输流量。
+      这使客户端能使用任何工具（如浏览器或 proxychains）通过服务器的网络位置路由流量。
+      Chisel 内部逻辑中默认使用的 SOCKS 端口为 1080。
     command: "chisel client {{server_ip}}:{{server_port}} {{local_socks_port|1080}}:socks"
 
-  - title: chisel - reverse socks proxy
+  - title: chisel - 反向 SOCKS 代理
     desc: |
-      Creates a SOCKS5 proxy on the server machine that routes traffic through 
-      the client machine into the client's internal network. This is the most 
-      common pivoting technique, allowing the attacker to reach the entire internal 
-      subnet of a compromised host. Requires the server to have --reverse enabled.
+      在服务器机器上创建 SOCKS5 代理，通过客户端机器将流量路由到客户端的内部网络。
+      这是最常见的跳板技术，使攻击者能到达受感染主机的整个内部子网。
+      需要服务器启用 --reverse。
     command: "chisel client {{server_ip}}:{{server_port}} R:{{socks_port|1080}}:socks"
 
   # === SECURITY AND OPTIMIZATION ===
-  - title: chisel - secure client with fingerprint
+  - title: chisel - 带指纹的安全客户端
     desc: |
-      Connects to a server while verifying its TLS fingerprint to prevent 
-      Man-in-the-Middle (MITM) attacks. The fingerprint is displayed by the 
-      server when it starts up. This ensures that the client is only talking 
-      to the intended, authorized Chisel server.
+      连接到服务器时验证其 TLS 指纹，以防止中间人（MITM）攻击。
+      服务器启动时会显示该指纹。这确保客户端只与
+      预期的、已授权的 Chisel 服务器通信。
     command: "chisel client --fingerprint {{fingerprint}} {{server_ip}}:{{server_port}} R:socks"
 
-  - title: chisel - optimized tunnel with compression
+  - title: chisel - 带压缩的优化隧道
     desc: |
-      Enables GZIP compression on the tunnel stream to reduce bandwidth usage. 
-      This is particularly useful when tunneling large amounts of data or 
-      operating over slow network connections. It may slightly increase CPU 
-      usage on both ends but usually results in better perceived performance.
+      在隧道流上启用 GZIP 压缩以降低带宽使用。
+      在隧道传输大量数据或在慢速网络连接上运行时特别有用。
+      它可能略微增加两端 CPU 使用，但通常会带来更好的感知性能。
     command: "chisel client {{server_ip}}:{{server_port}} --compress R:socks"
 
-  - title: chisel - persistent client connection
+  - title: chisel - 持久客户端连接
     desc: |
-      Configures the client to attempt to reconnect indefinitely if the connection 
-      is lost. The --keepalive flag sends heartbeat packets to prevent firewall 
-      timeouts from closing the connection. This is vital for maintaining a 
-      stable foothold in a long-term engagement.
+      配置客户端在连接丢失时无限尝试重连。
+      --keepalive 标志发送心跳数据包，防止防火墙超时关闭连接。
+      这对于在长期任务中维持稳定的立足点至关重要。
     command: "chisel client --keepalive {{interval|30s}} {{server_ip}}:{{server_port}} R:socks"

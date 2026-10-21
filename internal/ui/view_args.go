@@ -22,13 +22,13 @@ func (m App) viewArgs() string {
 	// Command preview
 	preview := model.BuildCommand(m.selectedCheat.Command, m.args)
 	previewBox := infoBoxStyle.Width(width - 4).Render(
-		titleStyle.Render("Command Preview") + "\n" + syntaxHighlight(preview),
+		titleStyle.Render("命令预览") + "\n" + syntaxHighlight(preview),
 	)
 	b.WriteString(previewBox)
 	b.WriteString("\n\n")
 
 	// Arguments list
-	b.WriteString(titleStyle.Render("Arguments:"))
+	b.WriteString(titleStyle.Render("参数："))
 	b.WriteString("\n\n")
 
 	for i, arg := range m.args {
@@ -37,7 +37,7 @@ func (m App) viewArgs() string {
 
 	// Footer
 	b.WriteString("\n")
-	b.WriteString(helpStyle.Render("tab/↓: next │ shift+tab/↑: prev │ enter: confirm │ esc: back"))
+	b.WriteString(helpStyle.Render("tab/↓: 下一个 │ shift+tab/↑: 上一个 │ enter: 确认 │ esc: 返回"))
 
 	return b.String()
 }

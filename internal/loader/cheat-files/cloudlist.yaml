@@ -4,85 +4,78 @@ tags: [cloud, reconnaissance, pentest, enumeration, asset-discovery, security]
 # === ENUMERATION ===
 
 actions:
-  - title: cloudlist - list all cloud assets
+  - title: cloudlist - 列出所有云资产
     desc: |
-      List all available assets across all configured cloud providers. This is the primary 
-      command used to gather a comprehensive overview of your cloud infrastructure. 
-      It requires a properly configured provider-config file containing credentials 
-      for services like AWS, GCP, or Azure.
+      列出所有已配置云服务商中的全部可用资产。这是用于收集
+      云基础设施全面概览的主要命令。
+      它需要一份正确配置的 provider-config 文件，其中包含
+      AWS、GCP 或 Azure 等服务的凭据。
     command: "cloudlist"
 
-  - title: cloudlist - filter by specific providers
+  - title: cloudlist - 按特定服务商过滤
     desc: |
-      Display assets belonging only to the specified cloud providers. Use this when 
-      you want to limit the scope of discovery to a single environment like AWS or DigitalOcean. 
-      Multiple providers can be provided as a comma-separated list to narrow down results.
+      仅显示属于指定云服务商的资产。当你希望将发现范围限制在
+      AWS 或 DigitalOcean 等单一环境时使用。
+      可以逗号分隔列表提供多个服务商以缩小结果。
     command: "cloudlist -provider {{providers|aws,gcp,digitalocean}}"
 
-  - title: cloudlist - filter by specific services
+  - title: cloudlist - 按特定服务过滤
     desc: |
-      Query and display results for specific cloud services such as S3, EC2, or Route53. 
-      This is useful for identifying specific resource types that might be vulnerable 
-      or require auditing. It helps in focusing the enumeration on high-value targets 
-      like storage buckets or compute instances.
+      查询并显示 S3、EC2 或 Route53 等特定云服务的结果。
+      这对于识别可能易受攻击或需要审计的特定资源类型很有用。
+      它有助于将枚举聚焦在存储桶或计算实例等高价值目标上。
     command: "cloudlist -service {{services|s3,ec2,lambda}}"
 
-  - title: cloudlist - filter by provider ID
+  - title: cloudlist - 按服务商 ID 过滤
     desc: |
-      Display results for specific account or provider IDs defined in your configuration. 
-      This is particularly useful if you have multiple accounts for the same provider 
-      configured and need to isolate one. It ensures that the output is restricted 
-      to the exact account context you are interested in.
+      显示配置中定义的特定账户或服务商 ID 的结果。
+      当你为同一服务商配置了多个账户、并需要隔离其中一个时特别有用。
+      它确保输出仅限于你感兴趣的精确账户上下文。
     command: "cloudlist -id {{provider_id}}"
 
 # === OUTPUT FILTERING ===
 
-  - title: cloudlist - extract only IP addresses
+  - title: cloudlist - 仅提取 IP 地址
     desc: |
-      Modify the output to display only the IP addresses of the discovered assets. 
-      This is ideal for piping the results into network scanners or other security 
-      tools that require a list of IP targets. It removes all hostnames and metadata 
-      to provide a clean list of network endpoints.
+      修改输出，仅显示已发现资产的 IP 地址。
+      这非常适合将结果管道到需要 IP 目标列表的网络扫描器或其他安全工具。
+      它移除所有主机名与元数据，提供干净的端点列表。
     command: "cloudlist -ip"
 
-  - title: cloudlist - extract only hostnames
+  - title: cloudlist - 仅提取主机名
     desc: |
-      Display only the hostnames or domain names of the discovered cloud assets. 
-      Use this command when performing DNS reconnaissance or preparing targets for 
-      web-based vulnerability scanners. It provides a focused list of FQDNs for 
-      further analysis or automated testing.
+      仅显示已发现云资产的主机名或域名。
+      在执行 DNS 侦察或为基于 Web 的漏洞扫描器准备目标时使用此命令。
+      它提供聚焦的 FQDN 列表以供进一步分析或自动化测试。
     command: "cloudlist -host"
 
-  - title: cloudlist - exclude private IP addresses
+  - title: cloudlist - 排除私有 IP 地址
     desc: |
-      Filter the output to exclude any private or internal IP addresses from the results. 
-      This is essential during external penetration tests to ensure you are only 
-      targeting publicly accessible infrastructure. It reduces noise by hiding 
-      resources that are not reachable from the internet.
+      过滤输出，从结果中排除任何私有或内部 IP 地址。
+      这在外部渗透测试中至关重要，可确保你仅针对公开可访问的基础设施。
+      它通过隐藏无法从互联网访问的资源来减少噪音。
     command: "cloudlist -exclude-private"
 
 # === CONFIGURATION & EXPORT ===
 
-  - title: cloudlist - use custom configuration files
+  - title: cloudlist - 使用自定义配置文件
     desc: |
-      Specify custom paths for the main config file and the provider credentials file. 
-      This is necessary when managing multiple client environments or keeping 
-      sensitive credentials in non-default locations. Ensure the provided paths 
-      are reachable and the YAML files are correctly formatted for the tool to function.
+      为主配置文件与服务商凭据文件指定自定义路径。
+      这在管理多个客户环境或将敏感凭据保存在非默认位置时是必要的。
+      请确保提供的路径可访问，且 YAML 文件格式正确，工具才能正常工作。
     command: "cloudlist -config {{config_path|~/.config/cloudlist/config.yaml}} -pc {{provider_config|~/.config/cloudlist/provider-config.yaml}}"
 
-  - title: cloudlist - export results to JSON
+  - title: cloudlist - 将结果导出为 JSON
     desc: |
-      Generate the discovery results in JSON format for structured data processing. 
-      JSON output is highly recommended for automation scripts and integration into 
-      larger security pipelines. It includes all available metadata for each asset, 
-      providing more context than the standard text output.
+      以 JSON 格式生成发现结果，用于结构化数据处理。
+      强烈建议将 JSON 输出用于自动化脚本并集成到更大的安全管道中。
+      它包含每个资产的所有可用元数据，比标准文本输出提供更多上下文。
     command: "cloudlist -json -o {{output_file|cloud_assets.json}}"
 
-  - title: cloudlist - verbose and silent modes
+  - title: cloudlist - 详细与静默模式
     desc: |
-      Toggle between verbose output for debugging and silent output for scripting. 
-      Verbose mode provides extra information about the discovery process and potential errors. 
-      Silent mode is best used when you only want the final results to be printed to the 
-      console, making it easier to pipe the output to other utilities.
+      在用于调试的详细输出与用于脚本的静默输出之间切换。
+      详细模式提供关于发现过程与潜在错误的额外信息。
+      静默模式最适合只希望将最终结果打印到控制台时使用，
+      使输出更容易管道到其他工具。
     command: "cloudlist {{mode|-silent}}"

@@ -3,94 +3,61 @@ tags: [web, scanner, security, pentest, enumeration, crawler, reconnaissance]
 
 actions:
   # === BASIC USAGE ===
-  - title: gospider - basic crawl
+  - title: gospider - 基础爬取
     desc: |
-      Performs a basic recursive crawl on a single target website. 
-      This is the primary command used to discover endpoints, files, and directories on a web application. 
-      By default, it will crawl the provided URL and look for links within the same domain. 
-      It is an essential starting point for mapping the attack surface of a target.
+      对单个目标网站执行基础递归爬取。这是发现 Web 应用端点、文件和目录的主要命令。默认情况下，它会爬取提供的 URL 并查找同一域内的链接。这是绘制目标攻击面的基本起点。
     command: "gospider -s {{url}}"
 
-  - title: gospider - crawl multiple sites
+  - title: gospider - 爬取多个站点
     desc: |
-      Crawls multiple websites provided in a text file. 
-      This is highly efficient for large-scale reconnaissance when dealing with multiple domains or subdomains. 
-      The threads flag can be adjusted to run site crawls in parallel, significantly speeding up the process. 
-      Ensure the input file contains one URL per line for correct parsing.
+      爬取文本文件中提供的多个网站。在处理多个域或子域的大规模侦察时非常高效。可以调整 threads 参数以并行运行站点爬取，显著加快进程。请确保输入文件每行包含一个 URL 以便正确解析。
     command: "gospider -S {{list_file}} -t {{threads|1}}"
 
   # === ADVANCED RECONNAISSANCE ===
-  - title: gospider - passive source integration
+  - title: gospider - 被动数据源集成
     desc: |
-      Enhances the crawl by fetching URLs from third-party sources like Archive.org, CommonCrawl, and VirusTotal. 
-      Including subdomains with the -w flag allows for a much broader discovery of the organizational infrastructure. 
-      The -r flag ensures that the tool not only finds these URLs but also actively visits them for further crawling. 
-      This is crucial for finding forgotten endpoints or legacy versions of the web application.
+      通过从 Archive.org、CommonCrawl 和 VirusTotal 等第三方来源获取 URL 来增强爬取。使用 -w 参数包含子域名可更广泛地发现组织基础设施。-r 参数确保工具不仅找到这些 URL，还会主动访问它们以进一步爬取。这对于发现被遗忘的端点或 Web 应用的遗留版本至关重要。
     command: "gospider -s {{url}} -a -w -r"
 
-  - title: gospider - sitemap and robots discovery
+  - title: gospider - Sitemap 与 robots 发现
     desc: |
-      Specifically instructs the tool to look for and parse the sitemap.xml and robots.txt files. 
-      Robots.txt often contains "Disallow" entries which point to sensitive or hidden directories intended to be kept away from search engines. 
-      Sitemaps provide a structured map of the website, helping to ensure no pages are missed during discovery. 
-      This command combines these checks with a standard site crawl for comprehensive coverage.
+      专门指示工具查找并解析 sitemap.xml 和 robots.txt 文件。robots.txt 通常包含指向敏感或隐藏目录的 Disallow 条目。Sitemap 提供网站的结构化地图，帮助确保发现过程中不漏掉任何页面。此命令将这些检查与标准站点爬取结合，实现全面覆盖。
     command: "gospider -s {{url}} --sitemap --robots"
 
   # === AUTHENTICATION & HEADERS ===
-  - title: gospider - authenticated crawl with cookies
+  - title: gospider - 使用 Cookie 的认证爬取
     desc: |
-      Executes a crawl while maintaining a session using the provided cookie string. 
-      This is necessary for crawling pages that are behind a login wall or require specific session state. 
-      Be careful with high concurrency during authenticated crawls to avoid triggering account lockout policies. 
-      The cookie format should follow the standard header format: "name1=value1; name2=value2".
+      使用提供的 Cookie 字符串维持会话执行爬取。这对于爬取登录墙之后或需要特定会话状态的页面是必要的。在认证爬取期间注意高并发，以避免触发账户锁定策略。Cookie 格式应遵循标准请求头格式：name1=value1; name2=value2。
     command: "gospider -s {{url}} --cookie {{cookie_string}}"
 
-  - title: gospider - custom headers
+  - title: gospider - 自定义请求头
     desc: |
-      Sends custom HTTP headers with every request during the crawling process. 
-      This can be used to bypass simple WAF rules, set a specific Authorization header, or simulate different client types. 
-      Multiple headers can be added by repeating the flag if necessary (though the base command shows one). 
-      It helps in testing how the server responds to different header configurations or specific API keys.
+      在爬取过程中为每个请求发送自定义 HTTP 请求头。可用于绕过简单的 WAF 规则、设置特定的 Authorization 请求头或模拟不同的客户端类型。必要时可重复该参数添加多个请求头（基础命令中显示一个）。它有助于测试服务器对不同请求头配置或特定 API 密钥的响应。
     command: "gospider -s {{url}} -H {{header_string|Content-Type: application/json}}"
 
-  - title: gospider - load from burp request
+  - title: gospider - 从 Burp 请求加载
     desc: |
-      Loads headers and cookies directly from a raw HTTP request file exported from Burp Suite. 
-      This is a massive time-saver for complex authentication flows where many headers are required. 
-      It ensures that the spidering activity perfectly mimics the request environment you have already established in your intercepting proxy. 
-      Simply right-click a request in Burp, save it to a file, and point Gospider to it.
+      直接从 Burp Suite 导出的原始 HTTP 请求文件加载请求头和 Cookie。对于需要多个请求头的复杂认证流程，这是巨大的时间节省。它确保爬取活动与你已在拦截代理中建立的请求环境完全一致。只需在 Burp 中右键点击请求，保存到文件，然后将其指向 Gospider。
     command: "gospider -s {{url}} --burp {{burp_raw_file}}"
 
   # === PERFORMANCE & STEALTH ===
-  - title: gospider - rate limited crawl
+  - title: gospider - 限速爬取
     desc: |
-      Limits the speed of the crawl to avoid overwhelming the target server or triggering rate-limiting protections. 
-      The concurrency flag controls how many simultaneous requests are made to the same domain. 
-      The delay and random-delay flags add a pause between requests, making the traffic pattern look more human-like. 
-      Use these settings when stealth is required or when testing fragile development environments.
+      限制爬取速度，以避免压垮目标服务器或触发限流保护。concurrency 参数控制对同一域名发出的并发请求数。delay 和 random-delay 参数在请求之间增加暂停，使流量模式看起来更像人类。当需要隐蔽性或测试脆弱的开发环境时使用这些设置。
     command: "gospider -s {{url}} -c {{concurrency|5}} -k {{delay|2}} -K {{random_delay|1}}"
 
-  - title: gospider - depth control
+  - title: gospider - 深度控制
     desc: |
-      Limits the recursion depth of the crawler to prevent it from getting stuck in infinite loops or crawling too far from the target. 
-      A depth of 0 allows for infinite recursion, which should be used with caution. 
-      Setting a specific depth (e.g., 2 or 3) is usually sufficient for most web applications. 
-      This helps in focusing the reconnaissance on the most relevant parts of the site structure.
+      限制爬虫的递归深度，防止其陷入无限循环或爬取离目标过远的内容。深度 0 表示无限递归，应谨慎使用。设置特定深度（如 2 或 3）通常对大多数 Web 应用足够。这有助于将侦察聚焦在站点结构中最相关的部分。
     command: "gospider -s {{url}} -d {{depth|2}}"
 
   # === PROXY & OUTPUT ===
-  - title: gospider - proxy configuration
+  - title: gospider - 代理配置
     desc: |
-      Routes all crawling traffic through a specified proxy server. 
-      This is commonly used to pipe Gospider traffic through Burp Suite (http://127.0.0.1:8080) for manual analysis of discovered endpoints. 
-      It can also be used with SOCKS proxies or VPN-like gateways to hide the true source IP of the scan. 
-      Ensure the proxy is active and reachable before starting the command.
+      通过指定代理服务器转发所有爬取流量。通常用于将 Gospider 流量导入 Burp Suite（http://127.0.0.1:8080），以便对发现的端点进行手动分析。也可与 SOCKS 代理或类似 VPN 的网关一起使用，以隐藏扫描的真实来源 IP。在开始命令前请确保代理处于活动且可访问状态。
     command: "gospider -s {{url}} -p {{proxy_url|http://127.0.0.1:8080}}"
 
-  - title: gospider - output to folder
+  - title: gospider - 输出到文件夹
     desc: |
-      Saves all discovered URLs and findings into a specified output directory. 
-      Gospider creates organized text files within this folder, typically separated by domain name. 
-      This is critical for documenting findings and for passing results to other tools in a pipeline. 
-      The output includes subdomains, links, scripts, and other identified assets.
+      将所有发现的 URL 和发现结果保存到指定的输出目录。Gospider 会在该文件夹中创建有组织的文本文件，通常按域名分隔。这对于记录发现结果以及将结果传递给流水线中的其他工具至关重要。输出包括子域名、链接、脚本和其他已识别的资产。
     command: "gospider -s {{url}} -o {{output_folder}}"

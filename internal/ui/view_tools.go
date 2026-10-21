@@ -28,12 +28,12 @@ func (m App) viewShowTools() string {
 	b.WriteString(m.renderHeader())
 	b.WriteString("\n\n")
 
-	b.WriteString(titleStyle.Render("Available Tools"))
+	b.WriteString(titleStyle.Render("可用工具"))
 	b.WriteString("\n\n")
 
 	toolInfoList := m.getToolInfoList()
 	if len(toolInfoList) == 0 {
-		b.WriteString(helpStyle.Render("No tools found."))
+		b.WriteString(helpStyle.Render("未找到工具。"))
 	} else {
 		// Render table
 		tableWidth := width - 4
@@ -49,11 +49,11 @@ func (m App) viewShowTools() string {
 		b.WriteString("\n\n")
 
 		// Total count
-		b.WriteString(helpStyle.Render(fmt.Sprintf("Total: %d tools", len(toolInfoList))))
+		b.WriteString(helpStyle.Render(fmt.Sprintf("共 %d 个工具", len(toolInfoList))))
 	}
 
 	b.WriteString("\n\n")
-	b.WriteString(helpStyle.Render("Press ESC to go back │ Enter: search selected tool │ ↑/↓: navigate │ ←/→: change page"))
+	b.WriteString(helpStyle.Render("按 ESC 返回 │ Enter: 搜索选中工具 │ ↑/↓: 导航 │ ←/→: 翻页"))
 
 	return b.String()
 }
@@ -65,8 +65,8 @@ func (m App) initToolsTable() App {
 	if len(toolInfoList) == 0 {
 		// Empty table
 		columns := []table.Column{
-			{Title: "Tool", Width: 30},
-			{Title: "Commands", Width: 15},
+			{Title: "工具", Width: 30},
+			{Title: "命令数", Width: 15},
 		}
 		t := table.New(
 			table.WithColumns(columns),
@@ -151,9 +151,9 @@ func (m App) initToolsTable() App {
 
 	// Calculate reserved space dynamically
 	header := m.renderHeader()
-	title := titleStyle.Render("Available Tools")
+	title := titleStyle.Render("可用工具")
 	paginatorView := m.toolsPaginator.View()
-	footer := helpStyle.Render("Press ESC or Enter to go back │ ↑/↓: navigate │ ←/→: change page")
+	footer := helpStyle.Render("按 ESC 或 Enter 返回 │ ↑/↓: 导航 │ ←/→: 翻页")
 	reservedHeight := lipgloss.Height(header) + 2 + // header + spacing
 		lipgloss.Height(title) + 2 + // title + spacing
 		lipgloss.Height(paginatorView) + 2 + // paginator + spacing

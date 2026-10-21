@@ -3,105 +3,91 @@ tags: [network, reconnaissance, dns, pentest, enumeration, security, information
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: dnsrecon - standard enumeration
+  - title: dnsrecon - 标准枚举
     desc: |
-      Performs a standard DNS enumeration to gather general information about the target. 
-      It queries for common records including SOA, NS, A, AAAA, MX, and SRV. 
-      This is usually the first step in DNS reconnaissance to identify the target's primary infrastructure and mail servers.
+      执行标准的 DNS 枚举，收集目标的一般信息。
+      查询常见记录，包括 SOA、NS、A、AAAA、MX 和 SRV，通常是识别目标主要基础设施和邮件服务器的第一步。
     command: "dnsrecon -d {{domain}} -t std"
 
-  - title: dnsrecon - zone transfer attempt
+  - title: dnsrecon - 区域传送尝试
     desc: |
-      Attempts an AXFR zone transfer against all identified name servers for the target domain. 
-      A successful zone transfer allows an attacker to see every record in a DNS zone without brute forcing. 
-      This is a critical security misconfiguration that should be tested during every penetration test.
+      对目标域名的所有已识别域名服务器尝试 AXFR 区域传送。
+      成功的区域传送可让攻击者无需暴力破解即可看到 DNS 区域中的每条记录，这是每次渗透测试都应检查的关键安全错误配置。
     command: "dnsrecon -d {{domain}} -a"
 
-  - title: dnsrecon - comprehensive scan
+  - title: dnsrecon - 综合扫描
     desc: |
-      Combines standard enumeration with a zone transfer attempt and certificate transparency check. 
-      This provides a broad overview of the target domain in a single command. 
-      It is highly efficient for initial data gathering but might be noisier than individual scans.
+      将标准枚举与区域传送尝试和证书透明度检查相结合。
+      用一条命令即可提供目标域名的广泛概览，对初始数据收集非常高效，但可能比单项扫描噪声更大。
     command: "dnsrecon -d {{domain}} -t std,crt -a"
 
   # === BRUTE FORCE & DISCOVERY ===
-  - title: dnsrecon - dictionary brute force
+  - title: dnsrecon - 字典暴力破解
     desc: |
-      Uses a dictionary file to discover subdomains and hostnames by attempting common names. 
-      This technique is essential when DNS zone transfers are disabled by the administrator. 
-      You can increase the thread count to speed up the discovery process on larger wordlists.
+      使用字典文件通过尝试常见名称来发现子域名和主机名。
+      当管理员禁用 DNS 区域传送时此技术必不可少，可增加线程数以加快更大字典上的发现进程。
     command: "dnsrecon -d {{domain}} -D {{wordlist|/usr/share/wordlists/dnsmap.txt}} -t brt --threads {{threads|10}}"
 
-  - title: dnsrecon - brute force with wildcard filtering
+  - title: dnsrecon - 带通配符过滤的暴力破解
     desc: |
-      Performs a brute force attack while filtering out records that resolve to a wildcard IP address. 
-      Wildcard DNS can lead to many false positives during subdomain enumeration. 
-      Using the -f flag ensures that your results only contain unique and valid host entries.
+      执行暴力破解攻击，同时过滤掉解析到通配符 IP 地址的记录。
+      通配符 DNS 会导致子域名枚举中出现大量误报，使用 -f 标志可确保结果只包含唯一且有效的主机条目。
     command: "dnsrecon -d {{domain}} -D {{wordlist}} -t brt -f"
 
   # === REVERSE & NETWORK MAPPING ===
-  - title: dnsrecon - reverse lookup range
+  - title: dnsrecon - 反向查询范围
     desc: |
-      Performs a reverse DNS lookup for a specific IP range or CIDR block to identify associated hostnames. 
-      This is useful for mapping internal networks or identifying cloud-hosted assets belonging to a target. 
-      It converts IP addresses back into human-readable domain names using PTR records.
+      对特定 IP 范围或 CIDR 块执行反向 DNS 查询，以识别关联的主机名。
+      对映射内部网络或识别属于目标的云托管资产非常有用，使用 PTR 记录将 IP 地址转换回可读的域名。
     command: "dnsrecon -r {{ip_range}} -t rvl"
 
-  - title: dnsrecon - reverse lookup from SPF
+  - title: dnsrecon - 从 SPF 反向查询
     desc: |
-      Extracts IP ranges from SPF (Sender Policy Framework) records and performs reverse lookups on them. 
-      SPF records often contain the IP addresses of authorized mail servers and associated networks. 
-      This provides a focused way to find infrastructure directly owned or used by the target organization.
+      从 SPF（发件人策略框架）记录中提取 IP 范围，并对其执行反向查询。
+      SPF 记录通常包含授权邮件服务器及相关网络的 IP 地址，可提供一种聚焦方式来发现目标组织直接拥有或使用的基础设施。
     command: "dnsrecon -d {{domain}} -s"
 
   # === OSINT & EXTERNAL SOURCES ===
-  - title: dnsrecon - certificate transparency search
+  - title: dnsrecon - 证书透明度搜索
     desc: |
-      Searches for subdomains and hosts using the crt.sh certificate transparency logs. 
-      This is a passive reconnaissance technique that does not interact directly with the target's DNS servers. 
-      It is excellent for finding hidden subdomains that have had SSL certificates issued in the past.
+      使用 crt.sh 证书透明度日志搜索子域名和主机。
+      这是一种不直接与目标 DNS 服务器交互的被动侦察技术，对查找过去签发过 SSL 证书的隐藏子域名非常出色。
     command: "dnsrecon -d {{domain}} -t crt"
 
-  - title: dnsrecon - search engine enumeration
+  - title: dnsrecon - 搜索引擎枚举
     desc: |
-      Queries search engines like Bing or Yandex to discover subdomains and hosts indexed publicly. 
-      This can reveal development or staging environments that are not listed in standard dictionaries. 
-      Note that frequent use might trigger CAPTCHAs or temporary blocks from the search providers.
+      查询 Bing 或 Yandex 等搜索引擎，以发现被公开索引的子域名和主机。
+      可揭示标准字典中不存在的开发或测试环境，注意频繁使用可能触发搜索引擎的验证码或临时封禁。
     command: "dnsrecon -d {{domain}} -t {{search_engine|bing}}"
 
   # === ADVANCED TECHNIQUES ===
-  - title: dnsrecon - dnssec zone walk
+  - title: dnsrecon - DNSSEC 区域遍历
     desc: |
-      Attempts a DNSSEC zone walk by exploiting NSEC records to enumerate the entire DNS zone. 
-      If the target uses NSEC instead of NSEC3, it is possible to reconstruct the full list of hosts. 
-      This is a powerful method for enumerating zones that have otherwise strict access controls.
+      通过利用 NSEC 记录尝试 DNSSEC 区域遍历，以枚举整个 DNS 区域。
+      如果目标使用 NSEC 而非 NSEC3，就有可能重建完整的主机列表，这是枚举严格访问控制区域的强大方法。
     command: "dnsrecon -d {{domain}} -z"
 
-  - title: dnsrecon - cache snooping
+  - title: dnsrecon - 缓存探测
     desc: |
-      Performs DNS cache snooping against a specific name server to see if certain domains have been resolved recently. 
-      This can provide insight into the browsing habits or software updates of the users behind that DNS server. 
-      A dictionary file (-D) and a target name server (-n) must be specified for this attack.
+      对特定域名服务器执行 DNS 缓存探测，查看某些域名最近是否被解析过。
+      可提供关于该 DNS 服务器背后用户浏览习惯或软件更新的洞察，此攻击需指定字典文件（-D）和目标域名服务器（-n）。
     command: "dnsrecon -t snoop -D {{wordlist}} -n {{nameserver}}"
 
-  - title: dnsrecon - tld expansion
+  - title: dnsrecon - TLD 扩展
     desc: |
-      Checks the target domain name against all Top-Level Domains (TLDs) registered in IANA. 
-      This helps identify related domains, brand protection issues, or potential phishing sites. 
-      It effectively strips the original extension and brute forces all other possible TLDs.
+      将目标域名与 IANA 注册的所有顶级域名（TLD）进行比对检查。
+      有助于识别相关域名、品牌保护问题或潜在的钓鱼网站，它会剥离原始扩展名并暴力破解所有其他可能的 TLD。
     command: "dnsrecon -d {{domain}} -t tld"
 
   # === DATA MANAGEMENT ===
-  - title: dnsrecon - export to json and xml
+  - title: dnsrecon - 导出为 JSON 和 XML
     desc: |
-      Runs a standard enumeration and saves the output into both JSON and XML formats. 
-      Saving results to structured files is crucial for documentation and for automated parsing by other tools. 
-      This prevents data loss and allows for easy comparison between different scan sessions.
+      运行标准枚举，并将输出同时保存为 JSON 和 XML 格式。
+      将结果保存为结构化文件对文档记录和其他工具的自动化解析至关重要，可防止数据丢失并便于比较不同扫描会话。
     command: "dnsrecon -d {{domain}} -t std --json {{json_file|results.json}} --xml {{xml_file|results.xml}}"
 
-  - title: dnsrecon - save to sqlite database
+  - title: dnsrecon - 保存到 SQLite 数据库
     desc: |
-      Executes a scan and stores all discovered records directly into a SQLite database file. 
-      Using a database is ideal for large-scale reconnaissance projects where you need to query results later. 
-      This keeps the workspace organized and allows for persistent storage of gathered intelligence.
+      执行扫描并将所有发现的记录直接存储到 SQLite 数据库文件。
+      使用数据库非常适合需要之后查询结果的大规模侦察项目，可保持工作区井然有序并持久存储收集到的情报。
     command: "dnsrecon -d {{domain}} -t std --db {{db_name|recon.db}}"

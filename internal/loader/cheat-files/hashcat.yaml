@@ -4,120 +4,81 @@ tags: [security, pentest, password-cracking, forensics, cryptography, gpu-accele
 actions:
 # === SYSTEM & IDENTIFICATION ===
 
- - title: hashcat - system benchmark
+ - title: hashcat - 系统基准测试
    desc: |
-     Runs a benchmark of various hash algorithms to test the performance of your hardware. 
-     This is essential for determining the expected cracking speed on your specific CPU or GPU.
-     It helps in estimating how long a specific attack will take before starting a real session.
-     The output displays the speed in Mega-hashes per second (MH/s) or Kilo-hashes per second (kH/s).
+     运行各种哈希算法的基准测试，以测试你硬件的性能。这对于确定在特定 CPU 或 GPU 上的预期破解速度至关重要。它有助于在开始真实会话之前估算特定攻击需要多长时间。输出以每秒百万哈希（MH/s）或每秒千哈希（kH/s）显示速度。
    command: "hashcat -b"
 
- - title: hashcat - identify hash type
+ - title: hashcat - 识别哈希类型
    desc: |
-     Automatically detects the potential hash algorithm of a given hash string or file.
-     This tool analyzes the structure, length, and character set of the input to suggest valid hash modes (-m).
-     It is the best starting point when you encounter an unknown hash format during an engagement.
-     Note that multiple algorithms might share the same format, so verify the results with context.
+     自动检测给定哈希字符串或文件的潜在哈希算法。此工具分析输入的结构、长度和字符集，以建议有效的哈希模式（-m）。当你遇到未知哈希格式时，这是最好的起点。请注意，多种算法可能共享相同格式，因此请结合上下文验证结果。
    command: "hashcat --identify {{hash_file}}"
 
- - title: hashcat - list supported hash modes
+ - title: hashcat - 列出支持的哈希模式
    desc: |
-     Displays a comprehensive list of all supported hashing algorithms and their corresponding mode numbers.
-     The mode number is required for the -m flag in almost every hashcat operation.
-     Use -hh for an even more detailed list including all plugin-based hashes.
-     This is useful for finding the specific code for rare or custom hashing schemes.
+     显示所有支持的哈希算法及其对应模式编号的完整列表。在几乎所有 hashcat 操作中，-m 参数都需要模式编号。使用 -hh 可获取更详细的列表，包括所有基于插件的哈希。这对于查找罕见或自定义哈希方案的具体代码非常有用。
    command: "hashcat -h"
 
 # === ATTACK MODES ===
 
 # --- Attack Mode 0: Straight (Wordlist) ---
 
- - title: hashcat - basic wordlist attack (mode 0)
+ - title: hashcat - 基础字典攻击（模式 0）
    desc: |
-     Performs a straightforward dictionary attack against a target hash file using a wordlist.
-     It reads each line from the wordlist, hashes it, and compares it to the target hash.
-     This is the most common attack type and is highly effective with leaked password lists.
-     Ensure you specify the correct hash type using the -m flag.
+     使用字典对目标哈希文件执行直接的字典攻击。它读取字典中的每一行，计算哈希，并与目标哈希进行比较。这是最常见的攻击类型，配合泄漏的密码列表非常有效。请确保使用 -m 参数指定正确的哈希类型。
    command: "hashcat -a 0 -m {{hash_mode|1000}} {{hash_file}} {{wordlist|/usr/share/wordlists/rockyou.txt}}"
 
- - title: hashcat - wordlist attack with rules
+ - title: hashcat - 带规则的字典攻击
    desc: |
-     Applies mutation rules to every word in a wordlist to catch complex password variations.
-     Rules can perform actions like capitalizing letters, adding numbers, or toggling case.
-     This significantly increases the effectiveness of a dictionary attack without needing a massive wordlist.
-     The 'best64.rule' is a standard starting point for common password patterns.
+     对字典中的每个单词应用变异规则，以捕获复杂的密码变体。规则可以执行首字母大写、添加数字或切换大小写等操作。这显著提高了字典攻击的有效性，而无需庞大的字典。best64.rule 是常见密码模式的标准起点。
    command: "hashcat -a 0 -m {{hash_mode}} {{hash_file}} {{wordlist}} -r {{rule_file|/usr/share/hashcat/rules/best64.rule}}"
 
 # --- Attack Mode 1: Combinator ---
 
- - title: hashcat - combinator attack (mode 1)
+ - title: hashcat - 组合攻击（模式 1）
    desc: |
-     Combines words from two different wordlists to create new password candidates.
-     For every word in the first list, it appends every word from the second list.
-     This is ideal for cracking passwords composed of two common words or names.
-     Note that this can lead to a very large keyspace if both wordlists are huge.
+     组合两个不同字典中的单词以创建新的密码候选。对于第一个列表中的每个单词，它都会追加第二个列表中的每个单词。非常适合破解由两个常见单词或名称组成的密码。请注意，如果两个字典都很大，这会导致非常大的密钥空间。
    command: "hashcat -a 1 -m {{hash_mode}} {{hash_file}} {{wordlist1}} {{wordlist2}}"
 
 # --- Attack Mode 3: Brute-force (Mask) ---
 
- - title: hashcat - mask attack (mode 3)
+ - title: hashcat - 掩码攻击（模式 3）
    desc: |
-     Executes a brute-force attack based on a specific pattern or "mask".
-     Masks use placeholders like ?l (lowercase), ?u (uppercase), ?d (digit), and ?s (special).
-     For example, '?u?l?l?l?d?d' would try all passwords starting with one uppercase letter, three lowercase, and two digits.
-     This is much more efficient than a pure brute-force attack when the password structure is known.
+     基于特定模式或“掩码”执行暴力破解攻击。掩码使用 ?l（小写）、?u（大写）、?d（数字）和 ?s（特殊字符）等占位符。例如 ?u?l?l?l?d?d 会尝试所有以一个首字母大写、三个小写字母和两个数字开头的密码。当密码结构已知时，这比纯暴力破解高效得多。
    command: "hashcat -a 3 -m {{hash_mode}} {{hash_file}} {{mask|?u?l?l?l?d?d}}"
 
- - title: hashcat - incrementing mask attack
+ - title: hashcat - 递增掩码攻击
    desc: |
-     Performs a mask attack that starts with a minimum length and increments to a maximum length.
-     This is useful when you know the character set but are unsure of the exact password length.
-     It prevents the tool from jumping straight to a long, time-consuming mask immediately.
-     Use --increment-min and --increment-max to define the length boundaries.
+     执行从最小长度开始并递增到最大长度的掩码攻击。当你已知字符集但不确定确切密码长度时非常有用。它防止工具立即跳到耗时的长掩码。使用 --increment-min 和 --increment-max 定义长度边界。
    command: "hashcat -a 3 -m {{hash_mode}} {{hash_file}} --increment --increment-min {{min|1}} --increment-max {{max|8}} {{mask|?a?a?a?a?a?a?a?a}}"
 
 # --- Attack Mode 6/7: Hybrid Attacks ---
 
- - title: hashcat - hybrid attack (wordlist + mask)
+ - title: hashcat - 混合攻击（字典+掩码）
    desc: |
-     Appends a mask-based pattern to the end of every word in a wordlist.
-     Commonly used to crack passwords that consist of a base word followed by a few digits or symbols.
-     For example, using a mask of '?d?d' will add '00' through '99' to every dictionary entry.
-     This attack mode is designated as -a 6.
+     将基于掩码的模式追加到字典中每个单词的末尾。常用于破解由基础单词后跟几位数字或符号组成的密码。例如使用 ?d?d 掩码会为每个字典条目添加 00 到 99。此攻击模式指定为 -a 6。
    command: "hashcat -a 6 -m {{hash_mode}} {{hash_file}} {{wordlist}} {{mask|?d?d?d}}"
 
 # === PERFORMANCE & OPTIMIZATION ===
 
- - title: hashcat - optimized kernels and workload
+ - title: hashcat - 优化内核与工作负载
    desc: |
-     Uses optimized GPU kernels and adjusts the workload profile for maximum performance.
-     The -O flag enables optimized kernels which are faster but may limit maximum password length.
-     The -w flag sets the workload profile; '3' or '4' are high-performance modes that might make the system lag.
-     Only use -w 4 on dedicated cracking machines where desktop responsiveness is not required.
+     使用优化的 GPU 内核并调整工作负载配置以获得最大性能。-O 参数启用优化内核，速度更快但可能限制最大密码长度。-w 参数设置工作负载配置；3 或 4 是可能使系统卡顿的高性能模式。仅在不要求桌面响应性的专用破解机器上使用 -w 4。
    command: "hashcat -m {{hash_mode}} {{hash_file}} {{wordlist}} -O -w {{profile|3}}"
 
 # === SESSION & OUTPUT MANAGEMENT ===
 
- - title: hashcat - resume a session
+ - title: hashcat - 恢复会话
    desc: |
-     Resumes a previously interrupted cracking session using the session name.
-     Hashcat automatically saves restore points unless explicitly disabled.
-     This is vital for long-running attacks that might be stopped due to power loss or system updates.
-     Ensure the original wordlists and hash files are in the same location.
+     使用会话名称恢复之前中断的破解会话。除非显式禁用，hashcat 会自动保存恢复点。这对于可能因断电或系统更新而停止的长时间攻击至关重要。请确保原始字典和哈希文件位于相同位置。
    command: "hashcat --session {{session_name|my_attack}} --restore"
 
- - title: hashcat - show cracked hashes
+ - title: hashcat - 显示已破解的哈希
    desc: |
-     Displays the cracked passwords from the potfile that match the provided hash file.
-     Hashcat stores all successfully recovered passwords in a central 'hashcat.potfile'.
-     This command is useful for quickly retrieving results without re-running the attack.
-     It filters the potfile to only show results relevant to your current target list.
+     显示与所提供的哈希文件匹配的 potfile 中已破解的密码。hashcat 将所有成功恢复的密码存储在中央 hashcat.potfile 中。此命令用于快速获取结果而无需重新运行攻击。它会过滤 potfile，仅显示与当前目标列表相关的结果。
    command: "hashcat -m {{hash_mode}} {{hash_file}} --show"
 
- - title: hashcat - output results to file
+ - title: hashcat - 将结果输出到文件
    desc: |
-     Redirects all recovered passwords and their corresponding hashes to a specific output file.
-     The --outfile-format flag can be used to customize what information is saved (e.g., hash only, plain only).
-     This is the preferred way to collect results during a large-scale engagement.
-     The default format usually includes the hash and the plain-text password separated by a colon.
+     将所有恢复的密码及其对应哈希重定向到特定输出文件。--outfile-format 参数可用于自定义保存的信息（如仅哈希、仅明文）。这是大规模测试期间收集结果的首选方式。默认格式通常包含哈希和明文密码，以冒号分隔。
    command: "hashcat -m {{hash_mode}} {{hash_file}} {{wordlist}} -o {{output_file|cracked.txt}}"

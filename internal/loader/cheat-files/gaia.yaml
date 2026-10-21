@@ -3,46 +3,46 @@ tags: [recon, web, urls, parameters, automation, discovery]
 
 actions:
   # === BASIC USAGE ===
-  - title: gaia - quick crawl with defaults
+  - title: gaia - 默认设置快速爬取
     desc: |
-      Run Gaia against a single target URL using all default collectors (gau, arjun, linkfinder, uro, and AI reasoning).
-      This is a fast way to enumerate endpoints, parameters, and interesting assets for a new target.
+      使用所有默认收集器（gau、arjun、linkfinder、uro 和 AI 推理）对单个目标 URL 运行 Gaia。
+      这是为新目标枚举端点、参数和有趣资产的快速方式。
     command: "gaia --url {{url}}"
 
-  - title: gaia - process urls from stdin
+  - title: gaia - 从标准输入处理 URL
     desc: |
-      Feed Gaia with multiple URLs from a file or pipeline.
-      Useful when chaining recon tools or reprocessing historical URL lists.
+      从文件或管道向 Gaia 提供多个 URL。
+      在串联侦察工具或重新处理历史 URL 列表时非常有用。
     command: "cat {{urls_file}} | gaia --stdin"
 
   # === FOCUS & SPEED ===
-  - title: gaia - parameters only without heavy collectors
+  - title: gaia - 仅参数（不启用重型收集器）
     desc: |
-      Focus on parameterized endpoints and skip historical URL gathering and JS discovery to reduce noise and runtime.
-      Disables gau, arjun, and linkfinder while keeping normalization enabled.
+      专注于带参数的端点，跳过历史 URL 收集和 JS 发现以减少噪声和运行时间。
+      禁用 gau、arjun 和 linkfinder，同时保持规范化启用。
     command: "gaia --url {{url}} --only-params --no-gau --no-arjun --no-linkfinder"
 
-  - title: gaia - show static assets and normalize urls
+  - title: gaia - 显示静态资源并规范化 URL
     desc: |
-      Include static assets like JS, CSS, and images in the results while keeping normalized URL output.
-      Handy for mapping external dependencies or spotting exposed asset paths.
+      在结果中包含 JS、CSS 和图片等静态资源，同时保持规范化的 URL 输出。
+      便于映射外部依赖或发现暴露的资源路径。
     command: "gaia --url {{url}} --show-assets"
 
   # === OUTPUT CONTROL ===
-  - title: gaia - limit results and auto-install deps
+  - title: gaia - 限制结果数并自动安装依赖
     desc: |
-      Cap the number of collected URLs and let Gaia install any missing helper tools automatically.
-      Helps prevent runaway output while keeping the toolchain ready.
+      限制收集的 URL 数量，并让 Gaia 自动安装任何缺失的辅助工具。
+      有助于防止输出失控，同时保持工具链就绪。
     command: "gaia --url {{url}} --max-urls {{max_urls|500}} --auto-install"
 
-  - title: gaia - structured report to file
+  - title: gaia - 输出结构化报告到文件
     desc: |
-      Export findings to a chosen format (console, md, or json) and save them to disk for later review.
-      Combine with other filters to build reproducible recon reports.
+      将发现导出为所选格式（console、md 或 json）并保存到磁盘以供日后查看。
+      可与其他过滤器结合以生成可复现的侦察报告。
     command: "gaia --url {{url}} --format {{format|json}} --output {{output|gaia-report.json}}"
 
-  - title: gaia - disable ai reasoning for strict results
+  - title: gaia - 禁用 AI 推理以获得严格结果
     desc: |
-      Turn off Gaia's AI reasoning layer when you need deterministic, tool-only output.
-      Keeps historical URL collection, parameter discovery, and JS parsing enabled.
+      当你需要确定性的、仅工具的输出时，关闭 Gaia 的 AI 推理层。
+      保持历史 URL 收集、参数发现和 JS 解析启用。
     command: "gaia --url {{url}} --no-ai"

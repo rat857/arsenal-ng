@@ -3,52 +3,40 @@ tags: [passwords, wordlist, social-engineering, pentest, brute-force, enumeratio
 
 actions:
   # === CORE PROFILING ===
-  - title: cupp - interactive password profiling
+  - title: cupp - 交互式密码画像
     desc: |
-      Starts an interactive session to generate a personalized wordlist based on a target's specific details. 
-      The tool will prompt for the target's name, nickname, birthdate, partner's info, and even pet names. 
-      This is the most effective way to use the tool when performing social engineering-driven password attacks. 
-      It creates a highly relevant list of potential passwords that humans are likely to choose.
+      启动交互式会话，根据目标的特定信息生成个性化字典。
+      工具会提示输入目标的姓名、昵称、生日、伴侣信息甚至宠物名，是社工驱动的密码攻击中最有效的用法。
     command: "cupp -i"
 
-  - title: cupp - improve existing wordlist
+  - title: cupp - 改进现有字典
     desc: |
-      Uses an existing wordlist or dictionary file as a seed to generate new password variations. 
-      This option is useful when you have a list of keywords related to a target and want to apply typical password complexity patterns to them. 
-      The tool processes the input file and generates a much larger "pwnsauce" dictionary. 
-      Ensure the input file is in a readable text format for the best results.
+      使用现有字典或词典文件作为种子，生成新的密码变体。
+      当你已有与目标相关的关键词列表，并想对其应用常见密码复杂度模式时，此选项非常有用。
     command: "cupp -w {{input_file|dictionary.txt}}"
 
   # === DATABASE AND REPOSITORY ===
-  - title: cupp - parse alecto default credentials
+  - title: cupp - 解析 Alecto 默认凭据
     desc: |
-      Parses default usernames and passwords directly from the Alecto Database integration. 
-      The Alecto DB merges and enhances purified databases from Phenoelit and CIRT projects. 
-      This is extremely useful for identifying default vendor credentials on network equipment, IoT devices, or legacy systems. 
-      It saves time by providing a consolidated list of known default access points.
+      直接从 Alecto 数据库集成中解析默认用户名和密码。
+      Alecto 数据库合并并增强了来自 Phenoelit 和 CIRT 项目的纯净数据库，可用于识别网络设备、IoT 设备或遗留系统的默认厂商凭据。
     command: "cupp -a"
 
-  - title: cupp - download wordlist repository
+  - title: cupp - 下载字典仓库
     desc: |
-      Downloads a collection of large wordlists directly from the official CUPP repository. 
-      These lists are categorized and can be used for general-purpose brute-forcing or as a base for further profiling. 
-      Note that this action requires an active internet connection to reach the remote repository. 
-      It is a quick way to populate your local toolset with standard password lists.
+      直接从官方 CUPP 仓库下载一批大型字典。
+      这些列表按类别整理，可用于通用暴力破解或作为进一步画像的基础，此操作需要有效的互联网连接。
     command: "cupp -l"
 
   # === MISCELLANEOUS ===
-  - title: cupp - show help menu
+  - title: cupp - 显示帮助菜单
     desc: |
-      Displays the help menu containing all available command-line arguments and options. 
-      This is the quickest way to verify the installed version and see the correct syntax for various flags. 
-      Use this whenever you are unsure about the specific parameter requirements for a command. 
-      The output provides a brief overview of interactive, database, and wordlist options.
+      显示包含所有可用命令行参数和选项的帮助菜单。
+      这是验证已安装版本并查看各标志正确语法的最快方式。
     command: "cupp -h"
 
-  - title: cupp - display version information
+  - title: cupp - 显示版本信息
     desc: |
-      Shows the current version of the CUPP tool installed on the system. 
-      Checking the version is important for ensuring compatibility with different Python environments and features. 
-      Newer versions may include updated logic for password generation or better integration with databases. 
-      This command is non-intrusive and does not perform any profiling or network activity.
+      显示系统中已安装的 CUPP 工具当前版本。
+      检查版本对于确保与不同 Python 环境和功能的兼容性很重要，此命令无侵入性且不执行任何画像或网络活动。
     command: "cupp -v"

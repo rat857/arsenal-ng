@@ -4,101 +4,101 @@ tags: [ai, llm, openai, terminal, cli, automation, productivity, pentest]
 # === BASIC USAGE ===
 
 actions:
-  - title: aix - basic prompt
+  - title: aix - 基础提示
     desc: |
-      Send a simple text query to the default language model from the command line. 
-      This is the most common way to get quick answers, code snippets, or explanations without leaving the terminal. 
-      By default, this command uses the GPT-3.5 model for processing.
+      从命令行向默认语言模型发送简单的文本查询。
+      这是无需离开终端即可快速获取答案、代码片段或解释的最常用方式。
+      默认情况下，该命令使用 GPT-3.5 模型进行处理。
     command: "aix -p \"{{prompt|What is the capital of France?}}\""
 
-  - title: aix - query via stdin
+  - title: aix - 通过标准输入查询
     desc: |
-      Pipe the output of another command directly into aix for processing or analysis. 
-      This is extremely useful for summarizing logs, explaining complex terminal outputs, or transforming data using AI. 
-      It allows for seamless integration of LLMs into existing shell pipelines and scripts.
+      将另一条命令的输出直接通过管道传入 aix 进行处理或分析。
+      这对于总结日志、解释复杂的终端输出或使用 AI 转换数据极为有用。
+      它允许将 LLM 无缝集成到现有的 Shell 管道与脚本中。
     command: "echo \"{{input_data|list top 5 linux distros}}\" | aix"
 
-  - title: aix - save output to file
+  - title: aix - 将输出保存到文件
     desc: |
-      Execute a prompt and save the generated response directly to a local file. 
-      This is useful for generating documentation, scripts, or long-form content that needs to be stored for later use. 
-      Combine this with other flags to ensure the output is formatted exactly as needed for your project.
+      执行提示并将生成的响应直接保存到本地文件。
+      这对于生成需要存储以备后用的文档、脚本或长篇幅内容很有用。
+      可与其他标志组合，确保输出格式完全符合项目需要。
     command: "aix -p \"{{prompt}}\" -o {{output_file|result.txt}}"
 
 # === MODEL SELECTION & CONFIGURATION ===
 
-  - title: aix - query with gpt-4
+  - title: aix - 使用 gpt-4 查询
     desc: |
-      Force the tool to use the GPT-4.0 model for the provided prompt. 
-      GPT-4 is generally more capable at complex reasoning, coding tasks, and following intricate instructions compared to GPT-3.5. 
-      Ensure your API key has the necessary permissions and credits to access GPT-4 models to avoid errors.
+      强制工具使用 GPT-4.0 模型处理提供的提示。
+      与 GPT-3.5 相比，GPT-4 通常在复杂推理、编码任务与遵循复杂指令方面能力更强。
+      请确保你的 API 密钥具有访问 GPT-4 模型所需的权限与额度，以免报错。
     command: "aix -p \"{{prompt|Write a python script to scan for open ports}}\" -g4"
 
-  - title: aix - use specific model
+  - title: aix - 使用指定模型
     desc: |
-      Specify a exact model identifier to use for the request, such as a specific snapshot version. 
-      This ensures consistency in responses if you are building automation that relies on a particular model version's behavior. 
-      Use the list-models flag if you are unsure of the exact strings accepted by the API.
+      为请求指定确切的模型标识符，例如某个具体的快照版本。
+      如果你正在构建依赖特定模型版本行为的自动化，这可确保响应的一致性。
+      如果不确定 API 接受的确切字符串，可使用 list-models 标志查看。
     command: "aix -m {{model_name|gpt-4-0314}} -p \"{{prompt}}\""
 
-  - title: aix - list available models
+  - title: aix - 列出可用模型
     desc: |
-      Retrieve a complete list of all AI models available to your current API key. 
-      This is a helpful diagnostic step to verify which engines (GPT-3, GPT-4, etc.) you are authorized to use. 
-      The output will show the model IDs required for the custom model flag.
+      检索当前 API 密钥可用的所有 AI 模型的完整列表。
+      这是验证你被授权使用哪些引擎（GPT-3、GPT-4 等）的有用诊断步骤。
+      输出将显示自定义模型标志所需的模型 ID。
     command: "aix -lm -ak {{api_key}}"
 
 # === ADVANCED TUNING ===
 
-  - title: aix - set system context
+  - title: aix - 设置系统上下文
     desc: |
-      Provide a system-level message to define the AI's persona, constraints, or background knowledge. 
-      This helps guide the AI to behave in a specific way, such as acting as a senior developer or a security auditor. 
-      Setting a strong system context can significantly improve the quality and relevance of the output for specialized tasks.
+      提供系统级消息以定义 AI 的角色、约束或背景知识。
+      这有助于引导 AI 以特定方式行事，例如扮演资深开发人员或安全审计员。
+      设置强有力的系统上下文可显著提升专业任务输出的质量与相关性。
     command: "aix -sc \"{{context|You are a professional security researcher specialized in web vulnerabilities.}}\" -p \"{{prompt}}\""
 
-  - title: aix - adjust temperature
+  - title: aix - 调整温度
     desc: |
-      Change the temperature parameter to control the randomness and creativity of the response. 
-      A lower value (e.g., 0.2) makes the output more deterministic and focused, while a higher value (e.g., 0.8) makes it more creative. 
-      Use lower values for technical tasks like coding and higher values for creative writing or brainstorming.
+      更改 temperature 参数以控制响应的随机性与创造性。
+      较低的值（如 0.2）使输出更确定、更聚焦，较高的值（如 0.8）则使其更具创造性。
+      编码等技术任务使用较低的值，创意写作或头脑风暴使用较高的值。
     command: "aix -p \"{{prompt}}\" -t {{temperature|0.7}}"
 
-  - title: aix - set top-p sampling
+  - title: aix - 设置 top-p 采样
     desc: |
-      Configure the top-p (nucleus) sampling value to control the diversity of the AI's response. 
-      This is an alternative to temperature that limits the AI's word choices to a subset of the most likely tokens. 
-      It is generally recommended to adjust either temperature or top-p, but not both simultaneously for the same query.
+      配置 top-p（核采样）值以控制 AI 响应的多样性。
+      它是 temperature 的替代方案，将 AI 的选词限制在最可能 token 的子集中。
+      一般建议对同一次查询只调整 temperature 或 top-p 之一，而不同时调整两者。
     command: "aix -p \"{{prompt}}\" -tp {{top_p|0.9}}"
 
 # === OUTPUT & FORMATTING ===
 
-  - title: aix - output in jsonl format
+  - title: aix - 以 jsonl 格式输出
     desc: |
-      Generate the AI's response in JSON Lines format, which includes metadata like timestamps and model info. 
-      This is the preferred format for programmatic processing, allowing you to easily parse the results using tools like jq. 
-      It is highly effective for building datasets or logging AI interactions for auditing purposes.
+      以 JSON Lines 格式生成 AI 响应，其中包含时间戳与模型信息等元数据。
+      这是程序化处理的首选格式，便于使用 jq 等工具解析结果。
+      它非常适合构建数据集或记录 AI 交互以供审计。
     command: "aix -p \"{{prompt}}\" -j"
 
-  - title: aix - stream output
+  - title: aix - 流式输出
     desc: |
-      Enable streaming mode to see the AI's response in the terminal as it is being generated. 
-      This provides immediate visual feedback for long responses, making the tool feel more interactive and responsive. 
-      Note that markdown rendering is typically disabled when streaming to ensure raw text is displayed correctly.
+      启用流式模式，在终端中实时查看 AI 响应的生成过程。
+      这为长响应提供即时的视觉反馈，使工具感觉更具交互性与响应性。
+      注意流式输出时通常会禁用 Markdown 渲染，以确保原始文本正确显示。
     command: "aix -p \"{{prompt}}\" -s"
 
-  - title: aix - silent mode
+  - title: aix - 静默模式
     desc: |
-      Run the tool in silent mode to suppress headers, version info, and informational logs. 
-      This ensures that only the actual AI-generated content is printed to the standard output. 
-      This is essential when using aix inside scripts where extra boilerplate text would break the logic.
+      以静默模式运行工具，抑制头部信息、版本信息与信息性日志。
+      这确保只有实际的 AI 生成内容被打印到标准输出。
+      在脚本中使用 aix 时至关重要，因为多余的样板文本会破坏逻辑。
     command: "aix -p \"{{prompt}}\" -silent"
 
 # === MAINTENANCE ===
 
-  - title: aix - update tool
+  - title: aix - 更新工具
     desc: |
-      Check for and install the latest version of the aix utility from the official repository. 
-      Keeping the tool updated ensures you have the latest features, bug fixes, and support for new OpenAI models. 
-      This command may require an active internet connection to reach the ProjectDiscovery update servers.
+      检查并从官方仓库安装最新版本的 aix 工具。
+      保持工具更新可确保你获得最新特性、错误修复以及对新 OpenAI 模型的支持。
+      该命令可能需要有效的互联网连接以访问 ProjectDiscovery 更新服务器。
     command: "aix -up"

@@ -3,54 +3,54 @@ tags: [security, pentest, encryption, luks, bruteforce, forensics, cracking]
 
 actions:
   # === BASIC USAGE ===
-  - title: bruteforce-luks - basic brute force
+  - title: bruteforce-luks - 基础暴力破解
     desc: |
-      Performs a brute-force attack on a LUKS-encrypted volume within a specified length range. 
-      Use this when the password length is known or bounded to a small range to avoid excessive computation time. 
-      This method generates passwords on the fly using the default alphanumeric character set.
+      在指定长度范围内对 LUKS 加密卷执行暴力破解攻击。
+      当密码长度已知或限制在小范围内时使用，以避免过长的计算时间。
+      该方法使用默认的字母数字字符集即时生成密码。
     command: "bruteforce-luks -l {{min_length|1}} -m {{max_length|6}} {{volume_path}}"
 
-  - title: bruteforce-luks - wordlist attack
+  - title: bruteforce-luks - 字典攻击
     desc: |
-      Attempts to decrypt the LUKS volume using passwords provided in an external text file. 
-      This is generally much faster and more efficient than brute-forcing if you have a high-quality dictionary or leaked password list. 
-      Each line in the specified file is treated as a single password candidate for the decryption attempt.
+      使用外部文本文件中提供的密码尝试解密 LUKS 卷。
+      如果你有高质量字典或泄露的密码列表，这通常比暴力破解更快、更高效。
+      指定文件中的每一行都被视为解密尝试的单个密码候选。
     command: "bruteforce-luks -f {{wordlist_path}} {{volume_path}}"
 
   # === OPTIMIZATION AND PERFORMANCE ===
-  - title: bruteforce-luks - multi-threaded performance
+  - title: bruteforce-luks - 多线程性能
     desc: |
-      Increases the speed of the attack by utilizing multiple CPU cores simultaneously. 
-      Use this option on modern hardware to significantly reduce the time required to process password candidates. 
-      Ensure the number of threads does not exceed your hardware capabilities to maintain system stability during the process.
+      通过同时利用多个 CPU 核心来提高攻击速度。
+      在现代硬件上使用此选项可显著缩短处理密码候选所需的时间。
+      请确保线程数不超过硬件能力，以在过程中维持系统稳定。
     command: "bruteforce-luks -t {{thread_count|4}} {{volume_path}}"
 
-  - title: bruteforce-luks - verbose progress reporting
+  - title: bruteforce-luks - 详细进度报告
     desc: |
-      Prints progress information to the console at a regular time interval. 
-      This is useful for monitoring the current status and speed of the attack, ensuring the process has not stalled. 
-      The interval is defined in seconds, allowing you to control how often the terminal updates.
+      每隔固定时间间隔将进度信息打印到控制台。
+      这对于监控攻击的当前状态与速度很有用，确保进程未停滞。
+      间隔以秒定义，允许你控制终端更新的频率。
     command: "bruteforce-luks -v {{seconds|5}} {{volume_path}}"
 
   # === TARGETED SEARCH ===
-  - title: bruteforce-luks - custom character set
+  - title: bruteforce-luks - 自定义字符集
     desc: |
-      Defines a specific set of characters to be used during the brute-force generation process. 
-      Use this when you know the password only contains certain types of characters, such as numeric digits or lowercase letters. 
-      Limiting the charset prevents the tool from wasting time on irrelevant character combinations and speeds up the search.
+      定义在暴力破解生成过程中要使用的特定字符集。
+      当你已知密码仅包含某些类型字符（如数字或小写字母）时使用。
+      限制字符集可避免工具在不相关的字符组合上浪费时间并加快搜索。
     command: "bruteforce-luks -s {{charset|0123456789}} {{volume_path}}"
 
-  - title: bruteforce-luks - prefix and suffix attack
+  - title: bruteforce-luks - 前缀与后缀攻击
     desc: |
-      Targets passwords where parts of the string are already known, such as a common company prefix or a year-based suffix. 
-      This drastically reduces the search space and time required for a successful crack by only brute-forcing the middle section. 
-      It is particularly useful in scenarios where partial password patterns or corporate naming conventions are identified.
+      针对字符串部分已知的密码，例如常见公司前缀或基于年份的后缀。
+      通过仅暴力破解中间部分，极大缩小搜索空间并缩短成功破解所需时间。
+      在识别出部分密码模式或企业命名约定时特别有用。
     command: "bruteforce-luks -b {{prefix|pass}} -e {{suffix|2023}} {{volume_path}}"
 
   # === SESSION MANAGEMENT ===
-  - title: bruteforce-luks - save and resume session
+  - title: bruteforce-luks - 保存并恢复会话
     desc: |
-      Saves the current progress of the attack to a file so it can be resumed later if the process is interrupted. 
-      This is essential for long-running brute-force tasks that might span several days or require system reboots. 
-      The state file is updated approximately every minute, ensuring that minimal progress is lost in the event of a crash.
+      将攻击的当前进度保存到文件，以便进程中断后可以恢复。
+      这对于可能持续数天或需要系统重启的长时间暴力破解任务至关重要。
+      状态文件大约每分钟更新一次，确保崩溃时损失最小。
     command: "bruteforce-luks -w {{state_file|session.state}} {{volume_path}}"

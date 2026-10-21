@@ -3,68 +3,44 @@ tags: [security, pentest, exploitation, lateral-movement, windows, active-direct
 
 actions:
   # === BASIC EXECUTION ===
-  - title: impacket-atexec - basic command execution
+  - title: impacket-atexec - 基础命令执行
     desc: |
-      Executes a command on a remote Windows target using the Task Scheduler service (ATSVC).
-      This is a highly effective method for lateral movement when administrative credentials are available.
-      The tool works by creating a scheduled task that runs the command, retrieves the output via a temporary file, and then cleans up after itself.
-      Requires administrative privileges on the target machine.
+      使用任务计划程序服务（ATSVC）在远程 Windows 目标上执行命令。当拥有管理凭据时，这是一种非常有效的横向移动方法。工具通过创建运行命令的计划任务、通过临时文件获取输出，然后自我清理来工作。需要在目标机器上具有管理权限。
     command: "impacket-atexec {{domain|.}}/{{username}}:{{password}}@{{target}} \"{{command|whoami}}\""
 
-  - title: impacket-atexec - authenticate using NTLM hashes
+  - title: impacket-atexec - 使用 NTLM 哈希认证
     desc: |
-      Performs Pass-the-Hash (PtH) to execute commands without needing the plaintext password.
-      This is essential in scenarios where only NTLM hashes have been recovered from memory (LSASS) or the SAM database.
-      The hash must be provided in the format LMHASH:NTHASH.
-      If the LM hash is unknown, use 32 zeros as the prefix (00000000000000000000000000000000:NTHASH).
+      执行 Pass-the-Hash（PtH），无需明文密码即可执行命令。在只从内存（LSASS）或 SAM 数据库恢复出 NTLM 哈希的场景中至关重要。哈希必须以 LMHASH:NTHASH 格式提供。如果 LM 哈希未知，请使用 32 个零作为前缀（00000000000000000000000000000000:NTHASH）。
     command: "impacket-atexec -hashes {{lm_hash:nt_hash|00000000000000000000000000000000:aad3b435b51404eeaad3b435b51404ee}} {{domain|.}}/{{username}}@{{target}} \"{{command|whoami}}\""
 
   # === ADVANCED AUTHENTICATION ===
-  - title: impacket-atexec - authenticate using Kerberos
+  - title: impacket-atexec - 使用 Kerberos 认证
     desc: |
-      Uses Kerberos tickets for authentication instead of NTLM.
-      This requires a valid Kerberos ticket (TGT) to be present in the environment, usually pointed to by the KRB5CCNAME variable.
-      The -k flag triggers Kerberos usage, and -no-pass tells the tool not to prompt for a password.
-      Ensure that the target is specified as a hostname/FQDN that matches the Service Principal Name (SPN) in the ticket.
+      使用 Kerberos 票据而非 NTLM 进行认证。这需要环境中存在有效的 Kerberos 票据（TGT），通常由 KRB5CCNAME 变量指向。-k 参数触发 Kerberos 使用，-no-pass 告诉工具不要提示输入密码。请确保目标指定为主机名/FQDN，且与票据中的服务主体名称（SPN）匹配。
     command: "impacket-atexec -k -no-pass {{domain}}/{{username}}@{{target_fqdn}} \"{{command|whoami}}\""
 
-  - title: impacket-atexec - authenticate using Kerberos AES keys
+  - title: impacket-atexec - 使用 Kerberos AES 密钥认证
     desc: |
-      Uses an AES128 or AES256 hex key for Kerberos authentication.
-      This is useful when you have extracted the account's long-term keys via DCSync or from a NTDS.dit file.
-      Using the -aesKey flag allows authentication without knowing the plaintext password or the NTLM hash.
-      It is often necessary to specify the Domain Controller's IP using -dc-ip when using this method.
+      使用 AES128 或 AES256 十六进制密钥进行 Kerberos 认证。当你通过 DCSync 或从 NTDS.dit 文件提取了账户的长期密钥时非常有用。使用 -aesKey 参数允许在不了解明文密码或 NTLM 哈希的情况下认证。使用此方法时通常需要用 -dc-ip 指定域控制器的 IP。
     command: "impacket-atexec -aesKey {{hex_key}} -k -dc-ip {{dc_ip}} {{domain}}/{{username}}@{{target}} \"{{command|whoami}}\""
 
   # === OPERATIONAL OPTIONS ===
-  - title: impacket-atexec - silent command execution
+  - title: impacket-atexec - 静默命令执行
     desc: |
-      Executes the specified command directly without wrapping it inside "cmd.exe /c".
-      This can be useful for evasion purposes as it reduces the number of child processes created on the target.
-      Note that when using -silentcommand, the tool will not capture or return any output from the command to your console.
-      This mode is ideal for fire-and-forget tasks like starting a reverse shell or executing a background script.
+      直接执行指定命令，而不将其包装在 cmd.exe /c 中。这对于规避目的很有用，因为它减少了目标上创建的子进程数量。请注意，使用 -silentcommand 时工具不会从命令捕获或返回任何输出到你的控制台。此模式非常适合启动反向 shell 或执行后台脚本等一次性任务。
     command: "impacket-atexec -silentcommand {{domain|.}}/{{username}}:{{password}}@{{target}} \"{{command|powershell.exe -Enc ...}}\""
 
-  - title: impacket-atexec - execution with timestamps and debug info
+  - title: impacket-atexec - 带时间戳和调试信息的执行
     desc: |
-      Adds timestamps to every line of the logging output, which is helpful for creating audit trails during an engagement.
-      The -debug flag can be added to troubleshoot connection issues or RPC errors.
-      This is recommended when working in unstable network environments or when dealing with complex RPC filtering.
-      It provides a granular view of the Task Scheduler service interaction.
+      为日志输出的每一行添加时间戳，有助于在测试期间创建审计跟踪。可以添加 -debug 参数以排查连接问题或 RPC 错误。在不稳定的网络环境或处理复杂的 RPC 过滤时推荐使用。它提供任务计划程序服务交互的细粒度视图。
     command: "impacket-atexec -ts -debug {{domain|.}}/{{username}}:{{password}}@{{target}} \"{{command|hostname}}\""
 
-  - title: impacket-atexec - execute using a specific Domain Controller
+  - title: impacket-atexec - 使用特定域控制器执行
     desc: |
-      Forces the tool to communicate with a specific Domain Controller for authentication purposes.
-      This is particularly useful when the client machine cannot resolve the domain name or is in a different network segment.
-      By specifying -dc-ip, you ensure that the NTLM or Kerberos authentication request is sent to a reachable DC.
-      The target parameter should still point to the intended victim's IP or hostname.
+      强制工具与特定域控制器通信以进行认证。当客户端机器无法解析域名或位于不同网段时特别有用。通过指定 -dc-ip，确保 NTLM 或 Kerberos 认证请求发送到可访问的 DC。目标参数仍应指向目标受害者的 IP 或主机名。
     command: "impacket-atexec -dc-ip {{dc_ip}} {{domain}}/{{username}}:{{password}}@{{target}} \"{{command|net user /domain}}\""
 
-  - title: impacket-atexec - execution with custom output encoding
+  - title: impacket-atexec - 使用自定义输出编码执行
     desc: |
-      Sets the encoding (codec) used to interpret the output returned from the target system.
-      The default is "utf-8", but Windows systems in different locales may use different code pages (e.g., cp1252 or cp437).
-      If the command output appears garbled in your terminal, identify the target's code page and specify it with the -codec flag.
-      This ensures that non-ASCII characters in directory names or user accounts are displayed correctly.
+      设置用于解释目标系统返回输出的编码（编解码器）。默认是 utf-8，但不同区域设置的 Windows 系统可能使用不同的代码页（如 cp1252 或 cp437）。如果命令输出在终端中显示乱码，请识别目标的代码页并用 -codec 参数指定。这确保目录名或用户账户中的非 ASCII 字符正确显示。
     command: "impacket-atexec -codec {{encoding|cp1252}} {{domain|.}}/{{username}}:{{password}}@{{target}} \"{{command|dir C:\\Users}}\""

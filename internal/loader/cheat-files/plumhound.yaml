@@ -3,87 +3,83 @@ tags: [active-directory, bloodhound, security, pentest, blue-team, purple-team, 
 
 actions:
   # === CONNECTIVITY & BASIC OPERATIONS ===
-  - title: PlumHound - basic connectivity test
+  - title: PlumHound - 基础连通性测试
     desc: |
-      Use the easy mode to test the connection to the Neo4j database. It outputs all Active Directory user objects 
-      directly to the standard output. This is the fastest way to verify that your credentials and server 
-      address are correct before running complex tasks.
+      使用简易模式测试与 Neo4j 数据库的连接。
+      它会将所有 Active Directory 用户对象直接输出到标准输出。
+      这是在运行复杂任务之前验证凭据和服务器地址是否正确的最快方式。
     command: "PlumHound.py --easy"
 
-  - title: PlumHound - connect with custom credentials
+  - title: PlumHound - 使用自定义凭据连接
     desc: |
-      Specify a custom Neo4j server URI, username, and password for database interaction. This is necessary 
-      when the database is not running on the default localhost or uses non-standard credentials. 
-      Ensure the server string follows the bolt protocol format for proper communication with the Neo4j instance.
+      指定自定义的 Neo4j 服务器 URI、用户名和密码进行数据库交互。
+      当数据库未运行在默认 localhost 或使用非标准凭据时，这是必需的。
+      确保服务器字符串遵循 bolt 协议格式，以便与 Neo4j 实例正确通信。
     command: "PlumHound.py -s {{server|bolt://127.0.0.1:7687}} -u {{username|neo4j}} -p {{password|neo4jneo4j}}"
 
   # === TASK-BASED REPORTING ===
-  - title: PlumHound - execute task list
+  - title: PlumHound - 执行任务列表
     desc: |
-      Run a predefined list of tasks from a file to automate multiple Cypher queries and reporting steps. 
-      Task files allow for complex auditing workflows to be executed in a single command, producing various 
-      output formats like HTML or CSV. This is highly useful for generating comprehensive security reports 
-      after a SharpHound ingest.
+      从文件运行预定义的任务列表，以自动化多个 Cypher 查询和报告步骤。
+      任务文件允许在单条命令中执行复杂的审计工作流，并生成 HTML 或 CSV 等多种输出格式。
+      这在 SharpHound 导入数据后生成综合安全报告时非常有用。
     command: "PlumHound.py -x {{task_file|tasks/default.tasks}}"
 
-  - title: PlumHound - execute tasks with quiet output
+  - title: PlumHound - 静默输出执行任务
     desc: |
-      Execute a task file while suppressing standard output by setting the verbosity level to zero. 
-      This is ideal for automated environments or background jobs where you only care about the 
-      generated report files. It prevents the terminal from being flooded with progress bars and query logs.
+      执行任务文件，同时通过将详细级别设为零来抑制标准输出。
+      这非常适合自动化环境或后台作业，你只关心生成的报告文件。
+      它可以防止终端被进度条和查询日志淹没。
     command: "PlumHound.py -x {{task_file|tasks/default.tasks}} -v 0"
 
   # === SINGLE QUERIES & EXPORTS ===
-  - title: PlumHound - single cypher query to stdout
+  - title: PlumHound - 单条 Cypher 查询输出到 stdout
     desc: |
-      Execute a single custom Cypher query against the Neo4j database and display the results in the terminal. 
-      This mode is ideal for quick lookups of specific objects, relationships, or AD attributes without 
-      generating a full report. It allows researchers to interact with the BloodHound data directly from the CLI.
+      对 Neo4j 数据库执行单条自定义 Cypher 查询，并在终端显示结果。
+      此模式非常适合快速查询特定对象、关系或 AD 属性，而无需生成完整报告。
+      它允许研究人员直接从 CLI 与 BloodHound 数据进行交互。
     command: "PlumHound.py -q \"{{query|MATCH (n:User) RETURN n.name, n.displayname LIMIT 10}}\""
 
-  - title: PlumHound - single query HTML report
+  - title: PlumHound - 单条查询生成 HTML 报告
     desc: |
-      Run a specific Cypher query and generate a formatted HTML report for easier visualization and sharing. 
-      You can specify the report title, the output file name, and the destination directory path. 
-      This helps in presenting specific findings to stakeholders or documenting critical attack paths 
-      discovered during a red or purple team engagement.
+      运行特定的 Cypher 查询并生成格式化的 HTML 报告，以便于可视化和分享。
+      你可以指定报告标题、输出文件名以及目标目录路径。
+      这有助于向利益相关方呈现具体发现，或记录红队/紫队行动中发现的攻击路径。
     command: "PlumHound.py -q \"{{query}}\" --title \"{{title}}\" --of \"{{outfile|report.html}}\" --op \"{{outpath|reports/}}\" --ox HTML"
 
-  - title: PlumHound - single query CSV export
+  - title: PlumHound - 单条查询导出 CSV
     desc: |
-      Execute a Cypher query and export the resulting data into a CSV file for further analysis in Excel or other tools. 
-      This is useful for data manipulation, such as filtering large lists of vulnerable users or misconfigured 
-      computers. Ensure the output format is explicitly set to CSV using the --ox flag.
+      执行 Cypher 查询并将结果数据导出到 CSV 文件，以便在 Excel 或其他工具中进一步分析。
+      这对于数据操作很有用，例如过滤大量易受攻击的用户或配置错误的计算机。
+      确保使用 --ox 标志将输出格式明确设置为 CSV。
     command: "PlumHound.py -q \"{{query}}\" --of \"{{outfile|data_export}}\" --ox CSV"
 
   # === ADVANCED PATH ANALYSIS (BLUEHOUND MODULES) ===
-  - title: PlumHound - analyze paths by label
+  - title: PlumHound - 按标签分析路径
     desc: |
-      Analyze attack paths based on object labels like User, Group, Computer, OU, or GPO. 
-      The function identifies which specific relationships (e.g., HasSession, AdminTo) must be 
-      remediated to break the path to sensitive targets. It provides blue teams with concrete, 
-      actionable steps to improve the overall AD security posture.
+      基于 User、Group、Computer、OU 或 GPO 等对象标签分析攻击路径。
+      该功能会识别必须修复哪些特定关系（例如 HasSession、AdminTo）才能切断通往敏感目标的路径。
+      它为蓝队提供具体、可操作的步骤，以改善整体 AD 安全态势。
     command: "PlumHound.py -ap {{label|user}}"
 
-  - title: PlumHound - analyze paths between specific nodes
+  - title: PlumHound - 分析特定节点之间的路径
     desc: |
-      Identify and analyze all possible attack paths between a specific starting node (source) and a target end node. 
-      The output details which relationships need to be removed to effectively break the entire attack chain. 
-      This is particularly useful for verifying if a specific user or computer can reach Domain Admin privileges.
+      识别并分析特定起始节点（源）与目标终点节点之间的所有可能攻击路径。
+      输出会详细说明需要移除哪些关系才能有效切断整条攻击链。
+      这对于验证特定用户或计算机能否获得 Domain Admin 权限特别有用。
     command: "PlumHound.py -ap \"{{start_node|domain users@example.com}}\" \"{{end_node|domain admins@example.com}}\""
 
-  - title: PlumHound - find busiest shortest paths
+  - title: PlumHound - 查找最繁忙的最短路径
     desc: |
-      Find the "busiest" shortest paths that grant the highest number of users a route to Domain Admin privileges. 
-      The command takes an algorithm type (short or all) and the number of top results to return. 
-      This helps security teams identify the most critical "choke points" in the network that attackers 
-      are likely to exploit.
+      查找为最多用户提供通往 Domain Admin 权限路线的「最繁忙」最短路径。
+      该命令接受算法类型（short 或 all）以及要返回的顶部结果数量。
+      这有助于安全团队识别网络中最关键的「咽喉点」，即攻击者可能利用的位置。
     command: "PlumHound.py -bp {{algorithm|short}} {{limit|5}}"
 
   # === HTML CUSTOMIZATION ===
-  - title: PlumHound - generate report with custom CSS
+  - title: PlumHound - 使用自定义 CSS 生成报告
     desc: |
-      Apply a custom CSS template to the generated HTML reports to match corporate branding or specific design needs. 
-      This allows for professional-looking reports that are ready for executive presentation. 
-      The tool uses default templates if this path is not specified.
+      将自定义 CSS 模板应用于生成的 HTML 报告，以匹配企业品牌或特定设计需求。
+      这可以得到适合高管演示的专业外观报告。
+      如果未指定此路径，工具会使用默认模板。
     command: "PlumHound.py -x {{task_file}} --HTMLCSS {{css_file|templates/custom.css}}"

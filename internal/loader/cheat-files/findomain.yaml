@@ -3,71 +3,84 @@ tags: [subdomain-enumeration, reconnaissance, pentest, osint, security, network-
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: findomain - basic enumeration
+  - title: findomain - 基本枚举
     desc: |
-      Perform a basic subdomain discovery against a single target domain. This command uses public APIs to find subdomains quickly without performing any active resolution by default. It is the primary way to start gathering information about a target's infrastructure. No special privileges or API keys are required for the default operation.
+      对单个目标域名执行基本的子域名发现。
+      此命令使用公共 API 快速查找子域名，默认不执行任何主动解析，是开始收集目标基础设施信息的主要方式，默认操作无需特殊权限或 API 密钥。
     command: "findomain -t {{target}}"
 
-  - title: findomain - resolved subdomains only
+  - title: findomain - 仅已解析的子域名
     desc: |
-      Filter the discovery results to show only subdomains that successfully resolve to an IP address. This is useful for eliminating stale DNS records and focusing on active infrastructure. It performs DNS lookups on every discovered subdomain to verify its existence. Use this when you want a clean list of targets for further vulnerability scanning.
+      过滤发现结果，仅显示成功解析到 IP 地址的子域名。
+      可用于消除过期的 DNS 记录并专注于活跃基础设施，对每个发现的子域名执行 DNS 查询以验证其存在。
     command: "findomain -t {{target}} -r"
 
-  - title: findomain - show ip addresses
+  - title: findomain - 显示 IP 地址
     desc: |
-      Discover subdomains and display their associated IP addresses in the output. This provides immediate insight into the network mapping and hosting providers used by the target. It combines enumeration with DNS resolution to provide a more detailed overview. Note that this will increase the time taken for the scan compared to a simple API search.
+      发现子域名并在输出中显示其关联的 IP 地址。
+      可立即了解目标使用的网络映射和托管提供商，将枚举与 DNS 解析相结合以提供更详细的概览，注意这会比简单的 API 搜索增加扫描时间。
     command: "findomain -t {{target}} -i"
 
   # === OUTPUT MANAGEMENT ===
-  - title: findomain - automatic output file
+  - title: findomain - 自动输出文件
     desc: |
-      Run a scan and automatically save the results to a text file named after the target. This ensures that you have a persistent record of the discovery for later analysis. The file is created in the current working directory. It is a standard practice during the reconnaissance phase of a penetration test.
+      运行扫描并自动将结果保存到以目标命名的文本文件。
+      确保你对发现结果有持久记录以供日后分析，文件在当前工作目录中创建，是渗透测试侦察阶段的标准做法。
     command: "findomain -t {{target}} -o"
 
-  - title: findomain - custom output filename
+  - title: findomain - 自定义输出文件名
     desc: |
-      Save the discovery results to a specific filename of your choice. This is useful when you want to organize your project files or append results to a specific log. It provides more control over output management compared to the automatic naming convention. Ensure you have write permissions in the target directory to avoid errors.
+      将发现结果保存到你选择的特定文件名。
+      当你想整理项目文件或将结果追加到特定日志时非常有用，与自动命名约定相比，可对输出管理提供更多控制。
     command: "findomain -t {{target}} -u {{output_file|results.txt}}"
 
   # === ADVANCED DISCOVERY ===
-  - title: findomain - bruteforce mode
+  - title: findomain - 暴力破解模式
     desc: |
-      Perform a subdomain bruteforce attack using a provided wordlist. This is used to find "hidden" subdomains that are not indexed by public search engines or certificate transparency logs. Using this option automatically enables active resolution. Be aware that this generates significant DNS traffic and may be logged by the target's DNS infrastructure.
+      使用提供的字典执行子域名暴力破解攻击。
+      用于查找未被公共搜索引擎或证书透明度日志索引的隐藏子域名，使用此选项会自动启用主动解析，注意这会产生大量 DNS 流量并可能被目标 DNS 基础设施记录。
     command: "findomain -t {{target}} -w {{wordlist|/usr/share/wordlists/dirb/common.txt}}"
 
-  - title: findomain - external tool integration
+  - title: findomain - 外部工具集成
     desc: |
-      Extend the search capabilities by integrating results from Amass and Subfinder. This command requires these tools to be installed and accessible in your system path. By combining multiple tools, you achieve a more comprehensive coverage of the target's attack surface. It is the most thorough way to perform subdomain enumeration using findomain.
+      通过集成 Amass 和 Subfinder 的结果来扩展搜索能力。
+      此命令需要这些工具已安装并可在系统路径中访问，结合多个工具可实现对目标攻击面更全面的覆盖。
     command: "findomain -t {{target}} --external-subdomains"
 
-  - title: findomain - exclude specific sources
+  - title: findomain - 排除特定数据源
     desc: |
-      Exclude specific data sources from the search to avoid rate limits or unreliable data. This is helpful if a particular API is slow or if you want to skip sources that you have already queried. It helps in customizing the reconnaissance process to be as efficient as possible. Provide a comma-separated list of sources to exclude.
+      从搜索中排除特定数据源以避免速率限制或不可靠的数据。
+      当某个 API 较慢，或你想跳过已经查询过的来源时很有帮助，可提供逗号分隔的来源列表进行排除。
     command: "findomain -t {{target}} --exclude-sources {{sources|facebook,virustotalapikey}}"
 
   # === ANALYSIS & PROBING ===
-  - title: findomain - check http status
+  - title: findomain - 检查 HTTP 状态
     desc: |
-      Check the HTTP response status code for every discovered subdomain. This helps identify which subdomains are running web servers and what their current state is (e.g., 200 OK, 403 Forbidden). It is essential for prioritizing targets that have active web interfaces. This involves sending active HTTP requests to the target subdomains.
+      检查每个已发现子域名的 HTTP 响应状态码。
+      有助于识别哪些子域名正在运行 Web 服务器及其当前状态（如 200 OK、403 Forbidden），对优先处理具有活跃 Web 界面的目标至关重要。
     command: "findomain -t {{target}} --http-status"
 
-  - title: findomain - port scanning
+  - title: findomain - 端口扫描
     desc: |
-      Enable the built-in port scanner to identify open ports on discovered subdomains. By default, it scans a range of common ports to find active services. This is a critical step in moving from reconnaissance to service identification. You can define the port range using additional flags like --iport and --lport.
+      启用内置端口扫描器以识别已发现子域名上的开放端口。
+      默认扫描常见端口范围以查找活动服务，是从侦察转向服务识别的关键步骤，可用 --iport 和 --lport 等额外标志定义端口范围。
     command: "findomain -t {{target}} --pscan --iport {{start_port|0}} --lport {{end_port|1000}}"
 
-  - title: findomain - capture screenshots
+  - title: findomain - 捕获截图
     desc: |
-      Automatically take screenshots of active web services found during the discovery. This provides a visual representation of the target's web assets, making it easier to identify interesting pages or login panels. It requires Chrome or Chromium to be installed on the system. Results are saved to the specified path for later review.
+      自动对发现过程中找到的活跃 Web 服务进行截图。
+      提供目标 Web 资产的可视化表示，便于识别有趣的页面或登录面板，需要系统安装 Chrome 或 Chromium，结果保存到指定路径以供日后查看。
     command: "findomain -t {{target}} -s {{screenshot_path|./screenshots}}"
 
   # === MASS PROCESSING ===
-  - title: findomain - scan from file
+  - title: findomain - 从文件扫描
     desc: |
-      Read a list of target domains from a file and perform enumeration on each one. This is highly efficient for large-scale assessments involving multiple parent domains. The tool will process each domain sequentially or according to configured thread limits. Ensure the file contains one domain per line.
+      从文件读取目标域名列表并对每个执行枚举。
+      对涉及多个父域名的大规模评估非常高效，工具会按顺序或根据配置的线程限制处理每个域名，确保文件每行一个域名。
     command: "findomain -f {{input_file|domains.txt}}"
 
-  - title: findomain - read from stdin
+  - title: findomain - 从标准输入读取
     desc: |
-      Accept target domains via standard input (stdin). This allows you to pipe output from other tools directly into findomain for processing. It is perfect for automation scripts and complex reconnaissance pipelines. It enables findomain to act as a modular component in a larger security toolset.
+      通过标准输入（stdin）接受目标域名。
+      允许你将其他工具的输出直接管道传递给 findomain 进行处理，非常适合自动化脚本和复杂的侦察管道，使 findomain 能作为更大安全工具集中的模块化组件运行。
     command: "cat {{input_file}} | findomain --stdin"

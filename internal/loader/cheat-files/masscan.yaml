@@ -4,90 +4,70 @@ tags: [network, scanner, security, pentest, enumeration, port-scanner, reconnais
 actions:
 # === BASIC SCANNING ===
 
- - title: masscan - basic port scan
+ - title: masscan - 基础端口扫描
    desc: |
-     Performs a standard SYN scan against a target range for specific ports. 
-     This is the most common way to use masscan for internal or external network discovery. 
-     Note that masscan uses its own custom TCP/IP stack, meaning it requires root or administrator privileges to run.
-     It is significantly faster than traditional scanners because it operates asynchronously.
+     对目标范围执行针对特定端口的标准 SYN 扫描。这是对内网或外网进行网络发现时使用 masscan 的最常见方式。
+     注意 masscan 使用自己的自定义 TCP/IP 协议栈，因此需要 root 或管理员权限才能运行。由于异步运行，它比传统扫描器快得多。
    command: "masscan {{target_range}} -p {{ports}}"
 
- - title: masscan - scan multiple port ranges
+ - title: masscan - 扫描多个端口范围
    desc: |
-     Allows scanning for multiple specific ports or ranges simultaneously. 
-     You can define ports separated by commas or use a dash for a continuous range of ports.
-     This is useful when you are looking for specific common services like web (80, 445) and management (22, 3389) across a large network.
-     The output will list each discovered open port alongside the IP address.
+     允许同时扫描多个特定端口或范围。你可以用逗号分隔端口，或用短横线表示连续端口范围。
+     当你在大型网络中寻找 Web（80、445）和管理（22、3389）等特定常见服务时很有用。输出会列出每个发现的开放端口及其 IP 地址。
    command: "masscan {{target_range}} -p {{port_1}},{{port_2}},{{range_start}}-{{range_end}}"
 
 # === PERFORMANCE TUNING ===
 
- - title: masscan - scan with custom rate limit
+ - title: masscan - 使用自定义速率扫描
    desc: |
-     Adjusts the speed of the scan by setting the packets-per-second (pps) rate. 
-     Increasing this value makes the scan faster but can overwhelm network bandwidth or trigger security alerts (IDS/IPS). 
-     By default, masscan is set to a relatively slow 100 packets/second to avoid crashing low-end consumer routers.
-     For high-speed internet scanning, this value is often set to 100,000 or higher depending on your uplink.
+     通过设置每秒数据包数（pps）速率来调整扫描速度。提高该值可加快扫描，但可能压垮网络带宽或触发安全告警（IDS/IPS）。
+     默认设置为相对较慢的每秒 100 个数据包。对于高速互联网扫描，该值常根据上行带宽设为 100,000 或更高。
    command: "masscan {{target_range}} -p {{ports}} --rate {{rate|1000}}"
 
- - title: masscan - top ports scan
+ - title: masscan - 扫描常用端口
    desc: |
-     Scans the most common ports as defined by frequency of use. 
-     While masscan does not have a built-in "--top-ports" flag like Nmap, you can manually specify the most popular ports.
-     This approach saves time by focusing on the most likely entry points rather than scanning all 65,535 ports.
-     Commonly used for quick situational awareness on very large subnets.
+     按使用频率扫描最常见的端口。虽然 masscan 不像 Nmap 那样内置 --top-ports 标志，但你可以手动指定最流行的端口。
+     这种方法通过聚焦最可能的入口点来节省时间，而不是扫描全部 65,535 个端口。常用于在非常大的子网上快速了解态势。
    command: "masscan {{target_range}} --ports {{ports|21,22,23,25,53,80,110,139,443,445,3389}}"
 
 # === ADVANCED ENUMERATION ===
 
- - title: masscan - banner grabbing
+ - title: masscan - Banner 抓取
    desc: |
-     Enables banner grabbing to identify service versions and software information on open ports. 
-     This requires masscan to establish a full TCP connection (Three-way handshake), which is slower than a simple SYN scan. 
-     Use this when you need to fingerprint services like SSH, HTTP, or FTP to find vulnerabilities.
-     It provides more context than just knowing a port is open.
+     启用 Banner 抓取以识别开放端口上的服务版本和软件信息。这要求 masscan 建立完整的 TCP 连接（三次握手），比简单的 SYN 扫描慢。
+     当你需要对 SSH、HTTP 或 FTP 等服务进行指纹识别以寻找漏洞时使用。它比仅知道端口开放提供更多上下文。
    command: "masscan {{target_range}} -p {{ports}} --banners"
 
- - title: masscan - scan the entire internet
+ - title: masscan - 扫描整个互联网
    desc: |
-     Configures masscan to scan the entire IPv4 address space for a specific port. 
-     This is the signature feature of masscan, allowing a full internet scan in minutes if given enough bandwidth. 
-     Always ensure you have permission and are following ethical guidelines before scanning public IP space.
-     The rate should be carefully managed to avoid local network saturation.
+     配置 masscan 针对特定端口扫描整个 IPv4 地址空间。这是 masscan 的标志性功能，若有足够带宽可在几分钟内完成全网扫描。
+     在扫描公共 IP 空间前务必确保你有权限并遵循道德准则。应谨慎管理速率以避免本地网络饱和。
    command: "masscan 0.0.0.0/0 -p {{port}} --rate {{rate|10000}}"
 
 # === EXCLUSIONS AND FILTERS ===
 
- - title: masscan - exclude specific targets
+ - title: masscan - 排除特定目标
    desc: |
-     Excludes specific IP addresses or ranges from being scanned even if they fall within the target range. 
-     This is critical for avoiding sensitive systems like production databases, medical equipment, or VOIP phones. 
-     You can provide a single range or point to a file containing multiple exclusions using the --excludefile flag.
-     This helps prevent accidental downtime on critical infrastructure.
+     即使特定 IP 地址或范围落在目标范围内，也将其排除在扫描之外。这对避免生产数据库、医疗设备或 VOIP 电话等敏感系统至关重要。
+     你可以提供单个范围，或用 --excludefile 标志指向包含多个排除项的文件。这有助于防止关键基础设施意外宕机。
    command: "masscan {{target_range}} -p {{ports}} --exclude {{exclude_range}}"
 
 # === OUTPUT AND CONFIGURATION ===
 
- - title: masscan - save output in multiple formats
+ - title: masscan - 以多种格式保存输出
    desc: |
-     Saves the scan results in a specific file format such as JSON, XML, or Grepable. 
-     JSON is highly recommended for modern automation and integration with other security tools like Python scripts or ELK stacks. 
-     The -oX flag provides XML output which is useful for importing results into tools like Metasploit or Zenmap.
-     Using the binary format (-oB) is the most efficient for extremely large scans.
+     以 JSON、XML 或 Grepable 等特定文件格式保存扫描结果。对于现代自动化以及与其他安全工具的集成，强烈推荐 JSON。
+     -oX 标志提供 XML 输出，便于导入 Metasploit 或 Zenmap 等工具。使用二进制格式（-oB）对超大规模扫描最有效。
    command: "masscan {{target_range}} -p {{ports}} -oJ {{output_file|results.json}}"
 
- - title: masscan - manual network interface config
+ - title: masscan - 手动网络接口配置
    desc: |
-     Manually specifies the source IP, source MAC address, and router MAC address for the scan. 
-     This is necessary if masscan fails to auto-detect your network interface settings correctly. 
-     It is often required in complex virtualized environments, over VPNs, or when using specialized network adapters.
-     Incorrectly setting these may lead to no results or "packet dropped" errors.
+     手动指定扫描的源 IP、源 MAC 地址和路由器 MAC 地址。当 masscan 无法正确自动检测网络接口设置时有必要。
+     在复杂的虚拟化环境、VPN 或使用专用网卡时通常需要。错误设置这些可能导致无结果或 packet dropped 错误。
    command: "masscan {{target_range}} -p {{ports}} --adapter-ip {{source_ip}} --adapter-mac {{source_mac}} --router-mac {{gateway_mac}}"
 
- - title: masscan - generate and use config files
+ - title: masscan - 生成并使用配置文件
    desc: |
-     Generates a configuration file based on the current command-line arguments or runs a scan from an existing config. 
-     The --echo flag is useful for learning all available parameters and creating a template for future scans. 
-     Using a configuration file helps in documenting the scan parameters and ensures reproducibility.
-     This is preferred for complex, recurring scans in enterprise environments.
+     根据当前命令行参数生成配置文件，或从现有配置运行扫描。--echo 标志对于学习所有可用参数并为未来扫描创建模板很有用。
+     使用配置文件有助于记录扫描参数并确保可复现性。企业环境中复杂且反复执行的扫描首选此方式。
    command: "masscan -c {{config_file|myscan.conf}}"

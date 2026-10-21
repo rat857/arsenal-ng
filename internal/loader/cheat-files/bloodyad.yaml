@@ -4,106 +4,106 @@ tags: [active-directory, pentest, security, privilege-escalation, ldap, authenti
 actions:
 # === AUTHENTICATION METHODS ===
 
- - title: bloodyad - ntlm authentication
+ - title: bloodyad - NTLM 认证
    desc: |
-     Performs basic authentication using a domain, username, and cleartext password.
-     This is the primary method for interacting with the Domain Controller when credentials are known.
-     Ensure that the account is not subject to lockout policies before running multiple attempts.
+     使用域、用户名与明文密码执行基本认证。
+     当凭据已知时，这是与域控制器交互的主要方式。
+     运行多次尝试前，请确保该账户不受锁定策略限制。
    command: "bloodyAD -d {{domain}} -u {{username}} -p {{password}} --host {{dc_ip}} get info"
 
- - title: bloodyad - pass-the-hash
+ - title: bloodyad - 哈希传递
    desc: |
-     Authenticates using an NTLM hash instead of a cleartext password.
-     This is useful in post-exploitation scenarios where hashes have been dumped from memory or SAM files.
-     The password parameter accepts the format LMHASH:NTHASH or just the NTHASH.
+     使用 NTLM 哈希而非明文密码进行认证。
+     这在已从内存或 SAM 文件转储哈希的后渗透场景中很有用。
+     密码参数接受 LMHASH:NTHASH 格式或仅 NTHASH。
    command: "bloodyAD -d {{domain}} -u {{username}} -p {{nthash}} --host {{dc_ip}} get info"
 
- - title: bloodyad - kerberos authentication (ccache)
+ - title: bloodyad - Kerberos 认证（ccache）
    desc: |
-     Uses an existing Kerberos ticket (ccache file) for authentication.
-     This method is stealthier as it does not involve sending the password or NTLM hash over the wire.
-     Ensure the KRB5CCNAME environment variable is set or provide the path directly to the tool.
+     使用现有的 Kerberos 票据（ccache 文件）进行认证。
+     此方法更隐蔽，因为它不通过网络发送密码或 NTLM 哈希。
+     请确保已设置 KRB5CCNAME 环境变量，或直接向工具提供路径。
    command: "bloodyAD -d {{domain}} -k ccache={{path_to_ccache|/tmp/ticket.ccache}} --host {{dc_hostname}} get info"
 
- - title: bloodyad - ldaps (secure ldap)
+ - title: bloodyad - LDAPS（安全 LDAP）
    desc: |
-     Connects to the Domain Controller using LDAP over TLS (LDAPS) on port 636.
-     This is often required for sensitive operations like password changes or when the environment enforces LDAP signing.
-     Use the -s flag to initiate the secure connection and ensure the hostname matches the certificate.
+     使用端口 636 上的 TLS 上的 LDAP（LDAPS）连接到域控制器。
+     对于密码更改等敏感操作或环境强制执行 LDAP 签名时，这通常是必需的。
+     使用 -s 标志发起安全连接，并确保主机名与证书匹配。
    command: "bloodyAD -d {{domain}} -u {{username}} -p {{password}} --host {{dc_hostname}} -s get info"
 
 # === ENUMERATION (GET) ===
 
- - title: bloodyad - get object information
+ - title: bloodyad - 获取对象信息
    desc: |
-     Retrieves detailed information and attributes for a specific Active Directory object.
-     It can be used to check user properties, computer details, or group memberships.
-     This is the fundamental command for identifying potential misconfigurations on a target object.
+     检索特定 Active Directory 对象的详细信息与属性。
+     它可用于检查用户属性、计算机详情或组成员关系。
+     这是识别目标对象潜在错误配置的基础命令。
    command: "bloodyAD -d {{domain}} -u {{username}} -p {{password}} --host {{dc_ip}} get object {{target_dn}}"
 
- - title: bloodyad - list group members
+ - title: bloodyad - 列出组成员
    desc: |
-     Lists all users and sub-groups belonging to a specific Active Directory group.
-     This is critical for mapping out high-privilege groups like 'Domain Admins' or 'Enterprise Admins'.
-     Use this to identify which accounts you should target for lateral movement or privilege escalation.
+     列出属于特定 Active Directory 组的所有用户与子组。
+     这对于绘制 'Domain Admins' 或 'Enterprise Admins' 等高权限组至关重要。
+     使用它来识别应针对横向移动或权限提升的账户。
    command: "bloodyAD -d {{domain}} -u {{username}} -p {{password}} --host {{dc_ip}} get children {{group_dn}}"
 
- - title: bloodyad - search for specific attributes
+ - title: bloodyad - 搜索特定属性
    desc: |
-     Searches the directory for objects that match a specific LDAP filter.
-     This is highly versatile for finding users with specific properties, such as those with 'ServicePrincipalName' set.
-     It allows for custom reconnaissance tailored to specific attack vectors like Kerberoasting or AS-REP Roasting.
+     在目录中搜索匹配特定 LDAP 过滤器的对象。
+     它用途非常广泛，可用于查找具有特定属性的用户，例如设置了 'ServicePrincipalName' 的用户。
+     它允许针对 Kerberoasting 或 AS-REP Roasting 等特定攻击向量进行定制侦察。
    command: "bloodyAD -d {{domain}} -u {{username}} -p {{password}} --host {{dc_ip}} get search '{{filter|(objectCategory=person)}}'"
 
 # === PRIVILEGE ESCALATION & MODIFICATION (SET/ADD) ===
 
- - title: bloodyad - add user to group
+ - title: bloodyad - 将用户添加到组
    desc: |
-     Adds a target user to a specific group, such as Domain Admins.
-     This requires high privileges (e.g., GenericAll over the group or Account Operators membership).
-     Be aware that adding users to sensitive groups is highly noisy and will likely trigger security alerts.
+     将目标用户添加到特定组，例如 Domain Admins。
+     这需要高权限（如对组具有 GenericAll 或 Account Operators 成员资格）。
+     请注意将用户添加到敏感组噪音很大，很可能触发安全告警。
    command: "bloodyAD -d {{domain}} -u {{username}} -p {{password}} --host {{dc_ip}} add groupMember {{group_dn}} {{user_dn}}"
 
- - title: bloodyad - set user password
+ - title: bloodyad - 设置用户密码
    desc: |
-     Forces a password reset for a specific user account.
-     This operation requires the 'Reset Password' permission or 'GenericAll' rights over the target object.
-     Usually requires a secure connection (-s) to the Domain Controller to succeed.
+     强制为特定用户账户重置密码。
+     该操作需要对目标对象具有 'Reset Password' 权限或 'GenericAll' 权限。
+     通常需要对域控制器的安全连接（-s）才能成功。
    command: "bloodyAD -d {{domain}} -u {{username}} -p {{password}} --host {{dc_ip}} -s set password {{target_dn}} {{new_password}}"
 
- - title: bloodyad - shadow credentials (msDS-KeyCredentialLink)
+ - title: bloodyad - 影子凭据（msDS-KeyCredentialLink）
    desc: |
-     Adds a new Key Credential to a target object to facilitate a Shadow Credentials attack.
-     This allows an attacker to take over an account by requesting a TGT using a certificate.
-     Requires 'WriteProperty' permissions over the 'msDS-KeyCredentialLink' attribute of the target.
+     向目标对象添加新的密钥凭据，以实施影子凭据攻击。
+     这允许攻击者通过使用证书请求 TGT 来接管账户。
+     需要对目标的 'msDS-KeyCredentialLink' 属性具有 'WriteProperty' 权限。
    command: "bloodyAD -d {{domain}} -u {{username}} -p {{password}} --host {{dc_ip}} add shadowCredentials {{target_dn}}"
 
- - title: bloodyad - resource-based constrained delegation (RBCD)
+ - title: bloodyad - 基于资源的约束委派（RBCD）
    desc: |
-     Configures Resource-Based Constrained Delegation by setting the 'msDS-AllowedToDelegateTo' attribute.
-     This is a common method for privilege escalation when you control a computer account.
-     It allows the controlled computer to impersonate any user (including Domain Admins) to the target machine.
+     通过设置 'msDS-AllowedToDelegateTo' 属性来配置基于资源的约束委派。
+     当你控制一个计算机账户时，这是权限提升的常见方法。
+     它允许受控计算机对目标机器模拟任何用户（包括域管理员）。
    command: "bloodyAD -d {{domain}} -u {{username}} -p {{password}} --host {{dc_ip}} set rbcd {{target_dn}} {{attacker_dn}}"
 
- - title: bloodyad - grant genericall permissions
+ - title: bloodyad - 授予 GenericAll 权限
    desc: |
-     Assigns 'GenericAll' permissions for one object over another.
-     GenericAll gives full control over the target object, including the ability to change its password or modify its attributes.
-     This is a powerful persistence or escalation primitive if you already have the rights to modify DACLs.
+     为一个对象分配对另一对象的 'GenericAll' 权限。
+     GenericAll 授予对目标对象的完全控制，包括更改其密码或修改其属性的能力。
+     如果你已有权修改 DACL，这是强大的持久化或提权原语。
    command: "bloodyAD -d {{domain}} -u {{username}} -p {{password}} --host {{dc_ip}} add genericAll {{target_dn}} {{grantee_dn}}"
 
 # === CLEANUP (REMOVE) ===
 
- - title: bloodyad - remove user from group
+ - title: bloodyad - 将用户从组中移除
    desc: |
-     Removes a user from a specified group to revert changes made during exploitation.
-     This is part of the cleanup process to minimize the footprint left on the domain.
-     Always ensure you have recorded the original state before making modifications.
+     将用户从指定组中移除，以撤销利用期间所做的更改。
+     这是清理流程的一部分，可最大程度减少在域中留下的痕迹。
+     进行修改前务必记录原始状态。
    command: "bloodyAD -d {{domain}} -u {{username}} -p {{password}} --host {{dc_ip}} remove groupMember {{group_dn}} {{user_dn}}"
 
- - title: bloodyad - remove shadow credentials
+ - title: bloodyad - 移除影子凭据
    desc: |
-     Clears the 'msDS-KeyCredentialLink' attribute from a target object.
-     Use this to clean up after a Shadow Credentials attack to prevent detection.
-     Be careful not to delete legitimate key credentials if they were already present.
+     清除目标对象的 'msDS-KeyCredentialLink' 属性。
+     在影子凭据攻击后使用它进行清理，以防被检测。
+     若原本已存在合法密钥凭据，请小心不要将其删除。
    command: "bloodyAD -d {{domain}} -u {{username}} -p {{password}} --host {{dc_ip}} remove shadowCredentials {{target_dn}}"

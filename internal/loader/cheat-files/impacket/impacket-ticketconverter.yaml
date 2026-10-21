@@ -4,36 +4,36 @@ tags: [pentest, security, kerberos, active-directory, exploitation, authenticati
 actions:
 # === TICKET CONVERSION ACTIONS ===
 
- - title: impacket-ticketConverter - convert kirbi to ccache
+ - title: impacket-ticketConverter - 将 kirbi 转换为 ccache
    desc: |
-     Converts a Windows-native Kerberos ticket (Kirbi/KRB-CRED format) into a Linux-compatible ccache format. 
-     This is a critical step when you have exported tickets from a Windows machine using tools like Mimikatz or Rubeus and intend to use them on a Linux-based attack platform. 
-     Once the ticket is converted to ccache, you can export it to your environment using 'export KRB5CCNAME=ticket.ccache' to use it with other Impacket tools like psexec or smbclient. 
-     The tool automatically handles the parsing of the KRB-CRED structure to ensure compatibility with MIT Kerberos implementations.
+     将 Windows 原生的 Kerberos 票据（Kirbi/KRB-CRED 格式）转换为 Linux 兼容的 ccache 格式。
+     当你使用 Mimikatz 或 Rubeus 等工具从 Windows 机器导出票据并打算在基于 Linux 的攻击平台上使用时，这是关键步骤。
+     票据转换为 ccache 后，你可以使用“export KRB5CCNAME=ticket.ccache”将其导出到环境中，与 psexec 或 smbclient 等其他 Impacket 工具一起使用。
+     该工具会自动处理 KRB-CRED 结构的解析，以确保与 MIT Kerberos 实现兼容。
    command: "impacket-ticketConverter {{input_ticket.kirbi}} {{output_ticket.ccache}}"
 
- - title: impacket-ticketConverter - convert ccache to kirbi
+ - title: impacket-ticketConverter - 将 ccache 转换为 kirbi
    desc: |
-     Converts a Linux MIT Kerberos cache (ccache) file into a Windows-compatible Kirbi (KRB-CRED) format. 
-     This procedure is frequently used when a penetration tester obtains a Kerberos ticket on a Linux system and needs to move it to a Windows environment for lateral movement. 
-     The resulting Kirbi file can be injected directly into the Windows LSASS memory space using tools like Mimikatz (via 'kerberos::ptt') or Rubeus. 
-     It is important to ensure the ticket is still within its validity period, as converting an expired ticket will not make it functional on the target Windows host.
+     将 Linux MIT Kerberos 缓存（ccache）文件转换为 Windows 兼容的 Kirbi（KRB-CRED）格式。
+     当渗透测试人员在 Linux 系统上获得 Kerberos 票据并需要将其移动到 Windows 环境进行横向移动时，经常使用此过程。
+     生成的 Kirbi 文件可以使用 Mimikatz（通过“kerberos::ptt”）或 Rubeus 等工具直接注入 Windows LSASS 内存空间。
+     请确保票据仍在有效期内，因为转换已过期的票据不会使其在目标 Windows 主机上生效。
    command: "impacket-ticketConverter {{input_ticket.ccache}} {{output_ticket.kirbi}}"
 
 # === PRACTICAL USAGE SCENARIOS ===
 
- - title: impacket-ticketConverter - prepare harvested ticket for impacket tools
+ - title: impacket-ticketConverter - 为 Impacket 工具准备捕获到的票据
    desc: |
-     This command facilitates the transition from a credential harvesting phase to an active exploitation phase. 
-     After successfully dumping tickets from a compromised Windows workstation, use this command to transform the .kirbi files into .ccache files. 
-     This allows the attacker to perform Pass-the-Ticket attacks from a remote Linux machine without needing to interact further with the Windows UI. 
-     Be mindful of the file paths, as providing an incorrect input path will result in a file-not-found error.
+     此命令促进从凭据收集阶段到主动利用阶段的过渡。
+     在成功从受感染的 Windows 工作站转储票据后，使用此命令将 .kirbi 文件转换为 .ccache 文件。
+     这允许攻击者从远程 Linux 机器执行传递票据攻击，而无需进一步与 Windows UI 交互。
+     请注意文件路径，因为提供错误的输入路径会导致文件未找到错误。
    command: "impacket-ticketConverter {{harvested_mimikatz.kirbi}} {{ready_to_use.ccache}}"
 
- - title: impacket-ticketConverter - convert rubeus dump to linux format
+ - title: impacket-ticketConverter - 将 Rubeus 转储转换为 Linux 格式
    desc: |
-     Converts a base64-decoded Rubeus ticket dump that has been saved to a file into a format usable by Linux tools. 
-     Rubeus often outputs tickets in base64 format; once decoded and saved as a binary file, this tool provides the bridge to the Impacket ecosystem. 
-     This is particularly useful in complex Active Directory environments where different segments of the network are accessed via different operating systems. 
-     Ensure the output filename has a clear .ccache extension to avoid confusion during multi-stage engagements.
+     将已保存到文件中的 base64 解码 Rubeus 票据转储转换为 Linux 工具可用的格式。
+     Rubeus 通常以 base64 格式输出票据；一旦解码并保存为二进制文件，此工具便提供了通往 Impacket 生态系统的桥梁。
+     在复杂 Active Directory 环境中，不同网段通过不同操作系统访问时特别有用。
+     确保输出文件名具有清晰的 .ccache 扩展名，以避免在多阶段评估期间产生混淆。
    command: "impacket-ticketConverter {{rubeus_dump.kirbi}} {{linux_compatible.ccache}}"

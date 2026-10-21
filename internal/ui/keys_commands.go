@@ -26,16 +26,16 @@ type variableHint struct {
 
 // commonVariables contains common variable suggestions for set command hints.
 var commonVariables = []variableHint{
-	{Name: "domain", Desc: "Target domain (e.g., corp.local)"},
-	{Name: "hash", Desc: "NTLM hash"},
-	{Name: "ip", Desc: "Target IP address (e.g., 10.10.10.10)"},
-	{Name: "lhost", Desc: "Local host (your IP)"},
-	{Name: "lport", Desc: "Local port (for reverse shell)"},
-	{Name: "output", Desc: "Output file name"},
-	{Name: "pass", Desc: "Password"},
-	{Name: "port", Desc: "Port number (e.g., 445)"},
-	{Name: "url", Desc: "Target URL"},
-	{Name: "user", Desc: "Username (e.g., admin)"},
-	{Name: "wordlist", Desc: "Wordlist path"},
+	{Name: "domain", Desc: "目标域名（例如 corp.local）"},
+	{Name: "hash", Desc: "NTLM 哈希"},
+	{Name: "ip", Desc: "目标 IP 地址（例如 10.10.10.10）"},
+	{Name: "lhost", Desc: "本机地址（你的 IP）"},
+	{Name: "lport", Desc: "本机端口（用于反弹 shell）"},
+	{Name: "output", Desc: "输出文件名"},
+	{Name: "pass", Desc: "密码"},
+	{Name: "port", Desc: "端口号（例如 445）"},
+	{Name: "url", Desc: "目标 URL"},
+	{Name: "user", Desc: "用户名（例如 admin）"},
+	{Name: "wordlist", Desc: "字典路径"},
 }
 

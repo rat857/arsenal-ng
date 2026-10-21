@@ -3,53 +3,47 @@ tags: [recon, web, security, pentest, enumeration, discovery, bugbounty, paramet
 
 actions:
   # === BASIC RECONNAISSANCE ===
-  - title: paramspider - basic domain scan
+  - title: paramspider - 基础域名扫描
     desc: |
-      Perform a basic parameter discovery scan against a single target domain. 
-      This command queries archival sources to find historical URLs that contain parameters. 
-      It is the most common starting point for identifying potential attack vectors like XSS, SQLi, or SSRF. 
-      The results are typically saved to a text file in the results directory.
+      对单个目标域名执行基础的参数发现扫描。
+      该命令会查询存档来源，查找包含参数的历史 URL。
+      这是识别 XSS、SQLi 或 SSRF 等潜在攻击向量的最常见起点，结果通常保存到 results 目录下的文本文件中。
     command: "paramspider -d {{domain}}"
 
-  - title: paramspider - bulk domain discovery
+  - title: paramspider - 批量域名发现
     desc: |
-      Scan multiple domains simultaneously by providing a list from a local file. 
-      This is highly efficient for large-scale reconnaissance or when working on bug bounty programs with expansive scopes. 
-      Ensure the input file contains one domain per line without protocol prefixes. 
-      This helps in automating the discovery phase across an entire organization's infrastructure.
+      通过提供本地文件中的列表，同时扫描多个域名。
+      这在大规模侦察或处理范围广泛的漏洞赏金项目时非常高效。
+      输入文件应每行一个域名且不含协议前缀，有助于自动化整个组织基础设施的发现阶段。
     command: "paramspider -l {{file_path}}"
 
   # === OUTPUT AND STREAMING ===
-  - title: paramspider - stream results to terminal
+  - title: paramspider - 将结果流式输出到终端
     desc: |
-      Enable streaming mode to print discovered URLs directly to the terminal output. 
-      By default, the tool might focus on file generation, but the stream flag allows for real-time monitoring. 
-      This is particularly useful when you want to pipe the output into other command-line tools like 'grep', 'httpx', or 'nuclei'. 
-      Use this for building complex automation pipelines in your terminal.
+      启用流式模式，将发现的 URL 直接打印到终端输出。
+      默认情况下该工具可能专注于生成文件，但 stream 标志允许实时监控。
+      当你需要把输出通过管道传给 grep、httpx 或 nuclei 等其他命令行工具时尤为有用，可用于在终端中构建复杂的自动化流水线。
     command: "paramspider -d {{domain}} -s"
 
   # === ADVANCED CONFIGURATION ===
-  - title: paramspider - scan via custom proxy
+  - title: paramspider - 通过自定义代理扫描
     desc: |
-      Route all outgoing web requests through a specified proxy server. 
-      This is essential when you need to monitor the discovery traffic via tools like Burp Suite or OWASP ZAP. 
-      It can also be used to route traffic through SOCKS or HTTP proxies to bypass IP-based rate limiting or regional restrictions. 
-      Ensure the proxy URL is provided in the format 'IP:PORT'.
+      将所有外发 Web 请求经由指定的代理服务器路由。
+      当你需要通过 Burp Suite 或 OWASP ZAP 等工具监控发现流量时，这是必不可少的。
+      也可用于通过 SOCKS 或 HTTP 代理路由流量，以绕过基于 IP 的速率限制或区域限制；代理 URL 需采用 IP:PORT 格式。
     command: "paramspider -d {{domain}} --proxy {{proxy_url|127.0.0.1:8080}}"
 
-  - title: paramspider - custom parameter placeholder
+  - title: paramspider - 自定义参数占位符
     desc: |
-      Set a custom placeholder value for discovered URL parameters. 
-      While the tool defaults to 'FUZZ', you can change this to specific reflection strings or vulnerability payloads. 
-      This prepares the discovered URLs for immediate use in automated scanners or manual testing tools. 
-      Using a unique string helps in identifying where your input is reflected in the web application's response.
+      为发现的 URL 参数设置自定义占位值。
+      工具默认使用 FUZZ，你可以将其改为特定的反射字符串或漏洞载荷。
+      这会让发现的 URL 可立即用于自动化扫描器或手工测试；使用唯一字符串有助于识别输入在 Web 应用响应中的回显位置。
     command: "paramspider -d {{domain}} -p {{placeholder|FUZZ}}"
 
   # === PIPELINE INTEGRATION ===
-  - title: paramspider - filter and save results
+  - title: paramspider - 过滤并保存结果
     desc: |
-      Combine streaming with output redirection to filter specific parameters. 
-      This example shows how to stream the output and then use standard Unix tools to isolate specific extensions or keywords. 
-      It allows for more granular control over what data is ultimately saved for the exploitation phase. 
-      This approach is recommended for cleaning up noise from large archival datasets.
+      结合流式输出与输出重定向来过滤特定参数。
+      此示例演示如何流式输出，然后使用标准 Unix 工具隔离特定的扩展名或关键字。
+      它能让你对最终保存用于利用阶段的数据进行更细粒度的控制，建议用于清理大型存档数据集中的噪声。
     command: "paramspider -d {{domain}} -s | grep {{keyword|php}} > {{output_file|results.txt}}"

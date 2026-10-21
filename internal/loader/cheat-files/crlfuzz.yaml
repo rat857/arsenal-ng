@@ -3,82 +3,71 @@ tags: [web-security, crlf-injection, scanner, pentest, reconnaissance, bug-bount
 
 actions:
   # === BASIC TARGETING ===
-  - title: crlfuzz - basic scan of a single URL
+  - title: crlfuzz - 单 URL 基本扫描
     desc: |
-      Performs a targeted scan for CRLF injection vulnerabilities on a single specified URL. 
-      The tool injects various payloads into the headers to detect if the server is susceptible to HTTP Response Splitting. 
-      This is the most common starting point when you have identified a specific suspicious endpoint.
+      对单个指定 URL 执行针对 CRLF 注入漏洞的定向扫描。
+      工具会向请求头注入各种载荷，以检测服务器是否易受 HTTP 响应拆分攻击。
     command: "crlfuzz -u {{url}}"
 
-  - title: crlfuzz - scan URLs from a list
+  - title: crlfuzz - 从列表扫描 URL
     desc: |
-      Reads multiple target URLs from a text file and performs automated fuzzing on each entry. 
-      This is highly efficient for large-scale reconnaissance and bug bounty hunting when you have a list of subdomains. 
-      Ensure the file contains one URL per line for the tool to process them correctly.
+      从文本文件读取多个目标 URL，并对每个条目执行自动化模糊测试。
+      当你拥有子域名列表时，对大规模侦察和漏洞赏金狩猎非常高效，文件应每行一个 URL。
     command: "crlfuzz -l {{file_path}}"
 
-  - title: crlfuzz - scan from standard input (stdin)
+  - title: crlfuzz - 从标准输入扫描（stdin）
     desc: |
-      Enables the tool to receive URLs directly from the output of other tools in a pipeline. 
-      When no input flag is provided, crlfuzz waits for data from stdin, making it perfect for chaining with tools like subfinder or httpx. 
-      This approach is essential for building fully automated vulnerability scanning workflows.
+      使工具能够直接从管道中其他工具的输出接收 URL。
+      未提供输入标志时，crlfuzz 会等待 stdin 数据，非常适合与 subfinder 或 httpx 等工具串联。
     command: "crlfuzz {{options}}"
 
   # === REQUEST CONFIGURATION ===
-  - title: crlfuzz - specify HTTP request method
+  - title: crlfuzz - 指定 HTTP 请求方法
     desc: |
-      Allows you to define a specific HTTP method such as POST, PUT, or DELETE instead of the default GET method. 
-      CRLF vulnerabilities can often be triggered through specific methods that handle headers or data differently. 
-      Use this when testing REST APIs or endpoints that require specific interaction types.
+      允许你定义特定的 HTTP 方法（如 POST、PUT 或 DELETE），而非默认的 GET 方法。
+      CRLF 漏洞通常可通过以不同方式处理请求头或数据的特定方法触发，测试 REST API 时尤其有用。
     command: "crlfuzz -u {{url}} -X {{method|POST}}"
 
-  - title: crlfuzz - scan with request body data
+  - title: crlfuzz - 携带请求体数据扫描
     desc: |
-      Sends custom data within the request body, which is typically required for POST, PATCH, or DELETE methods. 
-      This allows for the testing of endpoints that require specific parameters to reach the logic where headers are processed. 
-      Be careful with the data format to ensure it matches what the target server expects (e.g., JSON or form-encoded).
+      在请求体中发送自定义数据，这通常是 POST、PATCH 或 DELETE 方法所必需的。
+      可测试需要特定参数才能到达请求头处理逻辑的端点，数据格式需符合目标服务器预期（如 JSON 或表单编码）。
     command: "crlfuzz -u {{url}} -X {{method|POST}} -d {{data}}"
 
-  - title: crlfuzz - pass custom headers
+  - title: crlfuzz - 传入自定义请求头
     desc: |
-      Includes custom HTTP headers in the outgoing request, such as specialized User-Agents or Authorization tokens. 
-      This is critical for scanning authenticated areas of an application where a session cookie or bearer token is required. 
-      You can also use this to simulate specific client environments or bypass basic header-based filters.
+      在发出的请求中包含自定义 HTTP 请求头，如专用的 User-Agent 或 Authorization 令牌。
+      对扫描需要会话 Cookie 或 Bearer 令牌的应用认证区域至关重要，也可用于模拟特定客户端环境。
     command: "crlfuzz -u {{url}} -H \"{{header_name}}: {{header_value}}\""
 
   # === PERFORMANCE & PROXY ===
-  - title: crlfuzz - set concurrency level
+  - title: crlfuzz - 设置并发级别
     desc: |
-      Adjusts the number of concurrent fuzzing tasks running at the same time to optimize scanning speed. 
-      The default concurrency is 25, but you can increase it for faster results on robust servers or decrease it to avoid overwhelming the target. 
-      Setting this too high might lead to rate-limiting or false negatives due to network congestion.
+      调整同时运行的并发模糊测试任务数量，以优化扫描速度。
+      默认并发为 25，可在稳健的服务器上提高以加快速度，或降低以避免压垮目标。
     command: "crlfuzz -l {{file_path}} -c {{concurrency|50}}"
 
-  - title: crlfuzz - route traffic through a proxy
+  - title: crlfuzz - 通过代理转发流量
     desc: |
-      Directs all fuzzing traffic through a specified proxy server, such as Burp Suite or OWASP ZAP. 
-      This allows you to manually inspect the payloads being sent and the responses received from the server. 
-      The proxy string must include the protocol, for example, http://127.0.0.1:8080.
+      将所有模糊测试流量经由指定代理服务器（如 Burp Suite 或 OWASP ZAP）转发。
+      这样你可以手动检查发送的载荷和从服务器收到的响应，代理字符串需包含协议，如 http://127.0.0.1:8080。
     command: "crlfuzz -u {{url}} -x {{proxy_url|http://127.0.0.1:8080}}"
 
   # === OUTPUT & LOGGING ===
-  - title: crlfuzz - silent mode for vulnerable targets
+  - title: crlfuzz - 静默模式（仅输出易受攻击目标）
     desc: |
-      Activates silent mode, which suppresses all standard output except for the URLs found to be vulnerable. 
-      This is extremely useful when piping results into other tools or saving only actionable findings to a log. 
-      It reduces terminal noise significantly during large-scale automated scans.
+      启用静默模式，除发现易受攻击的 URL 外抑制所有标准输出。
+      在将结果管道传递给其他工具或仅将可操作发现保存到日志时极为有用，可在大规模自动化扫描中显著减少终端噪声。
     command: "crlfuzz -l {{file_path}} -s"
 
-  - title: crlfuzz - verbose mode for debugging
+  - title: crlfuzz - 详细模式调试
     desc: |
-      Enables verbose output to display detailed error messages and progress information. 
-      Use this when the tool is not behaving as expected or when you need to troubleshoot connection issues. 
-      It provides more context on why certain requests might be failing during the fuzzing process.
+      启用详细输出，显示详细的错误消息和进度信息。
+      当工具行为异常或需要排查连接问题时使用，可提供请求在模糊测试过程中为何失败的更多上下文。
     command: "crlfuzz -l {{file_path}} -v"
 
-  - title: crlfuzz - save results to a file
+  - title: crlfuzz - 保存结果到文件
     desc: |
-      Automatically saves the output of the fuzzing process to a specified text file. 
-      This is recommended for long-running scans to ensure that no findings are lost due to terminal buffer limits. 
-      The output file will contain the details of the vulnerabilities discovered for later reporting.
+      自动将模糊测试过程的输出保存到指定文本文件。
+      建议在长时间扫描时使用，以确保不会因终端缓冲区限制而丢失任何发现，输出文件将包含所发现漏洞的详细信息。
     command: "crlfuzz -l {{file_path}} -o {{output_file}}"

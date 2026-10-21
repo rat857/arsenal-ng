@@ -3,82 +3,71 @@ tags: [network, enumeration, ip-manipulation, cidr, recon, pentest, infrastructu
 
 actions:
 # === EXPANSION AND AGGREGATION ===
- - title: mapcidr - expand cidr to ip list
+ - title: mapcidr - 将 CIDR 展开为 IP 列表
    desc: |
-     Expands a given CIDR range or file containing multiple ranges into a full list of individual IP addresses.
-     This is the most common use case for generating target lists for other security tools like nmap or httpx.
-     It effectively translates network notation into a line-by-line format that is easy to pipe into other utilities.
+     将给定的 CIDR 范围或包含多个范围的文件展开为完整的单个 IP 地址列表。这是为 nmap 或 httpx 等其他安全工具生成目标列表的最常见用例。
+     它有效地将网络表示转换为逐行格式，便于管道输入其他工具。
    command: "mapcidr -cidr {{cidr_range|192.168.1.0/24}}"
 
- - title: mapcidr - aggregate ips to cidr
+ - title: mapcidr - 将 IP 聚合为 CIDR
    desc: |
-     Aggregates a list of individual IP addresses or sparse subnets into the smallest possible set of CIDR blocks.
-     This is extremely useful for simplifying firewall rules or identifying the overall network footprint of a target.
-     It takes fragmented IP lists and finds the mathematical boundaries that encompass them efficiently.
+     将单个 IP 地址列表或稀疏子网聚合为最小可能的 CIDR 块集合。这对简化防火墙规则或识别目标的整体网络足迹非常有用。
+     它接收碎片化的 IP 列表，并找到高效涵盖它们的数学边界。
    command: "mapcidr -cidr {{ip_list_file|ips.txt}} -aggregate"
 
- - title: mapcidr - approximate aggregation
+ - title: mapcidr - 近似聚合
    desc: |
-     Aggregates sparse IP addresses into an approximated minimum subnet even if the range isn't perfectly full.
-     Use this when you want a broader network view of a target's infrastructure based on a few discovered IPs.
-     Be aware that this might include IP addresses that were not in your original input list to fill the subnet gap.
+     将稀疏 IP 地址聚合为近似的最小子网，即使范围并非完全填满。当你想基于发现的少量 IP 获得目标基础设施的更广泛网络视图时使用。
+     注意这可能包含不在原始输入列表中的 IP 地址以填补子网空隙。
    command: "mapcidr -cidr {{ip_list_file|ips.txt}} -aggregate-approx"
 
 # === NETWORK SLICING ===
- - title: mapcidr - slice cidr by host count
+ - title: mapcidr - 按主机数切分 CIDR
    desc: |
-     Divides a large CIDR block into multiple smaller subnets based on a specific maximum number of hosts per block.
-     This is ideal for parallelizing scanning tasks across multiple VPS instances or different time windows.
-     It ensures that each resulting chunk is manageable and fits within the scale of the intended operation.
+     根据每块的最大主机数将大型 CIDR 块划分为多个较小子网。适合在多个 VPS 实例或不同时间窗口之间并行化扫描任务。
+     它确保每个结果块都可管理，并符合预期操作的规模。
    command: "mapcidr -cidr {{cidr_range|10.0.0.0/16}} -sbh {{host_count|256}}"
 
- - title: mapcidr - slice into fixed number of subnets
+ - title: mapcidr - 切分为固定数量的子网
    desc: |
-     Splits a large CIDR range into a specific number of equal-sized subnets.
-     Use this when you have a fixed number of worker threads or scanners and want to distribute the IP space evenly among them.
-     The tool calculates the appropriate bitmask automatically to satisfy the requested number of slices.
+     将大型 CIDR 范围切分为特定数量的等大小子网。当你有固定数量的工作线程或扫描器并希望均匀分配 IP 空间时使用。
+     工具会自动计算合适的位掩码以满足请求的切片数量。
    command: "mapcidr -cidr {{cidr_range|172.16.0.0/12}} -sbc {{slice_count|10}}"
 
 # === FILTERING AND FORMATTING ===
- - title: mapcidr - filter out special ips
+ - title: mapcidr - 过滤特殊 IP
    desc: |
-     Expands a CIDR range while automatically skipping the base network address (.0) and the broadcast address (.255).
-     This prevents sending unnecessary packets to addresses that generally do not host standard services.
-     It is a clean way to generate a list of "usable" host IPs within a specific network segment.
+     展开 CIDR 范围时自动跳过网络基地址（.0）和广播地址（.255）。这避免向通常不承载标准服务的地址发送不必要的数据包。
+     这是生成特定网段内可用主机 IP 列表的干净方式。
    command: "mapcidr -cidr {{cidr_range|192.168.50.0/24}} -skip-base -skip-broadcast"
 
- - title: mapcidr - filter ips using an exclusion list
+ - title: mapcidr - 使用排除列表过滤 IP
    desc: |
-     Filters out specific IPs or CIDR ranges from your input based on a provided exclusion list or file.
-     This is crucial during engagements to ensure you do not scan out-of-scope assets or sensitive infrastructure like medical equipment.
-     The tool matches the input against the filter list and removes any overlapping addresses before outputting.
+     根据提供的排除列表或文件，从输入中过滤掉特定 IP 或 CIDR 范围。在测试中确保不扫描范围外资产或医疗设备等敏感基础设施至关重要。
+     工具会将输入与过滤列表匹配，并在输出前移除任何重叠地址。
    command: "mapcidr -cidr {{input_list|targets.txt}} -filter-ip {{exclude_list|out_of_scope.txt}}"
 
- - title: mapcidr - convert ip formats for bypass
+ - title: mapcidr - 转换 IP 格式以绕过
    desc: |
-     Converts standard dotted IP addresses into various alternative formats such as decimal, hex, or octal (0-11).
-     This is a powerful technique for testing SSRF vulnerabilities or bypassing poorly configured WAF filters.
-     Experimenting with different numeric representations can often evade simple string-matching security rules.
+     将标准点分 IP 地址转换为十进制、十六进制或八进制（0-11）等各种替代格式。这是测试 SSRF 漏洞或绕过配置不当的 WAF 过滤器的强大技术。
+     尝试不同的数字表示形式往往可以规避简单的字符串匹配安全规则。
    command: "mapcidr -cidr {{ip_address|127.0.0.1}} -ip-format {{format_index|1}}"
 
 # === UTILITIES AND RECON ===
- - title: mapcidr - count ips in range
+ - title: mapcidr - 统计范围内的 IP 数量
    desc: |
-     Provides a quick count of the total number of IP addresses contained within the specified CIDR or range.
-     This is a passive reconnaissance step that helps in estimating the scale of an assessment without interacting with the target.
-     It is much faster than expanding the list and using "wc -l" on the resulting output.
+     快速统计指定 CIDR 或范围内包含的 IP 地址总数。这是被动的侦察步骤，帮助在不与目标交互的情况下估计评估规模。
+     它比展开列表并对结果运行 wc -l 快得多。
    command: "mapcidr -cidr {{cidr_range|10.0.0.0/8}} -count"
 
- - title: mapcidr - shuffle ips for stealth
+ - title: mapcidr - 打乱 IP 顺序以隐蔽
    desc: |
-     Randomizes the order of the IP addresses in the output list.
-     Shuffling is a critical security best practice to avoid triggering threshold-based Intrusion Detection Systems (IDS).
-     By not scanning IPs in sequential order, you reduce the likelihood of being detected as a network-wide scan.
+     将输出列表中的 IP 地址顺序随机化。打乱顺序是避免触发基于阈值的入侵检测系统（IDS）的关键安全最佳实践。
+     不按顺序扫描 IP 可降低被识别为全网扫描的可能性。
    command: "mapcidr -cidr {{input_file|ips.txt}} -shuffle-ip"
 
- - title: mapcidr - sort ip list
+ - title: mapcidr - 排序 IP 列表
    desc: |
-     Sorts the input IPs or CIDRs in ascending order to create a clean, organized list.
-     This is helpful for reporting purposes or when you need to deduplicate and compare different sets of discovery results.
-     Standardizing the output makes it easier to track progress through a defined network range.
+     将输入的 IP 或 CIDR 按升序排序，形成干净有序的列表。这对报告或需要去重并比较不同发现结果集时很有帮助。
+     标准化输出使跟踪整个定义网络范围的进度更加容易。
    command: "mapcidr -cidr {{input_file|unsorted_ips.txt}} -sort"

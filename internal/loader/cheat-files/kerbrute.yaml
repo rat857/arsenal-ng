@@ -3,75 +3,65 @@ tags: [active-directory, kerberos, pentest, enumeration, authentication, securit
 
 actions:
 # === ENUMERATION ===
- - title: kerbrute - username enumeration
+ - title: kerbrute - 用户名枚举
    desc: |
-     Performs username enumeration against an Active Directory Domain Controller using Kerberos Pre-Authentication. 
-     This method is highly efficient as it does not require valid credentials and is often faster than NTLM-based enumeration. 
-     Be aware that while this doesn't "log in," it still generates event logs (Event ID 4768) on the DC which can be monitored.
+     使用 Kerberos 预认证对 Active Directory 域控执行用户名枚举。此方法非常高效，因为无需有效凭据，且通常比基于 NTLM 的枚举更快。
+     注意虽然它不会登录，但仍会在域控上产生事件日志（事件 ID 4768），可能被监控。
    command: "kerbrute userenum -d {{domain}} --dc {{dc_ip}} {{user_wordlist}}"
 
- - title: kerbrute - username enumeration with hash capturing
+ - title: kerbrute - 带哈希捕获的用户名枚举
    desc: |
-     Enumerates valid usernames and automatically saves AS-REP hashes for accounts that do not require Kerberos Pre-Authentication. 
-     This effectively combines enumeration with AS-REP Roasting, allowing you to crack the captured hashes offline. 
-     It is a critical step for gaining initial access if accounts are configured with "Do not require Kerberos preauthentication."
+     枚举有效用户名，并自动为无需 Kerberos 预认证的账户保存 AS-REP 哈希。这实际上将枚举与 AS-REP Roasting 结合起来，允许你离线破解捕获的哈希。
+     若账户被配置为不要求 Kerberos 预认证，这是获取初始访问的关键一步。
    command: "kerbrute userenum -d {{domain}} --dc {{dc_ip}} --hash-file {{hash_output_file|hashes.txt}} {{user_wordlist}}"
 
 # === BRUTE FORCE & SPRAYING ===
- - title: kerbrute - password spraying
+ - title: kerbrute - 密码喷洒
    desc: |
-     Tests a single password against a list of users to find accounts with weak credentials. 
-     Password spraying is a common technique to avoid account lockouts, as it only attempts one password per user in a cycle. 
-     Always verify the domain's lockout policy (threshold and duration) before starting to ensure you don't lock out the entire organization.
+     用单个密码对用户列表进行测试，找出使用弱凭据的账户。密码喷洒是避免账户锁定的常用技术，因为它在一个循环中每个用户只尝试一个密码。
+     开始前务必核实域锁定策略（阈值和持续时间），以免锁死整个组织。
    command: "kerbrute passwordspray -d {{domain}} --dc {{dc_ip}} {{user_wordlist}} {{password}}"
 
- - title: kerbrute - brute force single user
+ - title: kerbrute - 暴力破解单个用户
    desc: |
-     Attempts to find the password for a specific target user by testing a wordlist of passwords. 
-     This is a targeted attack and is highly likely to lock out the account if the password is not discovered within the lockout threshold. 
-     Use this only when you have a specific reason to target an individual account and understand the risks of account lockout.
+     通过测试密码字典，尝试找到特定目标用户的密码。这是定向攻击，若在锁定阈值内未发现密码，极有可能锁定账户。
+     只有当你针对个别账户有特定理由且了解账户锁定风险时才使用。
    command: "kerbrute bruteuser -d {{domain}} --dc {{dc_ip}} {{pass_wordlist}} {{username}}"
 
- - title: kerbrute - combo list brute force
+ - title: kerbrute - 组合列表暴力破解
    desc: |
-     Tests a list of username and password pairs (formatted as user:pass) against the Domain Controller. 
-     This is useful for credential stuffing attacks or when you have acquired a list of potential credentials from other sources. 
-     The tool will attempt to validate each pair and report any successful authentications.
+     对域控测试用户名密码对列表（格式为 user:pass）。这对凭据填充攻击或当你从其他来源获得潜在凭据列表时很有用。
+     该工具会尝试验证每一对并报告任何成功的认证。
    command: "kerbrute bruteforce -d {{domain}} --dc {{dc_ip}} {{combo_list}}"
 
 # === STEALTH & PERFORMANCE ===
- - title: kerbrute - safe mode enumeration
+ - title: kerbrute - 安全模式枚举
    desc: |
-     Runs the enumeration or brute force process with the 'safe' flag enabled. 
-     In safe mode, kerbrute will immediately abort the process if it detects that any user account has been locked out. 
-     This acts as a failsafe to prevent widespread account lockouts during an engagement.
+     在启用 safe 标志的情况下运行枚举或暴力破解过程。在安全模式下，若检测到任何用户账户被锁定，kerbrute 会立即中止进程。
+     这充当防止测试期间大规模账户锁定的故障保护。
    command: "kerbrute userenum -d {{domain}} --dc {{dc_ip}} --safe {{user_wordlist}}"
 
- - title: kerbrute - throttled enumeration with delay
+ - title: kerbrute - 带延迟的限速枚举
    desc: |
-     Introduces a specific delay between each request to bypass rate-limiting or avoid detection by security monitoring tools. 
-     When a delay is set, the tool will automatically switch to a single-threaded mode to maintain the timing. 
-     This is recommended for stealthier operations where speed is less important than remaining undetected.
+     在每个请求之间引入特定延迟，以绕过速率限制或避免被安全监控工具发现。设置延迟后，工具会自动切换到单线程模式以保持时序。
+     建议用于更隐蔽的操作，此时速度不如保持不被发现重要。
    command: "kerbrute userenum -d {{domain}} --dc {{dc_ip}} --delay {{delay_ms|500}} {{user_wordlist}}"
 
- - title: kerbrute - multi-threaded attack
+ - title: kerbrute - 多线程攻击
    desc: |
-     Increases the number of concurrent threads used during the attack to speed up the process. 
-     The default is 10 threads, but this can be increased for faster results if the network and Domain Controller can handle the load. 
-     Higher thread counts increase the risk of detection and can potentially cause performance issues on the target KDC.
+     增加攻击期间使用的并发线程数以加快进程。默认为 10 个线程，若网络和域控能承受负载，可以增加以获得更快结果。
+     更高的线程数会增加被发现的风险，并可能对目标 KDC 造成性能问题。
    command: "kerbrute userenum -d {{domain}} --dc {{dc_ip}} -t {{threads|50}} {{user_wordlist}}"
 
 # === ADVANCED CONFIGURATION ===
- - title: kerbrute - force encryption downgrade
+ - title: kerbrute - 强制加密降级
    desc: |
-     Forces the Kerberos exchange to use the older and weaker arcfour-hmac-md5 (RC4) encryption type. 
-     This can be useful in environments where modern AES encryption is heavily monitored or if the target DC has specific legacy configurations. 
-     Note that many modern environments might flag the use of RC4 as suspicious.
+     强制 Kerberos 交换使用较旧且较弱的 arcfour-hmac-md5（RC4）加密类型。在 AES 加密被重点监控的环境或目标域控有特定遗留配置时有用。
+     注意许多现代环境可能将使用 RC4 标记为可疑。
    command: "kerbrute userenum -d {{domain}} --dc {{dc_ip}} --downgrade {{user_wordlist}}"
 
- - title: kerbrute - verbose logging to file
+ - title: kerbrute - 详细日志写入文件
    desc: |
-     Runs the tool with verbose output and saves all log entries to a specified file. 
-     Verbose mode is helpful for debugging connection issues or seeing specific Kerberos error codes returned by the DC. 
-     Saving to an output file ensures you have a record of all attempts, including failures, for your final report.
+     以详细输出运行工具，并将所有日志条目保存到指定文件。详细模式有助于调试连接问题或查看域控返回的具体 Kerberos 错误码。
+     保存到输出文件可确保你记录所有尝试（包括失败）以用于最终报告。
    command: "kerbrute userenum -d {{domain}} --dc {{dc_ip}} -v -o {{log_file|kerbrute_results.log}} {{user_wordlist}}"

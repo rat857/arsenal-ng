@@ -4,70 +4,62 @@ tags: [active-directory, kerberos, pentest, exploitation, security, authenticati
 actions:
 # === BASIC AUTHENTICATION SCENARIOS ===
 
- - title: impacket-getST - Request ST using cleartext password
+ - title: impacket-getST - 使用明文密码请求 ST
    desc: |
-     Requests a Kerberos Service Ticket (ST) for a specific SPN using a valid domain username and password. 
-     This is the most basic usage of the tool when you have acquired credentials and need to access a remote service. 
-     The resulting ticket is saved as a .ccache file in the current directory, which can then be used with other tools by setting the KRB5CCNAME environment variable. 
-     Ensure the SPN is valid and reachable within the domain environment.
+     使用有效的域用户名和密码为特定 SPN 请求 Kerberos 服务票据（ST）。
+     这是获得凭据后需要访问远程服务时最基本的用法。
+     生成的票据会以 .ccache 文件保存在当前目录，可通过设置 KRB5CCNAME 环境变量供其他工具使用，请确保 SPN 有效且在域内可达。
    command: "impacket-getST {{domain}}/{{username}}:{{password}} -spn {{spn|cifs/target.domain.com}} -dc-ip {{dc_ip}}"
 
- - title: impacket-getST - Request ST using NTLM hash (Pass-the-Hash)
+ - title: impacket-getST - 使用 NTLM 哈希请求 ST（Pass-the-Hash）
    desc: |
-     Obtains a Service Ticket by performing a Pass-the-Hash (PtH) authentication. 
-     This is useful in scenarios where the cleartext password is unknown but the NTLM hash has been extracted from memory or a SAM database. 
-     The hash must be provided in the LMHASH:NTHASH format; if the LM hash is unknown, use 32 zeros. 
-     This command facilitates lateral movement without needing the actual user password.
+     通过执行 Pass-the-Hash（PtH）认证获取服务票据。
+     适用于明文密码未知但已从内存或 SAM 数据库提取出 NTLM 哈希的场景。
+     哈希必须为 LMHASH:NTHASH 格式；LM 哈希未知时使用 32 个零，此命令无需实际用户密码即可实现横向移动。
    command: "impacket-getST {{domain}}/{{username}} -hashes {{hash}} -spn {{spn|cifs/target.domain.com}} -dc-ip {{dc_ip}}"
 
- - title: impacket-getST - Request ST using AES Key
+ - title: impacket-getST - 使用 AES 密钥请求 ST
    desc: |
-     Uses an AES128 or AES256 key for Kerberos authentication instead of a password or NTLM hash. 
-     This method is often more "stealthy" or required in environments where DES or NTLM is disabled and only AES is supported. 
-     The AES key is typically recovered from the LSASS process or a NTDS.dit file. 
-     Providing the AES key allows the tool to perform the initial AS-REQ/AS-REP exchange to get a TGT before requesting the specific ST.
+     使用 AES128 或 AES256 密钥进行 Kerberos 认证，而非密码或 NTLM 哈希。
+     在 DES 或 NTLM 被禁用、仅支持 AES 的环境中，此方法通常更“隐蔽”或是必需的。
+     AES 密钥通常从 LSASS 进程或 NTDS.dit 文件中恢复，提供该密钥可让工具先执行 AS-REQ/AS-REP 交互获取 TGT，再请求特定 ST。
    command: "impacket-getST {{domain}}/{{username}} -aesKey {{aes_key}} -spn {{spn|cifs/target.domain.com}} -dc-ip {{dc_ip}}"
 
 # === DELEGATION AND IMPERSONATION ===
 
- - title: impacket-getST - S4U2Self Impersonation
+ - title: impacket-getST - S4U2Self 模拟
    desc: |
-     Uses the Service-for-User-to-Self (S4U2Self) extension to request a service ticket for a target user. 
-     This is typically used when an account has constrained delegation configured or when performing specific Kerberos attacks. 
-     The impersonated user is usually a high-privileged account like 'Administrator'. 
-     Note that this only works if the identity providing the credentials is allowed to delegate to the specified SPN or is performing a self-query.
+     使用 Service-for-User-to-Self（S4U2Self）扩展为目标用户请求服务票据。
+     通常用于账户已配置约束委派或执行特定 Kerberos 攻击时。
+     被模拟的用户通常是“Administrator”等高权限账户，注意只有提供凭据的身份被允许向指定 SPN 委派或执行自查询时才有效。
    command: "impacket-getST {{domain}}/{{username}}:{{password}} -spn {{spn|cifs/target.domain.com}} -impersonate {{target_user|Administrator}} -dc-ip {{dc_ip}}"
 
- - title: impacket-getST - Constrained Delegation (S4U2Proxy)
+ - title: impacket-getST - 约束委派（S4U2Proxy）
    desc: |
-     Performs a full S4U2Proxy request to obtain a ticket for a service on behalf of another user. 
-     This requires the initial account to have the 'Trusted to authenticate for delegation' attribute (Constrained Delegation). 
-     It is a common technique for lateral movement where a compromised service account is used to impersonate a Domain Admin to another service. 
-     The tool handles the complex multi-step Kerberos exchange automatically.
+     执行完整的 S4U2Proxy 请求，代表另一用户获取某服务的票据。
+     这要求初始账户具有“Trusted to authenticate for delegation”属性（约束委派）。
+     是横向移动的常见技术，即利用失陷的服务账户向另一服务模拟域管理员，工具会自动处理复杂的多步 Kerberos 交互。
    command: "impacket-getST {{domain}}/{{username}}:{{password}} -spn {{spn|cifs/target.domain.com}} -impersonate {{target_user|Administrator}} -dc-ip {{dc_ip}}"
 
- - title: impacket-getST - Resource-Based Constrained Delegation (RBCD)
+ - title: impacket-getST - 基于资源的约束委派（RBCD）
    desc: |
-     Exploits Resource-Based Constrained Delegation by providing an additional service ticket. 
-     In RBCD, the 'msDS-AllowedToDelegateTo' attribute is set on the target resource rather than the delegating account. 
-     This command requires an additional ticket (usually a TGT or ST) of the account that has permissions to delegate to the target. 
-     This is a powerful technique for escalating privileges from a computer account to a full administrative session on a target server.
+     通过提供额外的服务票据来利用基于资源的约束委派。
+     在 RBCD 中，“msDS-AllowedToDelegateTo”属性设置在目标资源上，而非委派账户上。
+     此命令需要拥有向目标委派权限的账户的额外票据（通常是 TGT 或 ST），是从计算机账户提升为目标服务器完整管理会话的强大技术。
    command: "impacket-getST {{domain}}/{{username}}:{{password}} -spn {{spn|cifs/target.domain.com}} -impersonate {{target_user|Administrator}} -additional-ticket {{ticket_path|ticket.ccache}} -dc-ip {{dc_ip}}"
 
 # === ADVANCED EXPLOITATION ===
 
- - title: impacket-getST - Bronze Bit Attack (CVE-2020-17049)
+ - title: impacket-getST - Bronze Bit 攻击（CVE-2020-17049）
    desc: |
-     Exploits the Bronze Bit vulnerability by forcing the service ticket to be forwardable. 
-     This allows an attacker to bypass the 'Kerberos-only' restriction in constrained delegation, which normally prevents S4U2Proxy from working if the user didn't use Kerberos. 
-     The -force-forwardable flag flips the forwardable bit in the ticket encrypted with the service's key. 
-     For best results, provide the hashes or AES keys of the service account to ensure the tool can re-encrypt the ticket properly.
+     通过强制服务票据可转发来利用 Bronze Bit 漏洞。
+     可绕过约束委派中的“仅 Kerberos”限制，该限制通常会在用户未使用 Kerberos 时阻止 S4U2Proxy。
+     -force-forwardable 标志会翻转用服务密钥加密的票据中的 forwardable 位；为获得最佳效果，请提供服务账户的哈希或 AES 密钥以便工具正确重新加密票据。
    command: "impacket-getST {{domain}}/{{username}} -hashes :{{nt_hash}} -spn {{spn|cifs/target.domain.com}} -impersonate {{target_user|Administrator}} -force-forwardable -dc-ip {{dc_ip}}"
 
- - title: impacket-getST - Bypassing SPN restrictions with AltService
+ - title: impacket-getST - 使用 AltService 绕过 SPN 限制
    desc: |
-     Requests a ticket for one SPN but changes the service name (sname) in the resulting ticket using the -altservice flag. 
-     This is useful when you have delegation rights to a specific service (e.g., 'http/host.com') but you actually want to access a different service (e.g., 'cifs/host.com'). 
-     While the ticket is requested for the authorized service, the final .ccache will contain the 'altservice' name. 
-     This may fail if the target application server performs strict validation of the ticket's SPN field.
+     为一个 SPN 请求票据，但用 -altservice 标志更改结果票据中的服务名（sname）。
+     当你对特定服务（如“http/host.com”）有委派权限，但实际想访问其他服务（如“cifs/host.com”）时很有用。
+     票据虽为已授权服务请求，但最终 .ccache 会包含“altservice”名称；若目标应用服务器严格校验票据 SPN 字段则可能失败。
    command: "impacket-getST {{domain}}/{{username}}:{{password}} -spn {{spn|http/web.domain.com}} -altservice {{alt_spn|cifs}} -dc-ip {{dc_ip}}"

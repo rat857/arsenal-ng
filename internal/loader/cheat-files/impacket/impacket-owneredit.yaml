@@ -3,67 +3,67 @@ tags: [active-directory, ldap, pentest, security, exploitation, impacket, privil
 
 actions:
   # === RECONNAISSANCE & READING ===
-  - title: impacket-owneredit - read owner of a target object
+  - title: impacket-owneredit - 读取目标对象的所有者
     desc: |
-      This command is used to retrieve the current owner of a specific Active Directory object by its sAMAccountName. 
-      It is a critical first step during reconnaissance to identify if an object is owned by a specific user, which might lead to privilege escalation.
-      The output will display the owner's SID and Distinguished Name (DN).
+      此命令用于通过 sAMAccountName 获取指定 Active Directory 对象的当前所有者。
+      它是侦察阶段的关键第一步，可判断对象是否由特定用户所有，从而可能用于权限提升。
+      输出将显示所有者的 SID 和可分辨名称（DN）。
     command: "impacket-owneredit -target {{target_name}} -action read {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-owneredit - read owner using SID
+  - title: impacket-owneredit - 使用 SID 读取所有者
     desc: |
-      This command identifies the owner of a target object by providing the target's Security Identifier (SID) instead of a name.
-      Use this when the sAMAccountName is unknown or when dealing with objects that do not have standard naming conventions.
-      Targeting by SID is often more precise in complex environments with multiple domains or renamed accounts.
+      通过提供目标的安全标识符（SID）而非名称来识别目标对象的所有者。
+      当 sAMAccountName 未知或对象没有标准命名约定时使用此方法。
+      在具有多个域或已重命名帐户的复杂环境中，按 SID 定位通常更精确。
     command: "impacket-owneredit -target-sid {{target_sid}} -action read {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-owneredit - read owner using Distinguished Name (DN)
+  - title: impacket-owneredit - 使用可分辨名称（DN）读取所有者
     desc: |
-      This command retrieves the owner of an object identified by its full Distinguished Name (DN).
-      This is particularly useful for targeting specific Organizational Units (OUs) or containers that might not have a sAMAccountName.
-      Ensure the DN is correctly escaped if it contains special characters like commas or spaces.
+      通过完整可分辨名称（DN）识别对象的所有者。
+      这对于定位可能没有 sAMAccountName 的特定组织单位（OU）或容器特别有用。
+      如果 DN 包含逗号或空格等特殊字符，请确保正确转义。
     command: "impacket-owneredit -target-dn {{target_dn}} -action read {{domain}}/{{username}}:{{password}}"
 
   # === EXPLOITATION & WRITING ===
-  - title: impacket-owneredit - change owner of a target object
+  - title: impacket-owneredit - 更改目标对象的所有者
     desc: |
-      This action modifies the owner attribute of a target object to a new principal specified by their sAMAccountName.
-      Changing the owner is a powerful technique because the owner of an object can typically grant themselves full control over it, regardless of existing DACL restrictions.
-      This requires the attacker to have 'Write Owner' permissions on the target object.
+      此操作将目标对象的所有者属性修改为由其 sAMAccountName 指定的新主体。
+      更改所有者是一项强大的技术，因为对象所有者通常可以授予自己完全控制权，而无需考虑现有的 DACL 限制。
+      这要求攻击者拥有目标对象的“Write Owner”权限。
     command: "impacket-owneredit -target {{target_name}} -new-owner {{new_owner_name}} -action write {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-owneredit - set new owner using SID
+  - title: impacket-owneredit - 使用 SID 设置新所有者
     desc: |
-      This command sets a new owner for a target object using the new owner's Security Identifier (SID).
-      This is useful if you want to assign ownership to a well-known SID (like Domain Admins) or a specific user whose name you haven't resolved.
-      Note that setting a new owner may trigger alerts in environments with active Directory auditing.
+      此命令使用新所有者的安全标识符（SID）为目标对象设置新所有者。
+      当你想将所有权分配给已知 SID（如 Domain Admins）或某个尚未解析名称的特定用户时，此方法很有用。
+      请注意，在启用了 Active Directory 审计的环境中，设置新所有者可能触发告警。
     command: "impacket-owneredit -target {{target_name}} -new-owner-sid {{new_owner_sid}} -action write {{domain}}/{{username}}:{{password}}"
 
   # === AUTHENTICATION & CONNECTION ===
-  - title: impacket-owneredit - authentication using NTLM hashes
+  - title: impacket-owneredit - 使用 NTLM 哈希进行身份验证
     desc: |
-      This command allows performing owner operations by authenticating with NTLM hashes instead of a cleartext password.
-      This is standard practice in pass-the-hash scenarios where you have compromised a local admin or service account hash.
-      The format for the hashes parameter must be LMHASH:NTHASH.
+      此命令允许使用 NTLM 哈希而非明文密码执行所有者操作。
+      这是传递哈希场景中的标准做法，当你已获取本地管理员或服务帐户哈希时适用。
+      hashes 参数的格式必须为 LMHASH:NTHASH。
     command: "impacket-owneredit -target {{target_name}} -hashes {{lmhash:nthash}} -action read {{domain}}/{{username}}"
 
-  - title: impacket-owneredit - authenticate using Kerberos (Pass-the-Ticket)
+  - title: impacket-owneredit - 使用 Kerberos 进行身份验证（传递票据）
     desc: |
-      This command uses Kerberos authentication to interact with the Domain Controller.
-      It expects a valid Kerberos ticket (CCACHE) to be present in the environment (e.g., via KRB5CCNAME variable).
-      Using Kerberos is often more stealthy than NTLM and is required in environments where NTLM authentication is disabled.
+      此命令使用 Kerberos 身份验证与域控制器交互。
+      它要求环境中存在有效的 Kerberos 票据（CCACHE，例如通过 KRB5CCNAME 变量）。
+      使用 Kerberos 通常比 NTLM 更隐蔽，且在禁用 NTLM 身份验证的环境中必不可少。
     command: "impacket-owneredit -k -no-pass -dc-ip {{dc_ip}} -target {{target_name}} -action read {{domain}}/{{username}}"
 
-  - title: impacket-owneredit - secure connection via LDAPS
+  - title: impacket-owneredit - 通过 LDAPS 建立安全连接
     desc: |
-      Forces the tool to use LDAP over SSL/TLS (LDAPS) for communication with the Domain Controller.
-      Modern Active Directory environments often enforce LDAP signing and encryption, making standard LDAP connections fail.
-      Using LDAPS ensures that sensitive data, including potential credentials or object SIDs, are encrypted in transit.
+      强制该工具使用基于 SSL/TLS 的 LDAP（LDAPS）与域控制器通信。
+      现代 Active Directory 环境通常强制要求 LDAP 签名和加密，导致标准 LDAP 连接失败。
+      使用 LDAPS 可确保敏感数据（包括可能的凭据或对象 SID）在传输过程中被加密。
     command: "impacket-owneredit -use-ldaps -dc-ip {{dc_ip}} -target {{target_name}} -action read {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-owneredit - debug mode for troubleshooting
+  - title: impacket-owneredit - 用于故障排查的调试模式
     desc: |
-      Runs the tool with the -debug flag to provide verbose output regarding the LDAP connection and response.
-      This is extremely helpful for troubleshooting authentication failures, permission denied errors, or network connectivity issues.
-      It will show the underlying LDAP queries and response codes from the Domain Controller.
+      使用 -debug 标志运行该工具，提供有关 LDAP 连接和响应的详细输出。
+      这对于排查身份验证失败、权限被拒绝错误或网络连接问题非常有帮助。
+      它将显示底层的 LDAP 查询和域控制器返回的响应代码。
     command: "impacket-owneredit -debug -target {{target_name}} -action read {{domain}}/{{username}}:{{password}}"

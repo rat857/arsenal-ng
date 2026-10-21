@@ -3,111 +3,85 @@ tags: [web, scanner, security, pentest, enumeration, exploitation, vulnerability
 
 actions:
   # === BASIC SCANS ===
-  - title: wapiti - basic scan
+  - title: wapiti - 基础扫描
     desc: |
-      Performs a default vulnerability scan against a target URL.
-      This is the most common starting point for black-box web application testing.
-      Wapiti will crawl the site starting from the base URL and attempt to find vulnerabilities like XSS and SQL injection.
-      By default, it uses the 'folder' scope, meaning it won't go above the path provided in the URL.
+      对目标 URL 执行默认漏洞扫描。这是黑盒 Web 应用测试最常见的起点。Wapiti 会从基础 URL 开始爬取站点，并尝试发现 XSS 和 SQL 注入等漏洞。
+      默认情况下它使用 folder 作用域，意味着不会超出 URL 中提供的路径。
     command: "wapiti -u {{url}}"
 
-  - title: wapiti - scan with specific output format
+  - title: wapiti - 使用特定输出格式扫描
     desc: |
-      Runs a scan and generates a report in a specific file format.
-      Supported formats include html, json, xml, txt, and csv.
-      This is essential for documenting findings or integrating Wapiti results with other automated tools.
-      The HTML report is highly recommended for manual review as it provides detailed descriptions of vulnerabilities.
+      运行扫描并以特定文件格式生成报告。支持的格式包括 html、json、xml、txt 和 csv。
+      这对于记录发现或将 Wapiti 结果与其他自动化工具集成至关重要。HTML 报告强烈推荐用于人工审查，因为它提供漏洞的详细描述。
     command: "wapiti -u {{url}} -f {{format|html}} -o {{output_path|report.html}}"
 
   # === SCAN SCOPE & CRAWLING ===
-  - title: wapiti - set scan scope
+  - title: wapiti - 设置扫描范围
     desc: |
-      Defines the boundaries for the crawler to prevent it from wandering off-site.
-      The scope can be set to 'page', 'folder', 'subdomain', 'domain', or 'punk'.
-      Using 'domain' or 'subdomain' is useful for comprehensive testing of a large infrastructure.
-      Be careful with 'punk' mode as it will attack every URL it finds regardless of the domain, which might lead to legal issues.
+      定义爬虫的边界，防止它偏离站点。作用域可以设置为 page、folder、subdomain、domain 或 punk。
+      使用 domain 或 subdomain 有助于对大型基础设施进行全面测试。注意 punk 模式会攻击它找到的每个 URL，无论域名如何，可能导致法律问题。
     command: "wapiti -u {{url}} --scope {{scope|folder}}"
 
-  - title: wapiti - headless scanning
+  - title: wapiti - 无头扫描
     desc: |
-      Enables the use of a headless Firefox browser for crawling.
-      This allows Wapiti to discover links and forms that are generated dynamically via JavaScript.
-      It is significantly slower than the default crawler but much more effective for modern Single Page Applications (SPAs).
-      You can set the mode to 'hidden' to run in the background or 'visible' to see the browser actions.
+      启用无头 Firefox 浏览器进行爬取。这使 Wapiti 能够发现通过 JavaScript 动态生成的链接和表单。
+      它比默认爬虫慢得多，但对现代单页应用（SPA）更有效。你可以将模式设置为 hidden 在后台运行，或 visible 查看浏览器操作。
     command: "wapiti -u {{url}} --headless {{mode|hidden}}"
 
-  - title: wapiti - limit crawl depth and links
+  - title: wapiti - 限制爬取深度和链接数
     desc: |
-      Restricts the depth of the crawl and the number of links analyzed per page.
-      This is useful for very large websites where a full scan would take too long or consume too many resources.
-      Setting a lower depth ensures that the scanner stays focused on the most critical parts of the application.
-      Use this to fine-tune performance when working with restricted time windows.
+      限制爬取深度和每页分析的链接数量。这对于完整扫描耗时太长或消耗过多资源的大型网站很有用。
+      设置较低的深度可确保扫描器专注于应用最关键的部分。在时间窗口受限时用它来微调性能。
     command: "wapiti -u {{url}} -d {{depth|3}} --max-links-per-page {{max|20}}"
 
   # === AUTHENTICATION ===
-  - title: wapiti - form-based authentication
+  - title: wapiti - 基于表单的认证
     desc: |
-      Performs an authenticated scan by submitting a login form first.
-      You must provide the login page URL and the credentials to be used.
-      Note that automated scanning with credentials carries a risk of account lockout if the site has brute-force protections.
-      Always ensure you have permission to use the provided account for automated testing.
+      先提交登录表单，执行认证扫描。你必须提供登录页面 URL 和要使用的凭据。
+      注意如果站点有暴力破解防护，使用凭据的自动化扫描存在账户锁定的风险。始终确保你已获准使用所提供的账户进行自动化测试。
     command: "wapiti -u {{url}} --form-url {{login_url}} --form-user {{username}} --form-password {{password}}"
 
-  - title: wapiti - cookie-based authentication
+  - title: wapiti - 基于 Cookie 的认证
     desc: |
-      Uses an existing session cookie to perform an authenticated scan.
-      This is often easier than form-based authentication if the site uses complex multi-factor or JS-heavy login processes.
-      You can provide a raw cookie string or a JSON file containing exported cookies.
-      Ensure the session remains active during the duration of the scan to get accurate results.
+      使用现有会话 Cookie 执行认证扫描。如果站点使用复杂的多因素或重 JavaScript 登录流程，这通常比基于表单的认证更容易。
+      你可以提供原始 Cookie 字符串或包含导出 Cookie 的 JSON 文件。确保会话在扫描期间保持活跃以获得准确结果。
     command: "wapiti -u {{url}} -C \"{{cookie_string}}\""
 
-  - title: wapiti - get cookies utility
+  - title: wapiti - 获取 Cookie 工具
     desc: |
-      A helper utility to capture and save cookies to a file for later use with Wapiti.
-      It can handle login forms and save the resulting session state into a JSON format.
-      This is the preferred way to handle complex authentication scenarios before starting the main scan.
-      The generated file can then be passed to Wapiti using the '-c' flag.
+      一个辅助工具，用于捕获并保存 Cookie 到文件，供 Wapiti 后续使用。它可以处理登录表单，并将生成的会话状态保存为 JSON 格式。
+      这是在开始主扫描前处理复杂认证场景的首选方式。生成的文件随后可以用 -c 参数传给 Wapiti。
     command: "wapiti-getcookie -u {{login_url}} -c {{cookie_file|cookies.json}} --form-data \"{{post_data}}\""
 
   # === ATTACK MODULES ===
-  - title: wapiti - run specific modules
+  - title: wapiti - 运行特定模块
     desc: |
-      Tells Wapiti to only run a specific set of vulnerability modules.
-      This is useful when you only want to check for a particular class of bugs, such as SQL Injection or XSS.
-      It saves time by skipping modules that might not be relevant to your current testing goals.
-      Use the '--list-modules' flag separately to see all available attack modules.
+      告诉 Wapiti 仅运行一组特定的漏洞模块。当你只想检查特定类别的漏洞（如 SQL 注入或 XSS）时很有用。
+      它跳过可能与当前测试目标无关的模块，从而节省时间。可单独使用 --list-modules 参数查看所有可用的攻击模块。
     command: "wapiti -u {{url}} -m {{module_list|xss,sql,blindsql}}"
 
-  - title: wapiti - exclude specific URLs or parameters
+  - title: wapiti - 排除特定 URL 或参数
     desc: |
-      Excludes specific URLs or parameters from being crawled or attacked.
-      This is vital for avoiding 'logout' links that would end your session or destructive actions like 'delete_user'.
-      Excluding noisy parameters can also speed up the scan and reduce false positives.
-      You can use multiple '-x' flags to exclude several patterns.
+      从爬取或攻击中排除特定 URL 或参数。这对于避免会结束会话的 logout 链接或 delete_user 等破坏性操作至关重要。
+      排除嘈杂参数还可以加快扫描并减少误报。你可以使用多个 -x 参数排除多个模式。
     command: "wapiti -u {{url}} -x {{exclude_url}} --skip {{parameter_name}}"
 
   # === NETWORK & EVASION ===
-  - title: wapiti - proxy and tor integration
+  - title: wapiti - 代理和 Tor 集成
     desc: |
-      Routes all traffic through a specified HTTP/SOCKS proxy or the Tor network.
-      This is useful for bypassing IP-based restrictions or for maintaining anonymity during an engagement.
-      The '--tor' flag automatically configures Wapiti to use the local Tor listener (usually 127.0.0.1:9050).
-      Using a proxy also allows you to intercept Wapiti's traffic with tools like Burp Suite for deeper analysis.
+      将所有流量路由到指定的 HTTP/SOCKS 代理或 Tor 网络。这对于绕过基于 IP 的限制或在任务期间保持匿名很有用。
+      --tor 参数会自动将 Wapiti 配置为使用本地 Tor 监听器（通常为 127.0.0.1:9050）。使用代理还可以让你用 Burp Suite 等工具拦截 Wapiti 的流量进行深入分析。
     command: "wapiti -u {{url}} -p {{proxy_url|http://127.0.0.1:8080}}"
 
-  - title: wapiti - custom user-agent and headers
+  - title: wapiti - 自定义 User-Agent 和请求头
     desc: |
-      Sets a custom User-Agent string or additional HTTP headers for every request.
-      This can be used to bypass WAF rules that block the default Wapiti user-agent or to simulate specific mobile devices.
-      Custom headers are also useful for bypassing certain access control mechanisms or identifying scanner traffic.
-      Be sure to format the header string correctly as "Name: Value".
+      为每个请求设置自定义 User-Agent 字符串或附加 HTTP 请求头。这可用于绕过拦截默认 Wapiti User-Agent 的 WAF 规则，或模拟特定移动设备。
+      自定义请求头也可用于绕过某些访问控制机制或识别扫描器流量。请务必将请求头字符串正确格式化为“Name: Value”。
     command: "wapiti -u {{url}} -A \"{{user_agent}}\" -H \"{{header_name}}: {{value}}\""
 
   # === ADVANCED CONFIGURATION ===
-  - title: wapiti - aggressive scanning
+  - title: wapiti - 激进扫描
     desc: |
-      Adjusts the 'scan-force' level to control the intensity of the attack.
-      Values range from 'paranoid' (very slow, few requests) to 'insane' (very fast, many requests).
-      Aggressive levels might overwhelm the server or trigger rate-limiting and WAF blocks.
-      Use 'polite' or 'normal' for production environments to minimize the risk of causing a Denial of Service.
+      调整 scan-force 级别以控制攻击强度。值从 paranoid（非常慢，请求少）到 insane（非常快，请求多）。
+      激进级别可能压垮服务器或触发限速和 WAF 拦截。在生产环境中使用 polite 或 normal，以尽量降低造成拒绝服务的风险。
     command: "wapiti -u {{url}} -S {{force_level|aggressive}}"

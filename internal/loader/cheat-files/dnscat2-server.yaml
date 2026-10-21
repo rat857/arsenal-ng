@@ -3,84 +3,65 @@ tags: [network, security, pentest, exfiltration, c2, dns]
 
 actions:
 # === BASIC OPERATION ===
- - title: dnscat2-server - basic listener
+ - title: dnscat2-server - 基本监听器
    desc: |
-     Start the dnscat2 server on all interfaces using the default DNS port. This is the simplest
-     method to start a listener when you do not have a registered domain name for recursive tunneling.
-     It expects direct connections to the server IP and requires root privileges to bind to port 53.
+     在所有接口上使用默认 DNS 端口启动 dnscat2 服务器。
+     当你没有注册域名用于递归隧道时，这是启动监听器的最简单方法，它期望直连服务器 IP，并需要 root 权限绑定 53 端口。
    command: "dnscat2-server"
 
- - title: dnscat2-server - domain-based listener
+ - title: dnscat2-server - 基于域名的监听器
    desc: |
-     Configure the server to handle DNS requests for a specific authoritative domain. This is the 
-     primary way to use dnscat2 for recursive DNS tunneling, allowing traffic to bypass firewalls
-     by routing through legitimate DNS resolvers. You must ensure the NS record for the domain
-     points to your server's IP address.
+     将服务器配置为处理特定权威域名的 DNS 请求。
+     这是使用 dnscat2 进行递归 DNS 隧道的主要方式，可让流量经由合法 DNS 解析器绕过防火墙，你需确保该域名的 NS 记录指向服务器 IP。
    command: "dnscat2-server {{domain}}"
 
- - title: dnscat2-server - custom dns configuration
+ - title: dnscat2-server - 自定义 DNS 配置
    desc: |
-     Specify a custom IP address and port for the DNS server to listen on using the --dns flag.
-     This is useful if port 53 is already occupied or if the server is sitting behind a 
-     load balancer or NAT that forwards a different port. The parameters are passed as a
-     comma-separated list of key-value pairs.
+     使用 --dns 标志为 DNS 服务器指定自定义的 IP 地址和监听端口。
+     当 53 端口已被占用，或服务器位于转发不同端口的负载均衡器或 NAT 之后时非常有用，参数以逗号分隔的键值对列表传入。
    command: "dnscat2-server --dns 'host={{listen_ip|0.0.0.0}},port={{listen_port|5353}},domain={{domain}}'"
 
 # === SECURITY AND AUTHENTICATION ===
- - title: dnscat2-server - authenticated server
+ - title: dnscat2-server - 认证服务器
    desc: |
-     Set a pre-shared secret to enable authentication and prevent man-in-the-middle (MITM) attacks.
-     When a secret is provided, the server defaults to an 'authenticated' security level, requiring
-     clients to prove they know the secret before establishing a session. This is highly 
-     recommended for production environments to prevent unauthorized access to your C2 server.
+     设置预共享密钥以启用认证并防止中间人（MITM）攻击。
+     提供密钥后，服务器默认采用 authenticated 安全级别，要求客户端在建立会话前证明其知道该密钥，生产环境强烈建议使用以防止对 C2 服务器的未授权访问。
    command: "dnscat2-server --secret {{preshared_secret}} {{domain}}"
 
- - title: dnscat2-server - enforce security level
+ - title: dnscat2-server - 强制安全级别
    desc: |
-     Explicitly set the security level to define how encryption and authentication are handled.
-     Options include 'open' (client chooses), 'encrypted' (requires encryption), and 'authenticated'
-     (requires encryption and a secret). Use 'authenticated' to ensure that only your authorized 
-     clients can communicate with the server.
+     显式设置安全级别，以定义如何处理加密和认证。
+     选项包括 open（由客户端选择）、encrypted（要求加密）和 authenticated（要求加密及密钥），使用 authenticated 可确保只有你授权的客户端能与服务器通信。
    command: "dnscat2-server --security {{level|authenticated}} --secret {{preshared_secret}} {{domain}}"
 
 # === ADVANCED TUNNELING ===
- - title: dnscat2-server - dns passthrough
+ - title: dnscat2-server - DNS 直通转发
    desc: |
-     Forward unhandled DNS queries to an upstream DNS server. This allows the dnscat2 server 
-     to act as a functional DNS resolver for the target, passing legitimate queries to a real 
-     DNS server while intercepting C2 traffic. This helps the C2 traffic blend in with normal
-     network activity and prevents breaking DNS resolution on the victim machine.
+     将未处理的 DNS 查询转发到上游 DNS 服务器。
+     这让 dnscat2 服务器可充当目标的正常 DNS 解析器，将合法查询交给真正的 DNS 服务器，同时拦截 C2 流量，帮助 C2 流量混入正常网络活动。
    command: "dnscat2-server --passthrough {{upstream_dns|8.8.8.8:53}} {{domain}}"
 
- - title: dnscat2-server - automation with auto-command
+ - title: dnscat2-server - 使用 auto-command 自动化
    desc: |
-     Automatically execute a specific command on every client that connects to the server.
-     This is useful for immediate post-exploitation actions, such as spawning a shell or 
-     downloading a secondary payload without manual interaction. The command is sent 
-     as soon as the session is established and the client is ready.
+     对每个连接到服务器的客户端自动执行特定命令。
+     对于生成 Shell 或无需人工交互即可下载次级载荷等即时后渗透操作非常有用，命令会在会话建立且客户端就绪后立即发送。
    command: "dnscat2-server --auto-command \"{{command|shell}}\" {{domain}}"
 
- - title: dnscat2-server - automatic session attachment
+ - title: dnscat2-server - 自动附加会话
    desc: |
-     Automatically attach the console to any new session that is created. By default, 
-     dnscat2 creates new windows for each session that you must manually switch to.
-     This flag is useful when you expect only one connection and want to interact 
-     with it immediately upon arrival.
+     自动将控制台附加到任何新创建的会话。
+     默认情况下 dnscat2 会为每个会话创建新窗口，需要你手动切换，当你预期只有一个连接并希望立即交互时，此标志非常有用。
    command: "dnscat2-server --auto-attach {{domain}}"
 
 # === DEBUGGING AND LOGGING ===
- - title: dnscat2-server - packet tracing
+ - title: dnscat2-server - 数据包跟踪
    desc: |
-     Enable packet tracing to display every incoming and outgoing dnscat packet in the terminal.
-     This is a critical feature for debugging connectivity issues, protocol errors, or 
-     firewall interference. Be aware that this produces a large volume of output and 
-     should generally be used only for troubleshooting.
+     启用数据包跟踪，在终端中显示每个传入和传出的 dnscat 数据包。
+     这是调试连接问题、协议错误或防火墙干扰的关键功能，但会产生大量输出，通常仅用于故障排查。
    command: "dnscat2-server --packet-trace {{domain}}"
 
- - title: dnscat2-server - firehose output
+ - title: dnscat2-server - firehose 输出
    desc: |
-     Redirect all output directly to stdout instead of using the internal windowing system.
-     This is useful when you are running dnscat2 inside another script or if you want to 
-     log all activity to a file using standard shell redirection. It simplifies the 
-     interface by removing the interactive window management.
+     将所有输出直接重定向到 stdout，而不是使用内部窗口系统。
+     当你在另一个脚本中运行 dnscat2，或想通过标准 shell 重定向将所有活动记录到文件时非常有用，可移除交互式窗口管理以简化界面。
    command: "dnscat2-server --firehose {{domain}}"

@@ -3,140 +3,121 @@ tags: [containerization, devops, virtualization, infrastructure, security, orche
 
 actions:
 # === BASIC INFORMATION AND SETUP ===
- - title: docker - show version
+ - title: docker - 显示版本
    desc: |
-     Display the version information for the Docker client and server. 
-     This is useful for verifying compatibility with specific features or APIs. 
-     It provides details about the Go version, Git commit, and OS/Arch.
+     显示 Docker 客户端和服务器的版本信息。
+     对验证与特定功能或 API 的兼容性非常有用，可提供 Go 版本、Git 提交和 OS/Arch 等详细信息。
    command: "docker version"
 
- - title: docker - system information
+ - title: docker - 系统信息
    desc: |
-     Display system-wide information regarding the Docker installation. 
-     This includes the number of containers (running, paused, stopped), images, and storage driver details. 
-     Use this command to troubleshoot daemon issues or check resource limits.
+     显示关于 Docker 安装的系统级信息。
+     包括容器数量（运行中、暂停、停止）、镜像和存储驱动详细信息，可用此命令排查守护进程问题或检查资源限制。
    command: "docker info"
 
- - title: docker - login to registry
+ - title: docker - 登录镜像仓库
    desc: |
-     Authenticate the Docker client with a remote registry such as Docker Hub or a private repository. 
-     This allows you to push private images or pull images that require authorization. 
-     Be cautious as credentials may be stored in plain text in your home directory's config file.
+     让 Docker 客户端与远程仓库（如 Docker Hub 或私有仓库）进行认证。
+     这样你可以推送私有镜像或拉取需要授权的镜像，请注意凭据可能以明文形式存储在主目录的配置文件中。
    command: "docker login -u {{username}} -p {{password}} {{registry_url|index.docker.io/v1/}}"
 
 # === IMAGE MANAGEMENT ===
- - title: docker - pull image
+ - title: docker - 拉取镜像
    desc: |
-     Download a specific image from a registry to your local machine. 
-     If no tag is specified, it defaults to downloading the 'latest' version. 
-     This is a prerequisite before you can run a container based on that image.
+     从仓库下载特定镜像到本地机器。
+     如果未指定标签，默认下载 latest 版本，这是运行基于该镜像的容器之前的前提步骤。
    command: "docker pull {{image_name|ubuntu}}:{{tag|latest}}"
 
- - title: docker - build image
+ - title: docker - 构建镜像
    desc: |
-     Create a new container image from a Dockerfile located in the specified path. 
-     The tag option allows you to name the image for easier reference later. 
-     Ensure all necessary files are within the build context to avoid build failures.
+     从指定路径中的 Dockerfile 创建新的容器镜像。
+     tag 选项允许你为镜像命名，便于日后引用，确保所有必要文件都在构建上下文内以避免构建失败。
    command: "docker build -t {{image_name}}:{{tag|latest}} {{path|.}}"
 
- - title: docker - list images
+ - title: docker - 列出镜像
    desc: |
-     List all top-level images available on your local system. 
-     The output includes the repository name, tag, image ID, and size. 
-     Use this frequently to manage local storage and identify unused images.
+     列出本地系统上所有可用的顶层镜像。
+     输出包括仓库名称、标签、镜像 ID 和大小，可经常使用此命令管理本地存储并识别未使用的镜像。
    command: "docker images"
 
- - title: docker - remove image
+ - title: docker - 删除镜像
    desc: |
-     Remove one or more images from local storage. 
-     You cannot remove an image that is currently being used by a container (even a stopped one). 
-     Force removal with -f if necessary, but use it with caution to avoid losing data.
+     从本地存储删除一个或多个镜像。
+     不能删除当前正被容器使用的镜像（即使容器已停止），必要时可用 -f 强制删除，但请谨慎使用以免丢失数据。
    command: "docker rmi {{image_id_or_name}}"
 
 # === CONTAINER LIFECYCLE ===
- - title: docker - run container in background
+ - title: docker - 后台运行容器
    desc: |
-     Create and start a container in detached mode, meaning it runs in the background. 
-     This is the standard way to run services like web servers or databases. 
-     You can map host ports to container ports using the -p flag for external access.
+     以分离模式创建并启动容器，即它在后台运行。
+     这是运行 Web 服务器或数据库等服务的标准方式，可用 -p 标志将主机端口映射到容器端口以实现外部访问。
    command: "docker run -d --name {{container_name}} -p {{host_port|80}}:{{container_port|80}} {{image_name}}"
 
- - title: docker - run interactive container
+ - title: docker - 运行交互式容器
    desc: |
-     Launch a container and immediately attach an interactive terminal session to it. 
-     This is ideal for debugging, manual configuration, or exploring an image's filesystem. 
-     The --rm flag ensures the container is deleted automatically after you exit the shell.
+     启动容器并立即附加一个交互式终端会话。
+     非常适合调试、手动配置或探索镜像的文件系统，--rm 标志确保退出 Shell 后自动删除容器。
    command: "docker run -it --rm {{image_name}} {{shell|/bin/bash}}"
 
- - title: docker - list containers
+ - title: docker - 列出容器
    desc: |
-     Show a list of containers that are currently running on the system. 
-     Adding the -a flag will also show containers that have exited or stopped. 
-     It provides essential info like Container ID, Status, and Port mappings.
+     显示系统上当前正在运行的容器列表。
+     添加 -a 标志也会显示已退出或已停止的容器，提供容器 ID、状态和端口映射等关键信息。
    command: "docker ps {{flags|-a}}"
 
- - title: docker - stop container
+ - title: docker - 停止容器
    desc: |
-     Gracefully stop a running container by sending a SIGTERM signal. 
-     If the container does not exit within a grace period, it will be forcefully killed. 
-     Stopped containers still reside on disk until they are explicitly removed.
+     通过发送 SIGTERM 信号优雅地停止正在运行的容器。
+     如果容器在宽限期内未退出，将被强制终止，已停止的容器在显式删除之前仍会保留在磁盘上。
    command: "docker stop {{container_id_or_name}}"
 
- - title: docker - remove container
+ - title: docker - 删除容器
    desc: |
-     Permanently delete a stopped container from the local system. 
-     This frees up disk space and removes the container's metadata. 
-     To remove a running container, you must either stop it first or use the -f flag.
+     从本地系统永久删除已停止的容器。
+     这会释放磁盘空间并删除容器的元数据，要删除运行中的容器，需先停止它或使用 -f 标志。
    command: "docker rm {{container_id_or_name}}"
 
 # === INTERACTION AND INSPECTION ===
- - title: docker - execute command
+ - title: docker - 执行命令
    desc: |
-     Run a new command inside an existing, running container. 
-     This is the most common way to get a shell into a live service without restarting it. 
-     Use the -it flags to maintain an interactive session for tools like bash.
+     在现有运行中的容器内运行新命令。
+     这是在不重启实时服务的情况下进入 Shell 的最常见方式，对 bash 等工具使用 -it 标志可保持交互式会话。
    command: "docker exec -it {{container_id_or_name}} {{command|sh}}"
 
- - title: docker - view logs
+ - title: docker - 查看日志
    desc: |
-     Retrieve the logs produced by a container's main process (STDOUT and STDERR). 
-     The -f flag allows you to follow the log output in real-time as it is generated. 
-     This is a primary tool for troubleshooting application errors inside containers.
+     检索容器主进程产生的日志（STDOUT 和 STDERR）。
+     -f 标志允许你实时跟随日志输出，这是排查容器内应用错误的主要工具。
    command: "docker logs -f {{container_id_or_name}}"
 
- - title: docker - inspect object
+ - title: docker - 检查对象
    desc: |
-     Return low-level, JSON-formatted information on Docker objects like containers or images. 
-     It reveals detailed configuration such as IP addresses, volume mounts, and environment variables. 
-     Use the --format flag if you want to extract specific values from the JSON output.
+     返回容器或镜像等 Docker 对象的底层 JSON 格式信息。
+     可揭示 IP 地址、卷挂载和环境变量等详细配置，若想从 JSON 输出中提取特定值，可用 --format 标志。
    command: "docker inspect {{object_id_or_name}}"
 
- - title: docker - copy files
+ - title: docker - 复制文件
    desc: |
-     Copy files or folders between a container and the local host filesystem. 
-     This works whether the container is running or stopped. 
-     It is extremely useful for extracting logs or injecting configuration files manually.
+     在容器与本地主机文件系统之间复制文件或文件夹。
+     无论容器是运行还是停止状态都可使用，对提取日志或手动注入配置文件极为有用。
    command: "docker cp {{source_path}} {{target_path}}"
 
 # === RESOURCE MONITORING ===
- - title: docker - container stats
+ - title: docker - 容器资源统计
    desc: |
-     Display a live streaming update of container resource usage statistics. 
-     This includes CPU percentage, memory usage, network I/O, and block I/O. 
-     Use this to identify containers that are consuming excessive resources on the host.
+     显示容器资源使用统计的实时流更新。
+     包括 CPU 百分比、内存使用、网络 I/O 和块 I/O，可用此命令识别主机上消耗过多资源的容器。
    command: "docker stats"
 
- - title: docker - running processes
+ - title: docker - 运行中的进程
    desc: |
-     List the processes currently running inside a specific container. 
-     It functions similarly to the 'top' command in Linux but scoped to the container's PID namespace. 
-     This helps in identifying runaway processes or checking if services started correctly.
+     列出特定容器内当前正在运行的进程。
+     其功能类似 Linux 的 top 命令，但范围限定在容器的 PID 命名空间内，有助于识别失控进程或检查服务是否正确启动。
    command: "docker top {{container_id_or_name}}"
 
 # === SYSTEM CLEANUP ===
- - title: docker - prune system
+ - title: docker - 清理系统
    desc: |
-     Remove all unused containers, networks, images (dangling), and optionally volumes. 
-     This is a powerful cleanup command used to reclaim significant disk space. 
-     Be very careful as it will delete all data associated with stopped containers and unused networks.
+     删除所有未使用的容器、网络、悬空镜像以及可选的卷。
+     这是一条强大的清理命令，用于回收大量磁盘空间，请非常小心，因为它会删除与已停止容器和未使用网络相关的所有数据。
    command: "docker system prune {{flags|-a}}"

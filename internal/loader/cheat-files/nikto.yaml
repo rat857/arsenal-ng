@@ -4,103 +4,90 @@ tags: [web, scanner, security, pentest, vulnerability, enumeration, reconnaissan
 # === BASIC SCANS ===
 
 actions:
- - title: nikto - basic scan
+ - title: nikto - 基础扫描
    desc: |
-     Performs a standard vulnerability scan against a target host on the default port.
-     This is the most common starting point for web server reconnaissance to identify outdated software and common misconfigurations.
-     It checks for over 6700 potentially dangerous files/programs and reports outdated server versions.
+     在默认端口上对目标主机执行标准漏洞扫描。这是识别过时软件和常见错误配置的 Web 服务器侦察最常见起点。
+     它检查超过 6700 个潜在危险文件/程序，并报告过时的服务器版本。
    command: "nikto -h {{target}}"
 
- - title: nikto - scan with ssl/tls
+ - title: nikto - 使用 SSL/TLS 扫描
    desc: |
-     Forces the use of SSL/TLS for the connection to the target server.
-     This is necessary when scanning HTTPS websites or services running on port 443.
-     Nikto will attempt to negotiate a secure connection before starting the vulnerability tests.
+     强制与目标服务器的连接使用 SSL/TLS。扫描 HTTPS 网站或运行在 443 端口的服务时有必要。
+     Nikto 会在开始漏洞测试前尝试协商安全连接。
    command: "nikto -h {{target}} -ssl"
 
- - title: nikto - scan specific port
+ - title: nikto - 扫描特定端口
    desc: |
-     Directs the scanner to a specific port number where the web service is running.
-     This is useful for non-standard ports like 8080, 8443, or development environments.
-     By default, if the port is 443, Nikto will automatically attempt to use SSL.
+     将扫描器指向 Web 服务运行的具体端口号。对 8080、8443 或开发环境等非标准端口很有用。
+     默认情况下，若端口是 443，Nikto 会自动尝试使用 SSL。
    command: "nikto -h {{target}} -p {{port|8080}}"
 
 # === REPORTING AND OUTPUT ===
 
- - title: nikto - export results to file
+ - title: nikto - 导出结果到文件
    desc: |
-     Saves the scan results into a specific file format for later analysis or reporting.
-     Supported formats include htm, csv, json, xml, and txt.
-     This is essential for documenting findings during a penetration test or security audit.
+     将扫描结果保存为特定文件格式，供后续分析或报告。支持的格式包括 htm、csv、json、xml 和 txt。
+     这对渗透测试或安全审计期间记录发现至关重要。
    command: "nikto -h {{target}} -o {{output_file|report.html}} -Format {{format|htm}}"
 
 # === SCAN TUNING AND OPTIMIZATION ===
 
- - title: nikto - targeted tuning
+ - title: nikto - 定向调优
    desc: |
-     Runs only specific categories of tests to make the scan faster and more focused.
-     Tuning options include (4) Injection, (9) SQL Injection, (a) Auth Bypass, and (b) Software Identification.
-     This reduces the noise generated on the network and minimizes the risk of triggering security alerts for unrelated issues.
+     只运行特定类别的测试，使扫描更快、更聚焦。调优选项包括（4）注入、（9）SQL 注入、（a）认证绕过和（b）软件识别。
+     这减少了网络上产生的噪音，并最大限度降低因无关问题触发安全告警的风险。
    command: "nikto -h {{target}} -Tuning {{tuning_options|123bde}}"
 
- - title: nikto - exclude specific tests
+ - title: nikto - 排除特定测试
    desc: |
-     Runs all available tests except for the ones specified in the tuning string using the 'x' flag.
-     For example, you might want to exclude Denial of Service (6) tests to ensure server stability.
-     This is a safer approach when scanning production environments where uptime is critical.
+     使用 x 标志运行除调优字符串中指定之外的所有可用测试。例如，你可能想排除拒绝服务（6）测试以确保服务器稳定。
+     在扫描正常运行时间至关重要的生产环境时，这是更安全的方法。
    command: "nikto -h {{target}} -Tuning x{{exclude_options|6}}"
 
- - title: nikto - set maximum scan time
+ - title: nikto - 设置最大扫描时间
    desc: |
-     Limits the total duration of the scan to prevent it from running indefinitely.
-     You can specify time in hours (h), minutes (m), or seconds (s).
-     This is particularly useful in automated CI/CD pipelines or when working within strict testing windows.
+     限制扫描的总时长，防止其无限运行。你可以用小时（h）、分钟（m）或秒（s）指定时间。
+     在自动化 CI/CD 流水线中或在严格的测试窗口内工作时特别有用。
    command: "nikto -h {{target}} -maxtime {{time|1h}}"
 
 # === AUTHENTICATION AND EVASION ===
 
- - title: nikto - authenticated scan
+ - title: nikto - 认证扫描
    desc: |
-     Performs a scan using HTTP Basic Authentication credentials.
-     The format required is 'id:password' or 'id:password:realm'.
-     Be cautious as incorrect credentials might trigger account lockout policies on the target system.
+     使用 HTTP 基本认证凭据执行扫描。所需格式为 id:password 或 id:password:realm。
+     注意错误的凭据可能触发目标系统上的账户锁定策略。
    command: "nikto -h {{target}} -id {{username}}:{{password}}"
 
- - title: nikto - ids evasion techniques
+ - title: nikto - IDS 规避技术
    desc: |
-     Employs various encoding and request manipulation techniques to bypass Intrusion Detection Systems (IDS).
-     Options include (1) Random URI encoding, (5) Fake parameters, and (8) Windows directory separators.
-     Note that using multiple evasion techniques will significantly slow down the overall scan speed.
+     采用各种编码和请求操纵技术绕过入侵检测系统（IDS）。选项包括（1）随机 URI 编码、（5）伪造参数和（8）Windows 目录分隔符。
+     注意使用多个规避技术会显著降低整体扫描速度。
    command: "nikto -h {{target}} -evasion {{evasion_type|15}}"
 
- - title: nikto - use proxy
+ - title: nikto - 使用代理
    desc: |
-     Routes all scan traffic through a defined proxy server like Burp Suite or a SOCKS proxy.
-     The proxy details must be configured in the nikto.conf file or passed as a command-line argument.
-     This is useful for intercepting Nikto's requests for manual analysis or bypassing IP-based restrictions.
+     将所有扫描流量经由定义的代理服务器（如 Burp Suite 或 SOCKS 代理）转发。代理详情必须在 nikto.conf 文件中配置或作为命令行参数传递。
+     用于拦截 Nikto 的请求进行人工分析或绕过基于 IP 的限制。
    command: "nikto -h {{target}} -useproxy http://{{proxy_ip|127.0.0.1}}:{{proxy_port|8080}}"
 
 # === ADVANCED ENUMERATION ===
 
- - title: nikto - directory and user mutation
+ - title: nikto - 目录和用户变异
    desc: |
-     Attempts to guess additional file names, directory names, or usernames via various mutation techniques.
-     Mutation (3) enumerates usernames via Apache /~user requests, while (6) guesses directory names from a dictionary.
-     This helps discover hidden assets or backup files that are not linked directly within the web application.
+     通过多种变异技术尝试猜测额外的文件名、目录名或用户名。变异（3）通过 Apache /~user 请求枚举用户名，而（6）从字典猜测目录名。
+     这有助于发现 Web 应用内未直接链接的隐藏资产或备份文件。
    command: "nikto -h {{target}} -mutate {{mutation_type|3,6}}"
 
- - title: nikto - virtual host scanning
+ - title: nikto - 虚拟主机扫描
    desc: |
-     Specifies a virtual host name to be sent in the HTTP Host header.
-     This is critical when the target IP address hosts multiple websites (Shared Hosting).
-     Without this flag, the scanner might only test the default site associated with the IP address.
+     指定要在 HTTP Host header 中发送的虚拟主机名。当目标 IP 地址托管多个网站（共享主机）时至关重要。
+     没有此标志，扫描器可能只测试与该 IP 地址关联的默认站点。
    command: "nikto -h {{target}} -vhost {{domain_name}}"
 
 # === UTILITY ===
 
- - title: nikto - list plugins
+ - title: nikto - 列出插件
    desc: |
-     Lists all available plugins that Nikto can use to perform security checks.
-     No actual scanning is performed when this flag is used.
-     It is a good way to verify your installation and see what specific vulnerabilities Nikto is capable of detecting.
+     列出 Nikto 可用于执行安全检查的所有可用插件。使用此标志时不会执行实际扫描。
+     这是验证安装并查看 Nikto 能检测哪些特定漏洞的好方法。
    command: "nikto -list-plugins"

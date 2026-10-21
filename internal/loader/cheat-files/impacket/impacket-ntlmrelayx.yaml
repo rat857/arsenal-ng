@@ -4,108 +4,96 @@ tags: [network, pentest, exploitation, ntlm, relay, smb, ldap, adcs, sccm]
 actions:
 # === SMB RELAY OPERATIONS ===
 
- - title: impacket-ntlmrelayx - dump sam hashes
+ - title: impacket-ntlmrelayx - 转储 SAM 哈希
    desc: |
-     Relays incoming NTLM authentication to a specific target to dump SAM hashes. 
-     This is the most common use case when you have local administrator credentials being relayed. 
-     The tool automatically invokes secretsdump functionality if the relayed user has sufficient privileges.
-     It is highly recommended to use -smb2support for compatibility with modern Windows systems.
+     将传入的 NTLM 认证中继到特定目标以转储 SAM 哈希。
+     当你被中继的凭据是本地管理员时，这是最常见的用例。
+     如果被中继用户有足够权限，工具会自动调用 secretsdump 功能，强烈建议使用 -smb2support 以兼容现代 Windows 系统。
    command: "impacket-ntlmrelayx -t {{target_ip}} -smb2support"
 
- - title: impacket-ntlmrelayx - relay to multiple targets
+ - title: impacket-ntlmrelayx - 中继到多个目标
    desc: |
-     Relays NTLM credentials to a list of targets defined in a text file. 
-     This allows for lateral movement across an entire subnet by attempting to relay any captured session to all possible hosts. 
-     The -w flag can be added to watch the file for changes dynamically. 
-     Useful in combination with Responder or LLMNR/NetBIOS poisoning techniques.
+     将 NTLM 凭据中继到文本文件中定义的目标列表。
+     通过尝试将捕获到的任何会话中继到所有可能的主机，实现跨整个子网的横向移动。
+     可添加 -w 标志动态监视文件变化，常与 Responder 或 LLMNR/NetBIOS 投毒技术结合使用。
    command: "impacket-ntlmrelayx -tf {{targets_file}} -smb2support"
 
- - title: impacket-ntlmrelayx - execute system command
+ - title: impacket-ntlmrelayx - 执行系统命令
    desc: |
-     Executes a specific shell command on the target system upon a successful relay. 
-     Instead of dumping hashes, this allows for direct interaction such as adding a user or starting a reverse shell. 
-     Be aware that command execution via SMB (typically using service creation) is highly likely to be flagged by EDR/AV. 
-     Ensure the command is properly escaped if it contains special characters.
+     中继成功后，在目标系统上执行特定的 shell 命令。
+     它不是转储哈希，而是允许直接交互，例如添加用户或启动反向 shell。
+     请注意通过 SMB 执行命令（通常使用服务创建）很可能被 EDR/AV 标记，如果命令包含特殊字符请确保正确转义。
    command: "impacket-ntlmrelayx -t {{target_ip}} -c \"{{command|whoami}}\""
 
 # === SOCKS PROXY MODE ===
 
- - title: impacket-ntlmrelayx - socks proxy mode
+ - title: impacket-ntlmrelayx - SOCKS 代理模式
    desc: |
-     Starts a SOCKS proxy that keeps relayed sessions alive for manual use. 
-     This is one of the most powerful features as it allows you to use other tools like smbclient.py or crackmapexec through the proxy. 
-     Sessions are listed in the 'socks' command within the tool's interface or via the HTTP API. 
-     It bypasses the need for immediate automated action and allows for surgical post-exploitation.
+     启动 SOCKS 代理，使中继会话保持存活以供手动使用。
+     这是最强大的功能之一，允许你通过代理使用 smbclient.py 或 crackmapexec 等其他工具。
+     会话在工具界面的“socks”命令中或通过 HTTP API 列出，无需立即自动操作，可进行精细的后渗透。
    command: "impacket-ntlmrelayx -tf {{targets_file}} -socks -smb2support"
 
 # === LDAP & ACTIVE DIRECTORY ATTACKS ===
 
- - title: impacket-ntlmrelayx - ldap privilege escalation
+ - title: impacket-ntlmrelayx - LDAP 权限提升
    desc: |
-     Relays authentication to a Domain Controller via LDAP to escalate privileges for a specific user. 
-     It attempts to modify the Access Control List (ACL) of the domain object to grant the attacker 'DCSync' rights. 
-     This requires relaying a user who already has permissions to modify domain ACLs (like a Domain Admin). 
-     The --escalate-user flag specifies which account will receive the new privileges.
+     通过 LDAP 将认证中继到域控制器，为特定用户提升权限。
+     它尝试修改域对象的访问控制列表（ACL），为攻击者授予“DCSync”权限。
+     这需要中继一个已有权限修改域 ACL 的用户（如域管理员），--escalate-user 标志指定接收新权限的账户。
    command: "impacket-ntlmrelayx -t ldap://{{domain_controller_ip}} --escalate-user {{attacker_username}}"
 
- - title: impacket-ntlmrelayx - shadow credentials attack
+ - title: impacket-ntlmrelayx - Shadow Credentials 攻击
    desc: |
-     Performs the Shadow Credentials attack by modifying the msDS-KeyCredentialLink attribute. 
-     This allows an attacker to take over a computer or user account without changing their password. 
-     The attack results in a certificate that can be used for PKINIT authentication to get a TGT. 
-     Targeting a Domain Controller via LDAP is a common way to achieve Domain Admin status with this method.
+     通过修改 msDS-KeyCredentialLink 属性执行 Shadow Credentials 攻击。
+     允许攻击者在无需更改密码的情况下接管计算机或用户账户。
+     攻击会生成一个可用于 PKINIT 认证以获取 TGT 的证书，通过 LDAP 定位域控制器是获得域管理员权限的常见方式。
    command: "impacket-ntlmrelayx -t ldap://{{domain_controller_ip}} --shadow-credentials --shadow-target {{target_account_name}}"
 
- - title: impacket-ntlmrelayx - delegate access (resource-based constrained delegation)
+ - title: impacket-ntlmrelayx - 委派访问（基于资源的约束委派）
    desc: |
-     Relays to LDAP to configure Resource-Based Constrained Delegation (RBCD). 
-     It grants a computer account controlled by the attacker the right to impersonate users to the relayed target. 
-     This is a stealthy way to maintain persistence and gain administrative access to machines. 
-     Requires a machine account or a user with the ability to create machine accounts (ms-DS-MachineAccountQuota).
+     中继到 LDAP 以配置基于资源的约束委派（RBCD）。
+     它授予攻击者控制的计算机账户向被中继目标模拟用户的权利。
+     这是保持持久化并获得机器管理访问权限的隐蔽方式，需要计算机账户或有创建计算机账户权限的用户（ms-DS-MachineAccountQuota）。
    command: "impacket-ntlmrelayx -t ldap://{{domain_controller_ip}} --delegate-access --escalate-user {{attacker_machine_account}}"
 
 # === AD CS (CERTIFICATE SERVICES) ATTACKS ===
 
- - title: impacket-ntlmrelayx - ad cs relay (esc1/esc6)
+ - title: impacket-ntlmrelayx - AD CS 中继（ESC1/ESC6）
    desc: |
-     Relays NTLM authentication to an AD CS Web Enrollment endpoint to request a certificate. 
-     The resulting certificate can be used to authenticate as the relayed user or machine. 
-     This is particularly effective against Domain Controllers to perform the 'ESC8' attack. 
-     You must specify the correct template, usually 'Machine' for computers or 'User' for users.
+     将 NTLM 认证中继到 AD CS Web 注册端点以请求证书。
+     生成的证书可用于以被中继的用户或机器身份进行认证。
+     这对域控制器执行“ESC8”攻击尤为有效，必须指定正确的模板，计算机通常用“Machine”，用户用“User”。
    command: "impacket-ntlmrelayx -t http://{{ca_ip}}/certsrv/certfnsh.asp --adcs --template {{template|Machine}}"
 
 # === SPECIALIZED ATTACKS (SCCM & MSSQL) ===
 
- - title: impacket-ntlmrelayx - sccm policy secret dump
+ - title: impacket-ntlmrelayx - SCCM 策略密钥转储
    desc: |
-     Exploits SCCM (MECM) by relaying a machine account to the Management Point. 
-     The tool registers a fake device and requests secret policies which often contain network access account credentials. 
-     The target URL must point to the specific SCCM windowsauth endpoint. 
-     This is a very effective way to escalate from a local machine compromise to broader network access.
+     通过将机器账户中继到管理点来利用 SCCM（MECM）。
+     工具注册一个伪造设备并请求秘密策略，这些策略通常包含网络访问账户凭据。
+     目标 URL 必须指向特定的 SCCM windowsauth 端点，这是从本地机器攻陷扩展到更广泛网络访问的非常有效的方式。
    command: "impacket-ntlmrelayx -t http://{{sccm_mp_ip}}/ccm_system_windowsauth/request --sccm-policies"
 
- - title: impacket-ntlmrelayx - mssql query execution
+ - title: impacket-ntlmrelayx - MSSQL 查询执行
    desc: |
-     Relays authentication to an MSSQL server and executes a SQL query. 
-     This can be used to extract data, create new database users, or even gain OS-level access if xp_cmdshell is enabled. 
-     Multiple queries can be specified by repeating the -q flag. 
-     Relaying a sysadmin user provides full control over the database instance.
+     将认证中继到 MSSQL 服务器并执行 SQL 查询。
+     可用于提取数据、创建新的数据库用户，甚至在启用 xp_cmdshell 时获得 OS 级访问。
+     可重复使用 -q 标志指定多个查询，中继 sysadmin 用户可完全控制数据库实例。
    command: "impacket-ntlmrelayx -t mssql://{{sql_server_ip}} -q \"{{sql_query|SELECT @@version;}}\""
 
 # === ADVANCED CONFIGURATION ===
 
- - title: impacket-ntlmrelayx - remove mic (cve-2019-1040)
+ - title: impacket-ntlmrelayx - 移除 MIC（CVE-2019-1040）
    desc: |
-     Exploits CVE-2019-1040 by removing the Message Integrity Check (MIC) from the NTLM authentication. 
-     This allows relaying to services that strictly require NTLMv2 and have MIC enabled, such as LDAPS. 
-     It is essential for successful LDAP relaying on patched systems. 
-     Combine this with -smb2support for maximum effectiveness.
+     通过移除 NTLM 认证中的消息完整性检查（MIC）来利用 CVE-2019-1040。
+     这允许中继到严格要求 NTLMv2 且启用 MIC 的服务（如 LDAPS）。
+     对于在已打补丁系统上成功进行 LDAP 中继至关重要，结合 -smb2support 可获得最佳效果。
    command: "impacket-ntlmrelayx -t ldaps://{{domain_controller_ip}} --remove-mic --smb2support"
 
- - title: impacket-ntlmrelayx - serve custom image (wpad)
+ - title: impacket-ntlmrelayx - 提供自定义图像（WPAD）
    desc: |
-     Used during WPAD/Proxy attacks to serve a specific image to the victim. 
-     When victims attempt to authenticate to a fake proxy, this image is displayed if the browser requests one. 
-     It helps in making the attack look more legitimate or can be used for basic tracking. 
-     Often used with the -wh (WPAD Host) flag.
+     在 WPAD/代理攻击中用于向受害者提供特定图像。
+     当受害者尝试向伪造代理认证时，若浏览器请求图像就会显示该图像。
+     有助于使攻击看起来更可信，或用于基本追踪，常与 -wh（WPAD Host）标志配合使用。
    command: "impacket-ntlmrelayx -t {{target_ip}} --serve-image {{image_path|/tmp/logo.png}}"

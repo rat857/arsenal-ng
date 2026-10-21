@@ -3,75 +3,55 @@ tags: [graphql, security, pentest, fingerprinting, enumeration, reconnaissance, 
 
 actions:
   # === Information and Setup ===
-  - title: graphw00f - list supported technologies
+  - title: graphw00f - 列出支持的技术
     desc: |
-      Display all GraphQL technologies and engines that graphw00f is capable of detecting.
-      This command is useful for verifying if a specific backend engine is within the tool's detection database.
-      Run this before starting an engagement to understand the scope of the tool's fingerprinting capabilities.
+      显示 graphw00f 能够检测的所有 GraphQL 技术和引擎。此命令用于验证某个特定后端引擎是否在工具的检测数据库中。在开始测试前运行它，以了解工具指纹识别能力的范围。
     command: "graphw00f -l"
 
   # === Discovery and Fingerprinting ===
-  - title: graphw00f - detect graphql endpoints
+  - title: graphw00f - 检测 GraphQL 端点
     desc: |
-      Perform a discovery scan to find GraphQL endpoints on the specified target URL.
-      This mode iterates through common paths to locate where the GraphQL API is hosted.
-      It is the primary step when you know a target has GraphQL but do not know the exact URI.
+      执行发现扫描，在指定目标 URL 上查找 GraphQL 端点。此模式遍历常见路径以定位 GraphQL API 的托管位置。当你已知目标使用 GraphQL 但不知道确切 URI 时，这是首要步骤。
     command: "graphw00f -d -t {{url}}"
 
-  - title: graphw00f - fingerprint graphql engine
+  - title: graphw00f - 指纹识别 GraphQL 引擎
     desc: |
-      Identify the specific GraphQL engine implementation (e.g., Apollo, Graphene, Hasura) being used.
-      Fingerprinting helps security researchers identify known vulnerabilities or misconfigurations specific to that engine.
-      The output often includes a link to an Attack Surface Matrix for the detected technology.
+      识别正在使用的具体 GraphQL 引擎实现（如 Apollo、Graphene、Hasura）。指纹识别帮助安全研究人员发现该引擎特有的已知漏洞或错误配置。输出通常包含指向所检测技术攻击面矩阵的链接。
     command: "graphw00f -f -t {{target_url}}"
 
-  - title: graphw00f - detect and fingerprint combined
+  - title: graphw00f - 检测与指纹识别组合执行
     desc: |
-      Execute both discovery and fingerprinting in a single command execution.
-      This will first search for the GraphQL endpoint and, once found, immediately attempt to identify the underlying technology.
-      This is the most efficient way to start a GraphQL assessment on a new target.
+      在单次命令执行中同时进行发现和指纹识别。这会先搜索 GraphQL 端点，找到后立即尝试识别底层技术。这是对新目标开始 GraphQL 评估最有效的方式。
     command: "graphw00f -d -f -t {{url}}"
 
   # === Advanced Scanning Options ===
-  - title: graphw00f - detect with custom wordlist
+  - title: graphw00f - 使用自定义字典检测
     desc: |
-      Use a custom wordlist to search for GraphQL endpoints instead of the built-in default list.
-      This is particularly useful when dealing with non-standard naming conventions or heavily customized environments.
-      Providing a targeted wordlist can significantly increase the chances of discovery in complex infrastructures.
+      使用自定义字典而非内置默认列表来搜索 GraphQL 端点。在处理非标准命名约定或高度自定义的环境时特别有用。提供有针对性的字典可显著提高复杂基础设施中发现端点的几率。
     command: "graphw00f -d -t {{url}} -w {{wordlist_path}}"
 
-  - title: graphw00f - authenticated fingerprinting
+  - title: graphw00f - 带认证的指纹识别
     desc: |
-      Send custom HTTP headers, such as Authorization tokens, during the fingerprinting or detection process.
-      Many GraphQL endpoints are protected by authentication and will return 401 or 403 errors without proper credentials.
-      Ensure the header is formatted correctly as a "Key: Value" pair to ensure the request is accepted by the server.
+      在指纹识别或检测过程中发送自定义 HTTP 请求头，如 Authorization 令牌。许多 GraphQL 端点受认证保护，没有正确凭据时会返回 401 或 403 错误。请确保请求头以 Key: Value 对的形式正确格式化，以便服务器接受请求。
     command: "graphw00f -f -t {{target_url}} -H \"{{header_name|Authorization}}: {{header_value}}\""
 
-  - title: graphw00f - scan through proxy
+  - title: graphw00f - 通过代理扫描
     desc: |
-      Route all outgoing traffic from graphw00f through a specified HTTP or HTTPS proxy.
-      This is commonly used to tunnel traffic through Burp Suite for further manual analysis or to hide the source IP.
-      Make sure the proxy URL includes the protocol, host, and port correctly.
+      通过指定的 HTTP 或 HTTPS 代理转发 graphw00f 的所有出站流量。通常用于将流量导入 Burp Suite 以进一步手动分析，或隐藏来源 IP。请确保代理 URL 正确包含协议、主机和端口。
     command: "graphw00f -f -t {{target_url}} -p {{proxy_url|http://127.0.0.1:8080}}"
 
-  - title: graphw00f - export results to csv
+  - title: graphw00f - 导出结果为 CSV
     desc: |
-      Save the output of the fingerprinting or discovery process into a CSV file for reporting.
-      This allows for easier integration with other tools or for maintaining a record of findings during a penetration test.
-      The output file will contain the target details and the identified GraphQL engine if successful.
+      将指纹识别或发现过程的输出保存到 CSV 文件中以便报告。这便于与其他工具集成，或在渗透测试期间保留发现记录。输出文件将包含目标详情，以及识别出的 GraphQL 引擎（如果成功）。
     command: "graphw00f -f -t {{target_url}} -o {{output_file|results.csv}}"
 
   # === Connection Tuning ===
-  - title: graphw00f - set custom timeout and user-agent
+  - title: graphw00f - 设置自定义超时和 User-Agent
     desc: |
-      Adjust the network timeout settings and use a custom User-Agent string for the requests.
-      Increasing the timeout is helpful for slow-responding servers or high-latency network connections.
-      Modifying the User-Agent can help bypass basic WAF rules that block the default tool signatures.
+      调整网络超时设置，并为请求使用自定义 User-Agent 字符串。对于响应缓慢的服务器或高延迟网络连接，增加超时会有所帮助。修改 User-Agent 有助于绕过拦截默认工具签名的简单 WAF 规则。
     command: "graphw00f -f -t {{target_url}} -T {{timeout_seconds|10}} -u \"{{user_agent|Mozilla/5.0}}\""
 
-  - title: graphw00f - disable redirection following
+  - title: graphw00f - 禁用重定向跟随
     desc: |
-      Prevent the tool from following HTTP 3xx redirections during the scanning process.
-      This is useful when you want to analyze the exact response of a specific URL without being redirected to a login page or a different domain.
-      It provides more control over the reconnaissance phase in environments with complex routing.
+      在扫描过程中阻止工具跟随 HTTP 3xx 重定向。当你想分析特定 URL 的精确响应，而不被重定向到登录页或不同域名时，这非常有用。它在具有复杂路由的环境中为侦察阶段提供更多控制。
     command: "graphw00f -f -r -t {{target_url}}"

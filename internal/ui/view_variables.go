@@ -26,24 +26,24 @@ func (m App) viewShowVars() string {
 	b.WriteString(m.renderHeader())
 	b.WriteString("\n\n")
 
-	b.WriteString(titleStyle.Render("Global Variables"))
+	b.WriteString(titleStyle.Render("全局变量"))
 	b.WriteString("\n\n")
 
 	vars := m.globals.All()
 	if len(vars) == 0 {
-		b.WriteString(helpStyle.Render("No variables set."))
+		b.WriteString(helpStyle.Render("尚未设置任何变量。"))
 		b.WriteString("\n\n")
-		b.WriteString(titleStyle.Render("Usage:"))
+		b.WriteString(titleStyle.Render("用法："))
 		b.WriteString("\n\n")
-		b.WriteString(fmt.Sprintf("  %s  %s\n", argNameStyle.Render("set key=value     "), helpStyle.Render("Set a variable")))
-		b.WriteString(fmt.Sprintf("  %s  %s\n", argNameStyle.Render("unset key         "), helpStyle.Render("Remove a variable")))
-		b.WriteString(fmt.Sprintf("  %s  %s\n", argNameStyle.Render("variables         "), helpStyle.Render("List all variables")))
+		b.WriteString(fmt.Sprintf("  %s  %s\n", argNameStyle.Render("set key=value     "), helpStyle.Render("设置变量")))
+		b.WriteString(fmt.Sprintf("  %s  %s\n", argNameStyle.Render("unset key         "), helpStyle.Render("删除变量")))
+		b.WriteString(fmt.Sprintf("  %s  %s\n", argNameStyle.Render("variables         "), helpStyle.Render("列出所有变量")))
 	} else {
 		b.WriteString(m.varsTable.View())
 	}
 
 	b.WriteString("\n\n")
-	b.WriteString(helpStyle.Render("Press ESC or Enter to go back │ ↑/↓: navigate"))
+	b.WriteString(helpStyle.Render("按 ESC 或 Enter 返回 │ ↑/↓: 导航"))
 
 	return b.String()
 }
@@ -61,8 +61,8 @@ func (m App) initVarsTable() App {
 
 	// Create columns
 	columns := []table.Column{
-		{Title: "KEY", Width: 20},
-		{Title: "VALUE", Width: 50},
+		{Title: "键名", Width: 20},
+		{Title: "值", Width: 50},
 	}
 
 	// Create rows
@@ -79,8 +79,8 @@ func (m App) initVarsTable() App {
 
 	// Calculate reserved space dynamically
 	header := m.renderHeader()
-	title := titleStyle.Render("Global Variables")
-	footer := helpStyle.Render("Press ESC or Enter to go back │ ↑/↓: navigate")
+	title := titleStyle.Render("全局变量")
+	footer := helpStyle.Render("按 ESC 或 Enter 返回 │ ↑/↓: 导航")
 	reservedHeight := lipgloss.Height(header) + 2 + // header + spacing
 		lipgloss.Height(title) + 2 + // title + spacing
 		lipgloss.Height(footer) + 2 // footer + spacing

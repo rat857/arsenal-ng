@@ -8,7 +8,7 @@ package config
 // Application Metadata
 // =============================================================================
 
-var Version = "1.8"
+var Version = "1.8-cn"
 
 // Application info
 const (
@@ -46,7 +46,7 @@ const (
 
 // Input constraints
 const (
-	SearchPlaceholder = "Search commands..."
+	SearchPlaceholder = "搜索命令..."
 	SearchMaxLength   = 100
 	ArgumentMaxLength = 200
 )

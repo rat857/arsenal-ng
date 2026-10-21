@@ -4,103 +4,78 @@ tags: [system, archive, compression, utility, linux, files]
 # === ARCHIVE CREATION ===
 
 actions:
- - title: tar - create a basic archive
+ - title: tar - 创建基础归档
    desc: |
-     Create a standard tarball from specified files or directories. This command does not apply 
-     compression by default, making it faster but resulting in larger file sizes. It is useful 
-     for bundling files while preserving directory structures and basic metadata. Use the 
-     verbose flag (-v) to see the progress of the operation as files are added.
+     从指定的文件或目录创建标准 tar 归档。此命令默认不进行压缩，速度更快但文件更大。它适合在保留目录结构和基本元数据的同时打包文件。
+     使用详细参数（-v）可以在添加文件时查看操作进度。
    command: "tar -cvf {{archive_name|archive.tar}} {{source_files}}"
 
- - title: tar - create a compressed gzip archive
+ - title: tar - 创建 gzip 压缩归档
    desc: |
-     Create a compressed archive using the gzip algorithm, which is the most common format 
-     for Linux software distribution. It provides a good balance between compression speed and 
-     reduced file size. This is ideal for backups and transferring files over the network 
-     efficiently. The .tar.gz or .tgz extensions are typically used for these archive types.
+     使用 gzip 算法创建压缩归档，这是 Linux 软件分发中最常见的格式。它在压缩速度和减小文件大小之间提供了良好平衡。
+     非常适合备份和通过网络高效传输文件。此类归档通常使用 .tar.gz 或 .tgz 扩展名。
    command: "tar -czvf {{archive_name|archive.tar.gz}} {{source_files}}"
 
- - title: tar - create a compressed bzip2 archive
+ - title: tar - 创建 bzip2 压缩归档
    desc: |
-     Create an archive using bzip2 compression to achieve a better compression ratio than gzip. 
-     While it results in smaller file sizes, it requires significantly more CPU time and 
-     memory to process. Use this when storage space or bandwidth is a higher priority than 
-     processing speed. It commonly utilizes the .tar.bz2 extension for identification.
+     使用 bzip2 压缩创建归档，以获得比 gzip 更好的压缩率。虽然文件更小，但需要显著更多的 CPU 时间和内存来处理。
+     当存储空间或带宽比处理速度更重要时使用。它通常使用 .tar.bz2 扩展名进行标识。
    command: "tar -cjvf {{archive_name|archive.tar.bz2}} {{source_files}}"
 
- - title: tar - create a compressed xz archive
+ - title: tar - 创建 xz 压缩归档
    desc: |
-     Create an archive using the XZ compression algorithm, which offers the highest 
-     compression ratios available in standard tar. This is the preferred format for 
-     distributing large source code repositories or system images. Note that extraction and 
-     compression take more time compared to gzip or bzip2. It typically uses the .tar.xz extension.
+     使用 XZ 压缩算法创建归档，它提供标准 tar 中最高的压缩率。这是分发大型源代码仓库或系统镜像的首选格式。
+     注意与 gzip 或 bzip2 相比，解压和压缩耗时更长。它通常使用 .tar.xz 扩展名。
    command: "tar -cJvf {{archive_name|archive.tar.xz}} {{source_files}}"
 
 # === EXTRACTION AND INSPECTION ===
 
- - title: tar - extract an archive
+ - title: tar - 解压归档
    desc: |
-     Extract the contents of an archive into the current working directory. Modern versions 
-     of tar automatically detect the compression format (gzip, bzip2, xz) without needing 
-     the specific flag. Ensure you have sufficient write permissions in the target directory 
-     to avoid extraction errors. Use the verbose flag to monitor which files are being written.
+     将归档内容解压到当前工作目录。现代版本的 tar 会自动检测压缩格式（gzip、bzip2、xz），无需指定相应参数。
+     确保你在目标目录中有足够的写权限以避免解压错误。使用详细参数可监控正在写入哪些文件。
    command: "tar -xvf {{archive_name|archive.tar.gz}}"
 
- - title: tar - extract archive to specific directory
+ - title: tar - 解压归档到指定目录
    desc: |
-     Extract the archive contents into a specific target directory using the -C flag. This is 
-     highly useful for keeping the current directory clean or deploying software to a 
-     pre-defined path. The target directory must already exist before running the command 
-     to avoid failure. It helps prevent accidental overwrites of existing files in the current path.
+     使用 -C 参数将归档内容解压到特定目标目录。这对于保持当前目录整洁或将软件部署到预定路径非常有用。
+     目标目录必须在运行命令前已存在，以免失败。它有助于防止意外覆盖当前路径中的现有文件。
    command: "tar -xvf {{archive_name|archive.tar}} -C {{destination_dir}}"
 
- - title: tar - list archive contents
+ - title: tar - 列出归档内容
    desc: |
-     List the contents of a tar archive without extracting any files to the disk. This allows 
-     you to verify the internal folder structure and the presence of specific files inside 
-     the package. It is a safe way to inspect downloaded archives for unwanted or malicious 
-     content before execution. For detailed info like permissions and sizes, use the verbose flag.
+     列出 tar 归档的内容而不将任何文件解压到磁盘。这使你能够验证包内部的文件夹结构和特定文件是否存在。
+     这是一种在运行前检查下载归档是否含有不必要或恶意内容的安全方式。如需权限和大小等详细信息，请使用详细参数。
    command: "tar -tvf {{archive_name|archive.tar}}"
 
- - title: tar - extract specific file or directory
+ - title: tar - 解压特定文件或目录
    desc: |
-     Extract only a specific file or a single subdirectory from a larger archive. This is 
-     highly efficient when you only need one piece of data and do not want to unpack the 
-     entire archive. You must provide the exact relative path as it exists within the 
-     archive structure. Use the list (-t) command first to find the correct internal path.
+     仅从较大的归档中解压特定文件或单个子目录。当你只需要其中一部分数据且不想解包整个归档时，这非常高效。
+     你必须提供归档结构中存在的确切相对路径。先用列表命令（-t）查找正确的内部路径。
    command: "tar -xvf {{archive_name|archive.tar}} {{specific_path}}"
 
 # === ARCHIVE MANAGEMENT ===
 
- - title: tar - append files to existing archive
+ - title: tar - 向现有归档追加文件
    desc: |
-     Add new files to the end of an existing uncompressed tar archive. Note that this 
-     operation does not work on compressed archives (like .tar.gz) because the compression 
-     stream cannot be easily appended to. It is useful for incrementally building an archive 
-     as new data becomes available. Always verify the archive integrity after the append operation.
+     将新文件添加到现有未压缩 tar 归档的末尾。注意该操作不适用于压缩归档（如 .tar.gz），因为压缩流无法轻易追加。
+     当新数据可用时，它适合增量构建归档。追加操作后请务必验证归档完整性。
    command: "tar -rvf {{archive_name|archive.tar}} {{new_file}}"
 
- - title: tar - update files in archive
+ - title: tar - 更新归档中的文件
    desc: |
-     Update files within an archive only if the source file on disk is newer than the 
-     version already stored in the tarball. Similar to appending, this typically works only 
-     on uncompressed archives. It saves time by only adding modified files rather than 
-     recreating the entire archive from scratch. This is a basic way to manage incremental backups.
+     仅当磁盘上的源文件比 tarball 中已存储的版本更新时，才更新归档中的文件。与追加类似，它通常只适用于未压缩归档。
+     它只添加已修改的文件，而非从头重建整个归档，从而节省时间。这是管理增量备份的基本方式。
    command: "tar -uvf {{archive_name|archive.tar}} {{source_file}}"
 
- - title: tar - archive with excluded patterns
+ - title: tar - 使用排除模式创建归档
    desc: |
-     Create an archive while skipping files or directories that match a specific pattern. 
-     This is essential for avoiding the inclusion of temporary files, large cache 
-     directories, or version control folders like .git. Multiple exclusion patterns can be 
-     specified by repeating the flag. Ensure the pattern is quoted to prevent shell expansion.
+     创建归档时跳过匹配特定模式的文件或目录。这对于避免包含临时文件、大型缓存目录或 .git 等版本控制文件夹至关重要。
+     可以重复该参数来指定多个排除模式。请确保模式用引号括起来以防止 Shell 展开。
    command: "tar -cvf {{archive_name|archive.tar}} --exclude='{{pattern|*.log}}' {{source_dir}}"
 
- - title: tar - preserve permissions and metadata
+ - title: tar - 保留权限和元数据
    desc: |
-     Extract an archive while strictly preserving file permissions, including ACLs and 
-     ownership information. This is often the default for the root user but must be explicitly 
-     called using -p for other users if they have the necessary privileges. It is critical 
-     when restoring system backups or moving configurations between servers. It ensures 
-     the security context of the files remains intact.
+     解压归档时严格保留文件权限，包括 ACL 和所有权信息。这对 root 用户来说通常是默认行为，但其他用户若有足够权限则必须显式使用 -p。
+     在恢复系统备份或在服务器之间迁移配置时至关重要。它确保文件的安全上下文保持完整。
    command: "tar -xvpf {{archive_name|archive.tar}}"

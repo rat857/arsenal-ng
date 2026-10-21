@@ -3,76 +3,76 @@ tags: [web, security, pentest, fuzzer, bugbounty, reconnaissance, automation]
 
 actions:
   # === BASIC USAGE ===
-  - title: qsfuzz - basic query string fuzzing
+  - title: qsfuzz - 基础查询字符串模糊测试
     desc: |
-      Performs basic fuzzing on a list of URLs provided via standard input. 
-      This is the primary way to use the tool, typically by piping output from discovery tools like gau or waybackurls. 
-      It checks the parameters against built-in or default rules to find potential vulnerabilities.
+      对通过标准输入提供的 URL 列表执行基础模糊测试。
+      这是使用该工具的主要方式，通常通过管道传入 gau 或 waybackurls 等发现工具的输出。
+      它会根据内置或默认规则检查参数，以发现潜在漏洞。
     command: "cat {{url_list}} | qsfuzz"
 
-  - title: qsfuzz - fuzzing with custom configuration
+  - title: qsfuzz - 使用自定义配置进行模糊测试
     desc: |
-      Executes the fuzzer using a specific configuration file containing custom rules. 
-      The config file allows you to define specific payloads and matching patterns for vulnerabilities like XSS, SQLi, or SSRF. 
-      This is essential for targeted testing where default rules might not be sufficient for the specific technology stack.
+      使用包含自定义规则的特定配置文件执行模糊测试。
+      配置文件允许你为 XSS、SQLi 或 SSRF 等漏洞定义特定载荷和匹配模式。
+      这对于默认规则可能不足以覆盖特定技术栈的有针对性测试至关重要。
     command: "cat {{url_list}} | qsfuzz -c {{config_path|~/.config/qsfuzz/config.yaml}}"
 
   # === AUTHENTICATION & HEADERS ===
-  - title: qsfuzz - authenticated fuzzing with headers
+  - title: qsfuzz - 使用头进行认证模糊测试
     desc: |
-      Adds custom HTTP headers to all fuzzing requests sent by the tool. 
-      This is crucial for testing endpoints that require authorization tokens or custom headers for identification. 
-      Multiple headers can be included by separating them with a semi-colon within the string.
+      向工具发送的所有模糊测试请求添加自定义 HTTP 头。
+      这对于测试需要授权令牌或自定义标识头的端点至关重要。
+      可以通过在字符串内用分号分隔来包含多个头。
     command: "cat {{url_list}} | qsfuzz -H \"{{headers|Authorization: Bearer token; X-Custom-Header: value}}\""
 
-  - title: qsfuzz - authenticated fuzzing with cookies
+  - title: qsfuzz - 使用 Cookie 进行认证模糊测试
     desc: |
-      Includes session cookies in every request to fuzz protected or authenticated areas of a web application. 
-      This allows the fuzzer to reach internal logic and parameters that are not accessible to unauthenticated users. 
-      Ensure the cookies are valid and the session is active before starting the long-running scan.
+      在每个请求中包含会话 Cookie，以模糊测试 Web 应用受保护或需认证的区域。
+      这使模糊测试器能够触达未认证用户无法访问的内部逻辑和参数。
+      在开始长时间扫描之前，确保 Cookie 有效且会话处于活动状态。
     command: "cat {{url_list}} | qsfuzz -cookies \"{{cookies|session=abc123xyz}}\""
 
   # === PERFORMANCE & OPTIMIZATION ===
-  - title: qsfuzz - high-concurrency fuzzing
+  - title: qsfuzz - 高并发模糊测试
     desc: |
-      Sets the number of concurrent workers and adjusts the request timeout for faster processing. 
-      Increasing the worker count can significantly speed up the scanning of large URL lists but may lead to rate limiting. 
-      Setting a lower timeout helps the tool skip unresponsive servers quickly to maintain overall scanning momentum.
+      设置并发工作线程数并调整请求超时以加快处理速度。
+      增加工作线程数可以显著加快大型 URL 列表的扫描速度，但可能导致速率限制。
+      设置较低的超时有助于工具快速跳过无响应的服务器，从而保持整体扫描进度。
     command: "cat {{url_list}} | qsfuzz -w {{workers|50}} -t {{timeout|10}}"
 
-  - title: qsfuzz - silent mode for automation
+  - title: qsfuzz - 用于自动化的静默模式
     desc: |
-      Mutes all status updates and only prints successful evaluations or positive matches to the terminal. 
-      This mode is specifically designed for use in automation pipelines and shell scripts where only the findings are relevant. 
-      It prevents the terminal or log files from being cluttered with progress indicators and non-critical information.
+      静音所有状态更新，只向终端打印成功的评估结果或正匹配。
+      此模式专为自动化流水线和 shell 脚本设计，只有发现结果才重要。
+      它可以防止终端或日志文件被进度指示器和非关键信息淹没。
     command: "cat {{url_list}} | qsfuzz -s"
 
   # === ADVANCED BEHAVIOR ===
-  - title: qsfuzz - fuzzing with decoded parameters
+  - title: qsfuzz - 使用解码参数进行模糊测试
     desc: |
-      Sends fuzzing requests with decoded query strings and parameters instead of URL-encoded ones. 
-      This technique can sometimes bypass security filters or WAFs that only inspect encoded inputs. 
-      Be cautious as this might cause some web servers to return 400 Bad Request errors if they expect standard encoding.
+      发送使用解码后的查询字符串和参数的模糊测试请求，而不是 URL 编码的请求。
+      此技术有时可以绕过仅检查编码输入的安全过滤器或 WAF。
+      请谨慎，因为这可能导致某些 Web 服务器在期望标准编码时返回 400 Bad Request 错误。
     command: "cat {{url_list}} | qsfuzz -d"
 
-  - title: qsfuzz - disable redirect following
+  - title: qsfuzz - 禁用重定向跟随
     desc: |
-      Prevents the tool from following HTTP redirects (3xx status codes) during the fuzzing process. 
-      By default, qsfuzz follows redirects, but disabling it is useful when you want to analyze the immediate response of the target URL. 
-      This can help in identifying Open Redirect vulnerabilities or specific server behaviors on the initial landing page.
+      防止工具在模糊测试过程中跟随 HTTP 重定向（3xx 状态码）。
+      默认情况下 qsfuzz 会跟随重定向，但当你想分析目标 URL 的即时响应时，禁用它很有用。
+      这有助于识别 Open Redirect 漏洞或初始着陆页上的特定服务器行为。
     command: "cat {{url_list}} | qsfuzz -nr"
 
   # === INTEGRATION ===
-  - title: qsfuzz - slack notification integration
+  - title: qsfuzz - Slack 通知集成
     desc: |
-      Sends all positive matches and discovered vulnerabilities directly to a Slack channel via a webhook. 
-      The Slack API key and destination details must be correctly configured in the qsfuzz config file beforehand. 
-      This is an excellent feature for continuous monitoring or long-running scans where you want real-time alerts on your mobile or desktop.
+      通过 webhook 将所有正匹配和发现的漏洞直接发送到 Slack 频道。
+      Slack API 密钥和目标详情必须事先在 qsfuzz 配置文件中正确配置。
+      这对于持续监控或长时间扫描非常出色，你可以在手机或桌面上接收实时告警。
     command: "cat {{url_list}} | qsfuzz -ts"
 
-  - title: qsfuzz - debug mode for troubleshooting
+  - title: qsfuzz - 用于排查问题的调试模式
     desc: |
-      Enables verbose debug mode to provide more detailed information about failed or malformed requests. 
-      This is extremely helpful when the tool is not behaving as expected or when you are trying to debug connectivity issues. 
-      It will print detailed error messages for every URL that fails to process, helping you refine your input list or configuration.
+      启用详细调试模式，提供关于失败或格式错误请求的更详细信息。
+      当工具行为异常或你在调试连接问题时，这非常有帮助。
+      它会为每个处理失败的 URL 打印详细错误消息，帮助你优化输入列表或配置。
     command: "cat {{url_list}} | qsfuzz -debug"

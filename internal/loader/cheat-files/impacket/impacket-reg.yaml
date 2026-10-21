@@ -3,86 +3,86 @@ tags: [network, security, pentest, enumeration, exploitation, authentication, wi
 
 actions:
   # === AUTHENTICATION AND CONNECTIVITY ===
-  - title: impacket-reg - query with password
+  - title: impacket-reg - 使用密码查询
     desc: |
-      Performs a basic registry query using cleartext password authentication. 
-      This is the most straightforward way to list subkeys and values when credentials are known. 
-      The command retrieves the next tier of subkeys and entries under the specified path.
-      Be aware that using cleartext passwords might leave traces in the command history.
+      使用明文密码身份验证执行基本注册表查询。
+      当凭据已知时，这是列出子键和值的最直接方式。
+      该命令检索指定路径下的下一级子键和条目。
+      请注意，使用明文密码可能会在命令历史中留下痕迹。
     command: "impacket-reg {{domain|.}}/{{username}}:{{password}}@{{target_ip}} query -keyName {{key_path|HKLM\\SOFTWARE}}"
 
-  - title: impacket-reg - authenticate using NTLM hashes
+  - title: impacket-reg - 使用 NTLM 哈希进行身份验证
     desc: |
-      Connects to the remote registry using Pass-the-Hash (PtH) authentication. 
-      This is vital during post-exploitation when you have retrieved NTLM hashes but not the cleartext password. 
-      The hash should be provided in the format LMHASH:NTHASH.
-      This method allows for stealthier movement within the network as it bypasses the need for the original password.
+      使用传递哈希（PtH）身份验证连接远程注册表。
+      当你已获取 NTLM 哈希但没有明文密码时，这在后利用阶段至关重要。
+      哈希应以 LMHASH:NTHASH 格式提供。
+      此方法绕过了对原始密码的需求，可在网络内更隐蔽地移动。
     command: "impacket-reg {{domain|.}}/{{username}}@{{target_ip}} -hashes {{lmhash:nthash}} query -keyName {{key_path|HKLM\\SYSTEM}}"
 
-  - title: impacket-reg - kerberos authentication
+  - title: impacket-reg - Kerberos 身份验证
     desc: |
-      Uses Kerberos tickets for authentication instead of NTLM. 
-      This is particularly useful in environments where NTLM is disabled or heavily monitored. 
-      The -k flag instructs the tool to use a ccache file (defined in KRB5CCNAME) or the provided credentials.
-      Ensure the target name matches the SPN in the ticket and -dc-ip is specified for proper resolution.
+      使用 Kerberos 票据而非 NTLM 进行身份验证。
+      这在禁用 NTLM 或对 NTLM 进行严密监控的环境中特别有用。
+      -k 标志指示工具使用 ccache 文件（在 KRB5CCNAME 中定义）或提供的凭据。
+      确保目标名称与票据中的 SPN 匹配，并指定 -dc-ip 以便正确解析。
     command: "impacket-reg {{domain}}/{{username}}@{{target_name}} -k -no-pass -dc-ip {{dc_ip}} query -keyName {{key_path}}"
 
   # === ENUMERATION ===
-  - title: impacket-reg - list registry subkeys
+  - title: impacket-reg - 列出注册表子键
     desc: |
-      Enumerates all subkeys and values within a specific registry hive or path. 
-      It is a primary reconnaissance step for finding configuration weaknesses or installed application data. 
-      You can specify hives like HKLM (HKEY_LOCAL_MACHINE) or HKCU (HKEY_CURRENT_USER).
-      Requires sufficient read permissions on the target registry key.
+      枚举特定注册表 hive 或路径中的所有子键和值。
+      这是发现配置弱点或已安装应用程序数据的主要侦察步骤。
+      你可以指定 HKLM（HKEY_LOCAL_MACHINE）或 HKCU（HKEY_CURRENT_USER）等 hive。
+      需要拥有目标注册表键的足够读取权限。
     command: "impacket-reg {{domain|.}}/{{username}}@{{target_ip}} query -keyName {{key_path}}"
 
   # === DATA EXTRACTION ===
-  - title: impacket-reg - backup SAM/SYSTEM/SECURITY hives
+  - title: impacket-reg - 备份 SAM/SYSTEM/SECURITY hive
     desc: |
-      Specialized command to remotely back up the most critical Windows registry hives. 
-      These files (SAM, SYSTEM, SECURITY) contain the local account hashes and cached domain credentials. 
-      Once backed up to your local machine, you can use tools like secretsdump to extract credentials.
-      This action typically requires local Administrator or SYSTEM level privileges on the target.
+      远程备份最关键 Windows 注册表 hive 的专用命令。
+      这些文件（SAM、SYSTEM、SECURITY）包含本地帐户哈希和缓存的域凭据。
+      备份到本地机器后，你可以使用 secretsdump 等工具提取凭据。
+      此操作通常需要目标上的本地 Administrator 或 SYSTEM 级别权限。
     command: "impacket-reg {{domain|.}}/{{username}}@{{target_ip}} backup"
 
-  - title: impacket-reg - save specific key to file
+  - title: impacket-reg - 将特定键保存到文件
     desc: |
-      Exports a specific registry subkey and all its recursive content to a local file. 
-      This mimics the 'reg save' functionality but works remotely over the SMB protocol. 
-      It is useful for capturing specific configurations for offline analysis without downloading the entire hive.
-      The output file can later be parsed by registry viewer tools.
+      将特定注册表子键及其所有递归内容导出到本地文件。
+      这模仿“reg save”功能，但通过 SMB 协议远程工作。
+      它适合捕获特定配置以进行离线分析，而无需下载整个 hive。
+      输出文件之后可由注册表查看工具解析。
     command: "impacket-reg {{domain|.}}/{{username}}@{{target_ip}} save -keyName {{key_path}} -o {{output_filename|key_backup.reg}}"
 
   # === MODIFICATION AND PERSISTENCE ===
-  - title: impacket-reg - add a new registry entry
+  - title: impacket-reg - 添加新的注册表条目
     desc: |
-      Remotely adds a new subkey or value to the target machine's registry. 
-      This is frequently used for establishing persistence, such as adding a command to the 'Run' or 'RunOnce' keys. 
-      You must specify the value name (-v), the value type (-vt), and the data (-vd).
-      Modifying the registry carries a risk of system instability if incorrect values are added to system-critical keys.
+      远程向目标机器的注册表添加新的子键或值。
+      这经常用于建立持久化，例如向“Run”或“RunOnce”键添加命令。
+      你必须指定值名称（-v）、值类型（-vt）和数据（-vd）。
+      如果向系统关键键添加了不正确的值，修改注册表存在导致系统不稳定的风险。
     command: "impacket-reg {{domain|.}}/{{username}}@{{target_ip}} add -keyName {{key_path}} -v {{value_name}} -vt {{type|REG_SZ}} -vd {{value_data}}"
 
-  - title: impacket-reg - delete a registry entry
+  - title: impacket-reg - 删除注册表条目
     desc: |
-      Removes a specified registry subkey or a specific value from the remote system. 
-      This is typically used during the cleanup phase of an engagement to remove persistence mechanisms. 
-      If only the -keyName is provided, the entire key is deleted; if -v is provided, only that value is removed.
-      Exercise extreme caution, as deleting critical system keys can lead to OS corruption or failure to boot.
+      从远程系统删除指定的注册表子键或特定值。
+      这通常在评估的清理阶段用于移除持久化机制。
+      如果只提供 -keyName，则删除整个键；如果提供 -v，则只删除该值。
+      务必极其谨慎，因为删除关键系统键可能导致操作系统损坏或无法启动。
     command: "impacket-reg {{domain|.}}/{{username}}@{{target_ip}} delete -keyName {{key_path}} -v {{value_name}}"
 
   # === ADVANCED CONNECTIVITY ===
-  - title: impacket-reg - connect to custom SMB port
+  - title: impacket-reg - 连接到自定义 SMB 端口
     desc: |
-      Forces the tool to connect to a non-standard SMB port. 
-      This is used when a target machine has SMB listening on a port other than the default 445 (e.g., through port forwarding). 
-      It can also be useful when bypassing certain network filtering rules that block standard ports.
-      Ensure the target service is actually an SMB-based registry service.
+      强制工具连接到非标准 SMB 端口。
+      当目标机器的 SMB 监听在默认 445 之外的端口时使用（例如通过端口转发）。
+      它在绕过某些阻止标准端口的网络过滤规则时也很有用。
+      确保目标服务确实是基于 SMB 的注册表服务。
     command: "impacket-reg {{domain|.}}/{{username}}@{{target_ip}} -port {{port|445}} query -keyName {{key_path}}"
 
-  - title: impacket-reg - debug connection issues
+  - title: impacket-reg - 调试连接问题
     desc: |
-      Enables verbose debug output for the connection and registry operations. 
-      Use this when you encounter authentication errors, RPC communication failures, or "Access Denied" messages. 
-      The debug logs provide detailed information about the SMB/RPC handshake and the specific error codes returned by Windows.
-      It is very helpful for troubleshooting complex Kerberos or permission-related issues.
+      为连接和注册表操作启用详细调试输出。
+      当你遇到身份验证错误、RPC 通信失败或“Access Denied”消息时使用。
+      调试日志提供有关 SMB/RPC 握手以及 Windows 返回的具体错误代码的详细信息。
+      它对于排查复杂的 Kerberos 或权限相关问题非常有帮助。
     command: "impacket-reg -debug {{domain|.}}/{{username}}@{{target_ip}} query -keyName {{key_path}}"

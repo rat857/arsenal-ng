@@ -3,39 +3,60 @@ tags: [pentest, forensic, windows, registry, impacket, security, enumeration]
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: impacket-registry-read - enumerate subkeys
+  - title: impacket-registry-read - 枚举子键
     desc: |
-      Lists all subkeys for a specific registry path within an offline hive file. This is useful for mapping out the structure of a registry hive that has been extracted from a target system, such as via Volume Shadow Copies or manual dumping. It helps identifying installed software, system configuration nodes, or persistence locations. You must provide a valid path to a hive file like SYSTEM, SOFTWARE, or SAM.
+      列出离线 hive 文件中特定注册表路径下的所有子键。
+      这对于梳理从目标系统（例如通过卷影副本或手动转储）提取的注册表 hive 结构非常有用。
+      它有助于识别已安装的软件、系统配置节点或持久化位置。
+      你必须提供有效的 hive 文件路径，如 SYSTEM、SOFTWARE 或 SAM。
     command: "impacket-registry-read {{hive_path}} enum_key -keyName {{key_path}}"
 
-  - title: impacket-registry-read - enumerate values
+  - title: impacket-registry-read - 枚举值
     desc: |
-      Retrieves all value names and their corresponding types within a specific registry key. This action is essential for identifying what data is actually stored inside a key once you have navigated to the correct path. It is commonly used during forensic analysis to find system settings, user activity logs, or network configurations. Ensure the key path is provided in the format expected by the hive (e.g., ControlSet001\Services).
+      检索特定注册表键中所有值的名称及其对应类型。
+      当你导航到正确路径后，此操作对于识别键内实际存储的数据至关重要。
+      在取证分析中，它常用于查找系统设置、用户活动日志或网络配置。
+      请确保键路径按 hive 所期望的格式提供（例如 ControlSet001\Services）。
     command: "impacket-registry-read {{hive_path}} enum_values -keyName {{key_path}}"
 
   # === DATA EXTRACTION ===
-  - title: impacket-registry-read - get specific value data
+  - title: impacket-registry-read - 获取特定值的数据
     desc: |
-      Extracts and displays the actual data content stored in a specific registry value. This command is critical for reading sensitive information like the BootKey, service parameters, or encoded configuration strings. It requires both the specific key path and the exact value name you wish to query. This is typically the final step after identifying an interesting value via the enumeration commands.
+      提取并显示存储在特定注册表值中的实际数据内容。
+      此命令对于读取敏感信息（如 BootKey、服务参数或编码的配置字符串）至关重要。
+      它需要特定的键路径以及你要查询的确切值名称。
+      这通常是在通过枚举命令识别到感兴趣的值之后的最后一步。
     command: "impacket-registry-read {{hive_path}} get_value -keyName {{key_path}} -valueName {{value_name}}"
 
-  - title: impacket-registry-read - get class information
+  - title: impacket-registry-read - 获取类信息
     desc: |
-      Retrieves the class information associated with a specified registry key. While used less frequently in standard penetration tests, it provides metadata about the registry object that can be useful for deep forensic investigations. It can help distinguish between different types of registry nodes or objects defined by the Windows Object Manager. This provides a lower-level view of how the registry hive is structured internally.
+      检索与指定注册表键关联的类信息。
+      虽然在标准渗透测试中使用较少，但它提供有关注册表对象的元数据，对深度取证调查很有用。
+      它有助于区分 Windows 对象管理器定义的不同类型的注册表节点或对象。
+      这提供了注册表 hive 内部结构的底层视图。
     command: "impacket-registry-read {{hive_path}} get_class -keyName {{key_path}}"
 
   # === ADVANCED OPERATIONS ===
-  - title: impacket-registry-read - recursive walk
+  - title: impacket-registry-read - 递归遍历
     desc: |
-      Recursively traverses the entire registry hive starting from the specified node or the root. This is the most comprehensive way to dump the structure of an entire hive for offline analysis and searching. Be aware that this can produce a very large volume of output, especially for large hives like SOFTWARE. It is highly recommended to redirect the output to a text file for later processing.
+      从指定节点或根开始递归遍历整个注册表 hive。
+      这是转储整个 hive 结构以进行离线分析和搜索的最全面方式。
+      请注意，这会产生非常大量的输出，尤其是对于 SOFTWARE 这样的大型 hive。
+      强烈建议将输出重定向到文本文件以便后续处理。
     command: "impacket-registry-read {{hive_path}} walk -keyName {{start_key|/}}"
 
-  - title: impacket-registry-read - debug mode with timestamps
+  - title: impacket-registry-read - 带时间戳的调试模式
     desc: |
-      Runs the registry parsing operation with verbose debugging output and timestamps for every log entry. This is indispensable for troubleshooting issues where the tool might fail to parse a corrupted or locked hive file. Timestamps help security researchers correlate tool activities with other system logs during a forensic timeline reconstruction. Use this if the standard commands are not returning the expected data or throwing errors.
+      以详细调试输出运行注册表解析操作，并为每条日志添加时间戳。
+      当工具可能无法解析损坏或锁定的 hive 文件时，这对于排查问题不可或缺。
+      时间戳有助于安全研究人员在取证时间线重建过程中将工具活动与其他系统日志相关联。
+      当标准命令未返回预期数据或抛出错误时使用此选项。
     command: "impacket-registry-read {{hive_path}} -debug -ts walk"
 
-  - title: impacket-registry-read - read root of a hive
+  - title: impacket-registry-read - 读取 hive 的根
     desc: |
-      Enumerates the top-level keys available at the root of a provided hive file. This is usually the first command run when you are unsure of the internal structure of a found hive. It allows you to see the primary branches before diving deeper into subkeys. It is a safe way to verify that the hive file is valid and readable by the tool.
+      枚举所提供 hive 文件根部的顶级键。
+      当你对发现的 hive 内部结构不确定时，这通常是运行的第一个命令。
+      它让你在深入子键之前查看主要分支。
+      这是验证 hive 文件有效且可被工具读取的安全方式。
     command: "impacket-registry-read {{hive_path}} enum_key -keyName {{root_path|/}}"

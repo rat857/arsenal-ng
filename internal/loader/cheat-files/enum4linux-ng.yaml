@@ -4,110 +4,96 @@ tags: [network, windows, smb, enumeration, pentest, active-directory, security]
 # === BASIC ENUMERATION ===
 
 actions:
-  - title: enum4linux-ng - full enumeration
+  - title: enum4linux-ng - 完整枚举
     desc: |
-      Perform all simple enumeration checks against the target host. 
-      This is the most common starting point which combines user, group, share, password policy, OS, and NetBIOS lookups.
-      It is equivalent to running multiple individual flags like -U, -G, -S, and -P simultaneously.
+      对目标主机执行所有简单的枚举检查。
+      这是最常见的起点，组合了用户、组、共享、密码策略、操作系统和 NetBIOS 查询，相当于同时运行 -U、-G、-S 和 -P 等多个单独标志。
     command: "enum4linux-ng -A {{target}}"
 
-  - title: enum4linux-ng - short enumeration
+  - title: enum4linux-ng - 简短枚举
     desc: |
-      Perform a quick enumeration scan without NetBIOS name lookups. 
-      This is useful when you want to speed up the reconnaissance process or when NetBIOS is restricted.
-      It still covers users, groups, shares, and OS information but skips the noisier nmblookup phase.
+      执行不包含 NetBIOS 名称查询的快速枚举扫描。
+      当你想加快侦察进程或 NetBIOS 受限时非常有用，仍覆盖用户、组、共享和操作系统信息，但跳过噪声较大的 nmblookup 阶段。
     command: "enum4linux-ng -As {{target}}"
 
 # === USER AND GROUP ENUMERATION ===
 
-  - title: enum4linux-ng - enumerate users via RPC
+  - title: enum4linux-ng - 通过 RPC 枚举用户
     desc: |
-      Retrieve a list of users from the target system using RPC calls. 
-      This command is highly effective if the target allows anonymous null sessions or if valid credentials are provided.
-      It attempts to query the SAM (Security Accounts Manager) database directly via the network.
+      使用 RPC 调用从目标系统检索用户列表。
+      如果目标允许匿名空会话或提供了有效凭据，此命令非常有效，它尝试直接通过网络查询 SAM（安全账户管理器）数据库。
     command: "enum4linux-ng -U {{target}}"
 
-  - title: enum4linux-ng - enumerate groups with members
+  - title: enum4linux-ng - 枚举组及其成员
     desc: |
-      Extract all domain or local groups along with their respective members.
-      Using the -Gm flag provides a more detailed view than the standard group listing.
-      This is essential for identifying high-privilege accounts like Domain Admins or Enterprise Admins.
+      提取所有域组或本地组及其各自的成员。
+      使用 -Gm 标志可提供比标准组列表更详细的视图，对识别 Domain Admins 或 Enterprise Admins 等高权限账户至关重要。
     command: "enum4linux-ng -Gm {{target}}"
 
-  - title: enum4linux-ng - detailed user/group info
+  - title: enum4linux-ng - 详细的用户/组信息
     desc: |
-      Get comprehensive details for all discovered users and groups.
-      This flag adds verbosity to the user and group enumeration results, providing extra attributes if available.
-      Use this when you need more than just a list of names, such as account descriptions or last logon times.
+      获取所有已发现用户和组的全面详细信息。
+      此标志为用户和组枚举结果增加详细程度，在可用时提供账户描述或最后登录时间等额外属性。
     command: "enum4linux-ng -d -U -G {{target}}"
 
-  - title: enum4linux-ng - RID cycling enumeration
+  - title: enum4linux-ng - RID 循环枚举
     desc: |
-      Enumerate users by cycling through Relative Identifiers (RIDs).
-      This technique is powerful because it can discover users even if the standard "enum users" RPC call is restricted.
-      By default, it checks common RID ranges (500-550, 1000-1050), but you can specify custom ranges if needed.
+      通过循环遍历相对标识符（RID）来枚举用户。
+      此技术很强大，因为即使标准的枚举用户 RPC 调用受限，它也能发现用户，默认检查常见 RID 范围（500-550、1000-1050）。
     command: "enum4linux-ng -R {{target}}"
 
 # === AUTHENTICATION METHODS ===
 
-  - title: enum4linux-ng - authenticated scan
+  - title: enum4linux-ng - 认证扫描
     desc: |
-      Perform enumeration using specific user credentials.
-      Authenticated scans provide much more data than anonymous sessions, often revealing hidden shares and full user attributes.
-      Always ensure you have permission to use the credentials as failed attempts might trigger account lockout policies.
+      使用特定用户凭据执行枚举。
+      认证扫描比匿名会话提供更多数据，通常能揭示隐藏共享和完整的用户属性，请始终确保有权使用这些凭据，失败的尝试可能触发账户锁定策略。
     command: "enum4linux-ng -A -u {{user|administrator}} -p {{password}} {{target}}"
 
-  - title: enum4linux-ng - pass-the-hash authentication
+  - title: enum4linux-ng - 传递哈希认证
     desc: |
-      Authenticate to the target using an NTLM hash instead of a plaintext password.
-      This is a classic post-exploitation technique used when you have extracted hashes but cannot crack them.
-      The hash should be provided in the format LM:NT or just the NT hash.
+      使用 NTLM 哈希而非明文密码对目标进行认证。
+      这是你已提取哈希但无法破解它们时的经典后渗透技术，哈希应以 LM:NT 格式或仅 NT 哈希提供。
     command: "enum4linux-ng -A -u {{user|administrator}} -H {{nthash}} {{target}}"
 
-  - title: enum4linux-ng - kerberos authentication
+  - title: enum4linux-ng - Kerberos 认证
     desc: |
-      Use a Kerberos ticket file for authentication against a Windows target.
-      This is specifically useful in Active Directory environments where you have obtained a valid .kirbi or .ccache ticket.
-      Note that DNS must be correctly configured so the tool can resolve the domain name and reach the KDC.
+      使用 Kerberos 票据文件对 Windows 目标进行认证。
+      在 Active Directory 环境中你已获得有效的 .kirbi 或 .ccache 票据时特别有用，注意 DNS 必须正确配置，以便工具解析域名并到达 KDC。
     command: "enum4linux-ng -A -K {{ticket_file}} {{target}}"
 
 # === SHARES AND SERVICES ===
 
-  - title: enum4linux-ng - list shares and services
+  - title: enum4linux-ng - 列出共享与服务
     desc: |
-      Specifically target the discovery of SMB shares and running services on the remote host.
-      Identifying shares is critical for finding sensitive files or misconfigured permissions (e.g., anonymous write access).
-      The service enumeration helps identify what roles the server is performing within the network.
+      专门针对远程主机上 SMB 共享和运行服务的发现。
+      识别共享对查找敏感文件或错误配置的权限（如匿名写入访问）至关重要，服务枚举有助于识别服务器在网络中承担的角色。
     command: "enum4linux-ng -S -C {{target}}"
 
-  - title: enum4linux-ng - share brute forcing
+  - title: enum4linux-ng - 共享暴力破解
     desc: |
-      Attempt to discover hidden or non-standard shares using a wordlist.
-      This is useful if the target has "RestrictAnonymous" enabled, preventing a standard share listing.
-      You must provide a path to a text file containing potential share names.
+      使用字典尝试发现隐藏或非标准的共享。
+      当目标启用了 RestrictAnonymous、阻止标准共享列表时非常有用，你必须提供包含潜在共享名称的文本文件路径。
     command: "enum4linux-ng -s {{shares_file|/usr/share/wordlists/dirb/common.txt}} {{target}}"
 
 # === ADVANCED INFRASTRUCTURE ENUMERATION ===
 
-  - title: enum4linux-ng - domain controller enumeration (LDAP)
+  - title: enum4linux-ng - 域控制器枚举（LDAP）
     desc: |
-      Retrieve additional domain information via LDAP or LDAPS protocols.
-      This flag is primarily designed for use against Domain Controllers to extract AD-specific data.
-      It provides a deeper look into the directory structure compared to standard SMB-only tools.
+      通过 LDAP 或 LDAPS 协议检索额外的域信息。
+      此标志主要设计用于域控制器，以提取特定于 AD 的数据，与仅支持 SMB 的标准工具相比，可更深入地查看目录结构。
     command: "enum4linux-ng -L {{target}}"
 
-  - title: enum4linux-ng - password policy enumeration
+  - title: enum4linux-ng - 密码策略枚举
     desc: |
-      Extract the password policy from the target machine.
-      This reveals critical information like minimum password length, complexity requirements, and lockout thresholds.
-      Knowing the lockout threshold is vital before attempting any password spraying or brute-force attacks.
+      从目标机器提取密码策略。
+      可揭示最小密码长度、复杂度要求和锁定阈值等关键信息，在尝试任何密码喷洒或暴力破解攻击之前，了解锁定阈值至关重要。
     command: "enum4linux-ng -P {{target}}"
 
 # === OUTPUT AND LOGGING ===
 
-  - title: enum4linux-ng - export results to files
+  - title: enum4linux-ng - 导出结果到文件
     desc: |
-      Save the enumeration results into both JSON and YAML formats for further analysis.
-      This is one of the main advantages of the 'ng' version over the original enum4linux.pl script.
-      These structured files can be easily parsed by other security tools or used for automated reporting.
+      将枚举结果同时保存为 JSON 和 YAML 格式以供进一步分析。
+      这是 ng 版本相对于原始 enum4linux.pl 脚本的主要优势之一，这些结构化文件可被其他安全工具轻松解析或用于自动化报告。
     command: "enum4linux-ng -A -oA {{output_filename|enum_results}} {{target}}"

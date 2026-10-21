@@ -3,77 +3,77 @@ tags: [wifi, wireless, security, pentest, wps, cracking, exploitation]
 
 actions:
   # === BASIC USAGE ===
-  - title: reaver - basic wps pin attack
+  - title: reaver - 基础 WPS PIN 攻击
     desc: |
-      Performs a brute-force attack on the target Access Point's WPS PIN to recover the WPA/WPA2 passphrase. 
-      This is the most common usage of the tool when a target AP has WPS enabled and is not currently locked. 
-      The verbose flag (-vv) is highly recommended to see the progress of the pin attempts and any error messages.
-      Be aware that continuous attempts may trigger a WPS lockout on modern routers.
+      对目标接入点的 WPS PIN 执行暴力破解攻击，以恢复 WPA/WPA2 口令。
+      当目标 AP 已启用 WPS 且当前未锁定时，这是该工具最常见的用法。
+      强烈建议使用详细标志（-vv）查看 PIN 尝试进度和任何错误消息。
+      请注意，持续尝试可能触发现代路由器上的 WPS 锁定。
     command: "reaver -i {{interface|wlan0mon}} -b {{bssid}} -vv"
 
-  - title: reaver - pixie dust attack
+  - title: reaver - Pixie Dust 攻击
     desc: |
-      Executes the Pixie Dust attack which exploits cryptographic weaknesses in the WPS implementation of certain chipsets. 
-      This method is significantly faster than a standard brute-force attack as it can often recover the PIN within seconds by analyzing the M3 message. 
-      It is particularly effective against Ralink, Broadcom, and Realtek chipsets. 
-      Using the -K or -Z flag initiates this specific offline cracking logic.
+      执行 Pixie Dust 攻击，利用某些芯片组 WPS 实现中的密码学弱点。
+      此方法比标准暴力破解攻击快得多，通常可以通过分析 M3 消息在几秒内恢复 PIN。
+      它对 Ralink、Broadcom 和 Realtek 芯片组特别有效。
+      使用 -K 或 -Z 标志启动此特定的离线破解逻辑。
     command: "reaver -i {{interface|wlan0mon}} -b {{bssid}} -K"
 
   # === TARGETING & ENUMERATION ===
-  - title: reaver - attack on fixed channel
+  - title: reaver - 在固定信道上攻击
     desc: |
-      Targets a specific Access Point on a predefined wireless channel while disabling automatic channel hopping. 
-      Using a fixed channel ensures that the wireless interface stays synchronized with the target AP throughout the attack. 
-      This is recommended once the target BSSID and its operating channel have been identified via tools like airodump-ng. 
-      The -f flag forces the tool to stay on the specified frequency.
+      在预定义无线信道上针对特定接入点，同时禁用自动信道跳转。
+      使用固定信道可确保无线接口在整个攻击过程中与目标 AP 保持同步。
+      一旦通过 airodump-ng 等工具识别出目标 BSSID 及其工作信道后，建议使用此方式。
+      -f 标志强制工具停留在指定频率上。
     command: "reaver -i {{interface|wlan0mon}} -b {{bssid}} -c {{channel|6}} -f"
 
-  - title: reaver - attack 5ghz networks
+  - title: reaver - 攻击 5GHz 网络
     desc: |
-      Enables support for 802.11 5GHz frequency bands during the WPS attack process. 
-      Many modern dual-band routers support WPS on both 2.4GHz and 5GHz, and one band might be more vulnerable than the other. 
-      You must ensure that your wireless adapter supports 5GHz monitoring mode for this command to function. 
-      This is often combined with specific channel selection for better reliability.
+      在 WPS 攻击过程中启用对 802.11 5GHz 频段的支持。
+      许多现代双频路由器在 2.4GHz 和 5GHz 上都支持 WPS，其中一个频段可能比另一个更脆弱。
+      你必须确保无线网卡支持 5GHz 监听模式才能使此命令正常工作。
+      通常结合特定信道选择以获得更好的可靠性。
     command: "reaver -i {{interface|wlan0mon}} -b {{bssid}} -5"
 
   # === ADVANCED CONFIGURATION & LOCKOUT EVASION ===
-  - title: reaver - avoid wps lockouts with delays
+  - title: reaver - 通过延时避免 WPS 锁定
     desc: |
-      Configures custom delays between PIN attempts and lockout recovery periods to bypass AP security triggers. 
-      The -d flag sets a delay between each individual attempt, while -l defines how long to wait if the AP reports a locked state. 
-      Slower attacks are less likely to be detected or blocked by the router's firmware. 
-      This is essential for attacking newer routers that implement aggressive rate-limiting on WPS requests.
+      配置 PIN 尝试之间的自定义延时和锁定恢复期，以绕过 AP 安全触发。
+      -d 标志设置每次尝试之间的延时，而 -l 定义 AP 报告锁定状态时要等待多久。
+      较慢的攻击不太可能被路由器固件检测或阻止。
+      这对于攻击对 WPS 请求实施激进速率限制的较新路由器至关重要。
     command: "reaver -i {{interface|wlan0mon}} -b {{bssid}} -d {{delay|30}} -l {{lock_delay|60}} -vv"
 
-  - title: reaver - small dh keys for speed
+  - title: reaver - 使用小 DH 密钥提高速度
     desc: |
-      Forces the use of small Diffie-Hellman keys to speed up the WPS handshake process. 
-      This reduces the computational overhead on both the attacking machine and the target Access Point. 
-      While it can improve the speed of the attack, some Access Points may not support smaller keys and might fail to associate. 
-      Use this option if you are experiencing slow response times during the authentication phase.
+      强制使用小的 Diffie-Hellman 密钥以加速 WPS 握手过程。
+      这减少了攻击机和目标接入点双方的计算开销。
+      虽然它可以提高攻击速度，但某些接入点可能不支持较小的密钥并可能导致关联失败。
+      如果你在认证阶段遇到响应缓慢，请使用此选项。
     command: "reaver -i {{interface|wlan0mon}} -b {{bssid}} -S -vv"
 
-  - title: reaver - mimic windows 7 registrar
+  - title: reaver - 模拟 Windows 7 注册器
     desc: |
-      Configures Reaver to mimic the behavior of a Windows 7 machine when acting as a WPS registrar. 
-      Some Access Points are configured to only respond or permit WPS operations from recognized client types or vendors. 
-      By using the -w flag, the attack may bypass certain basic vendor-specific filters or behavioral checks. 
-      This can be a useful fallback if standard association attempts are being rejected by the target.
+      配置 Reaver 在充当 WPS 注册器时模拟 Windows 7 机器的行为。
+      某些接入点被配置为只响应或允许来自已识别客户端类型或厂商的 WPS 操作。
+      通过使用 -w 标志，攻击可能绕过某些基础的厂商特定过滤器或行为检查。
+      如果标准关联尝试被目标拒绝，这可以作为有用的备选方案。
     command: "reaver -i {{interface|wlan0mon}} -b {{bssid}} -w"
 
   # === SESSION MANAGEMENT ===
-  - title: reaver - resume session
+  - title: reaver - 恢复会话
     desc: |
-      Restores a previously interrupted attack session from a saved session file. 
-      Reaver automatically saves progress, and using the -s flag allows you to pick up exactly where the brute-force last stopped. 
-      This is critical for long-running attacks that may span several days or involve thousands of PIN combinations. 
-      Ensure the session file path is correct to avoid starting the attack from the beginning.
+      从保存的会话文件恢复之前中断的攻击会话。
+      Reaver 会自动保存进度，使用 -s 标志可以让你从暴力破解上次停止的位置继续。
+      这对于可能持续数天或涉及数千个 PIN 组合的长时间攻击至关重要。
+      确保会话文件路径正确，以避免从头开始攻击。
     command: "reaver -i {{interface|wlan0mon}} -b {{bssid}} -s {{session_file|session.cap}}"
 
-  - title: reaver - test specific pin
+  - title: reaver - 测试特定 PIN
     desc: |
-      Attempts to authenticate against the target Access Point using a single, manually specified WPS PIN. 
-      This is useful when you have a strong candidate PIN from a default PIN database or calculated via a MAC-to-PIN algorithm. 
-      If the PIN is correct, Reaver will immediately return the WPA/WPA2 PSK for the network. 
-      It is a much faster alternative to brute-forcing when the PIN is already suspected.
+      尝试使用单个手动指定的 WPS PIN 对目标接入点进行认证。
+      当你从默认 PIN 数据库或通过 MAC 到 PIN 算法计算出强候选 PIN 时很有用。
+      如果 PIN 正确，Reaver 将立即返回该网络的 WPA/WPA2 PSK。
+      当 PIN 已被怀疑时，这是比暴力破解快得多的替代方案。
     command: "reaver -i {{interface|wlan0mon}} -b {{bssid}} -p {{wps_pin}} -vv"

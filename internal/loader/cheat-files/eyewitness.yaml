@@ -3,94 +3,72 @@ tags: [web, reconnaissance, enumeration, scanner, pentest, osint, security, auto
 
 actions:
   # === BASIC USAGE ===
-  - title: eyewitness - scan urls from file
+  - title: eyewitness - 从文件扫描 URL
     desc: |
-      Take screenshots of multiple URLs provided in a line-separated text file. 
-      This is the most common way to use the tool during the initial discovery phase of a penetration test to visualize the attack surface. 
-      The headless flag is used to run the process in the background without opening a visible browser window.
-      Results are saved in the specified directory, creating an easy-to-navigate HTML report.
+      对逐行分隔的文本文件中提供的多个 URL 进行截图。
+      这是渗透测试初始发现阶段可视化攻击面时使用该工具的最常见方式，headless 标志用于在后台运行而不打开可见的浏览器窗口。
     command: "eyewitness -f {{url_file}} -d {{output_dir|screens}} --headless"
 
-  - title: eyewitness - scan single url
+  - title: eyewitness - 扫描单个 URL
     desc: |
-      Capture a screenshot, server headers, and basic info for a single specific target URL. 
-      Use this when you want to quickly document the state of a specific web application without processing a full list. 
-      It provides a rapid way to verify if a site is active and what technology stack it might be running.
-      This is particularly useful for verifying findings discovered during manual testing.
+      捕获单个特定目标 URL 的截图、服务器响应头和基本信息。
+      当你只想快速记录特定 Web 应用的状态而不处理完整列表时使用，可快速验证站点是否活跃及其可能运行的技术栈。
     command: "eyewitness --single {{url}} -d {{output_dir|single_scan}}"
 
   # === INTEGRATION & INPUTS ===
-  - title: eyewitness - scan from nmap xml
+  - title: eyewitness - 从 Nmap XML 扫描
     desc: |
-      Parse an Nmap XML output file to identify and screenshot web services discovered during a port scan. 
-      This bridge between network scanning and web reconnaissance saves time by automatically targeting discovered HTTP/HTTPS services. 
-      It is highly effective for large internal network ranges where many web interfaces might be hidden on non-standard ports.
-      Ensure the Nmap scan was run with the -oX flag to generate the required XML format.
+      解析 Nmap XML 输出文件以识别并截取端口扫描期间发现的 Web 服务。
+      网络扫描与 Web 侦察之间的这种衔接可自动瞄准发现的 HTTP/HTTPS 服务，从而节省时间，对可能存在隐藏 Web 界面的大型内部网络范围非常有效。
     command: "eyewitness -x {{nmap_xml_file}} -d {{output_dir|nmap_results}} --web"
 
-  - title: eyewitness - scan from nessus file
+  - title: eyewitness - 从 Nessus 文件扫描
     desc: |
-      Import and process a .nessus scan file to capture screenshots of identified web applications.
-      This allows security professionals to visually triage vulnerabilities reported by Nessus and prioritize manual verification.
-      It helps in distinguishing between false positives and actual exploitable web interfaces.
-      The tool will extract host and port information directly from the Nessus XML structure.
+      导入并处理 .nessus 扫描文件，以对识别出的 Web 应用进行截图。
+      这让安全专业人员可以直观地对 Nessus 报告的漏洞进行分类，并优先进行手动验证，工具会直接从 Nessus XML 结构中提取主机和端口信息。
     command: "eyewitness -x {{nessus_file}} -d {{output_dir|nessus_results}} --web"
 
   # === PERFORMANCE & TIMING ===
-  - title: eyewitness - high performance scan
+  - title: eyewitness - 高性能扫描
     desc: |
-      Increase the number of concurrent threads and adjust the timeout for faster processing of large URL lists. 
-      Increasing threads can significantly speed up the scan but may cause stability issues on the local machine or the target network.
-      Adjusting the timeout is useful when dealing with slow-responding applications or high-latency network connections.
-      Be careful with high thread counts as they might trigger rate limiting or DoS protections on the target.
+      增加并发线程数并调整超时，以更快处理大型 URL 列表。
+      增加线程可显著加快扫描，但可能导致本地机器或目标网络不稳定，调整超时在处理响应缓慢的应用或高延迟网络连接时很有用。
     command: "eyewitness -f {{url_file}} --threads {{thread_count|10}} --timeout {{timeout_seconds|15}} -d {{output_dir|fast_scan}}"
 
-  - title: eyewitness - stealthy scan with jitter
+  - title: eyewitness - 带抖动的隐蔽扫描
     desc: |
-      Add random delays (jitter) between requests to mimic human behavior and avoid detection. 
-      This is essential during red team engagements where avoiding automated detection systems and WAF alerts is a priority. 
-      The jitter flag adds a random number of seconds to the delay, making the traffic pattern less predictable.
-      Note that using jitter and delays will significantly increase the total time required to complete the scan.
+      在请求之间添加随机延迟（抖动），以模仿人类行为并避免检测。
+      在红队演练中，避免自动化检测系统和 WAF 告警是优先事项时必不可少，抖动标志会为延迟增加随机秒数，使流量模式更不可预测。
     command: "eyewitness -f {{url_file}} --jitter {{jitter_seconds|5}} --delay {{delay_seconds|2}} -d {{output_dir|stealth_scan}}"
 
   # === ADVANCED CONFIGURATION ===
-  - title: eyewitness - scan through proxy
+  - title: eyewitness - 通过代理扫描
     desc: |
-      Route all web requests through a specified proxy server such as Burp Suite, Zap, or a SOCKS5 proxy. 
-      This is necessary when targets are only accessible through a specific gateway or when you want to capture the traffic for further analysis. 
-      Ensure the proxy is active and reachable; otherwise, all requests within EyeWitness will fail.
-      You can specify the type as 'socks5' or 'http' depending on your proxy configuration.
+      将所有 Web 请求经由 Burp Suite、Zap 或 SOCKS5 代理等指定代理服务器转发。
+      当目标只能通过特定网关访问，或你想捕获流量以供进一步分析时必不可少，可根据代理配置将类型指定为 socks5 或 http。
     command: "eyewitness -f {{url_file}} --proxy-ip {{proxy_host|127.0.0.1}} --proxy-port {{proxy_port|8080}} --proxy-type {{proxy_type|socks5}} -d {{output_dir|proxy_scan}}"
 
-  - title: eyewitness - custom user-agent and cookies
+  - title: eyewitness - 自定义 User-Agent 和 Cookie
     desc: |
-      Use a custom User-Agent string and session cookies for the requests. 
-      Providing a custom User-Agent can help bypass filters that block default automation headers or mimic specific browser versions. 
-      Adding cookies allows EyeWitness to take screenshots of pages that require authentication or specific session states.
-      Format cookies as a comma-separated list of key=value pairs.
+      为请求使用自定义 User-Agent 字符串和会话 Cookie。
+      提供自定义 User-Agent 可帮助绕过屏蔽默认自动化请求头或模拟特定浏览器版本的过滤，添加 Cookie 让 EyeWitness 能对需要认证或特定会话状态的页面进行截图。
     command: "eyewitness -f {{url_file}} --user-agent \"{{user_agent|Mozilla/5.0}}\" --cookies \"{{cookie_string|sessionid=12345}}\" -d {{output_dir|authenticated_scan}}"
 
-  - title: eyewitness - scan custom web ports
+  - title: eyewitness - 扫描自定义 Web 端口
     desc: |
-      Instruct EyeWitness to treat specific non-standard ports as HTTP or HTTPS services. 
-      By default, the tool only looks for common ports like 80, 443, 8080, etc. 
-      This option ensures you don't miss administrative interfaces or dev environments running on unusual ports like 8443 or 9000.
-      It is particularly useful for identifying hidden management consoles on IoT devices or cloud instances.
+      指示 EyeWitness 将特定的非标准端口视为 HTTP 或 HTTPS 服务。
+      默认情况下工具只查找 80、443、8080 等常见端口，此选项可确保你不会错过运行在 8443 或 9000 等不寻常端口上的管理界面或开发环境。
     command: "eyewitness -f {{url_file}} --add-http-ports {{http_ports|8001,8002}} --add-https-ports {{https_ports|9443}} -d {{output_dir|custom_ports}}"
 
   # === MAINTENANCE & RESUME ===
-  - title: eyewitness - resume interrupted scan
+  - title: eyewitness - 恢复中断的扫描
     desc: |
-      Resume a previously interrupted or crashed scan using the local database file generated during the initial run. 
-      EyeWitness automatically creates a database (usually ew.db) to track progress, preventing the need to restart large scans from scratch. 
-      This feature is a lifesaver when dealing with thousands of targets where network stability or system resources might be an issue.
-      Simply point the tool to the path of the existing .db file to pick up where it left off.
+      使用初始运行期间生成的本地数据库文件恢复之前中断或崩溃的扫描。
+      EyeWitness 会自动创建数据库（通常为 ew.db）来跟踪进度，从而避免从零重新启动大型扫描，只需将工具指向现有 .db 文件的路径即可从中断处继续。
     command: "eyewitness --resume {{db_file|ew.db}}"
 
-  - title: eyewitness - auto-prepend protocol
+  - title: eyewitness - 自动添加协议前缀
     desc: |
-      Automatically add http:// and https:// prefixes to a list of raw domain names or IP addresses. 
-      This eliminates the need to manually format target lists that are exported from other tools without a protocol specified. 
-      It ensures that EyeWitness attempts to connect to both secure and insecure versions of the target to find the active web service.
-      This is a great time-saver when working with raw OSINT data or domain enumeration results.
+      自动为原始域名或 IP 地址列表添加 http:// 和 https:// 前缀。
+      无需手动格式化从其他工具导出且未指定协议的目标列表，确保 EyeWitness 尝试连接目标的安全和不安全两种版本以找到活跃的 Web 服务。
     command: "eyewitness -f {{domain_file}} --prepend-https -d {{output_dir|prepended_scan}}"

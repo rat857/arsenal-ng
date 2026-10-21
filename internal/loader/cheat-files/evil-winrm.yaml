@@ -3,75 +3,65 @@ tags: [winrm, windows, pentest, exploitation, remote-access, powershell]
 
 actions:
   # === AUTHENTICATION ===
-  - title: evil-winrm - basic password authentication
+  - title: evil-winrm - 基本密码认证
     desc: |
-      Establishes a basic WinRM session using a plaintext password. 
-      This is the most common method used when you have valid user credentials for a Windows target. 
-      By default, it connects to port 5985; ensure the WinRM service is enabled on the remote host.
+      使用明文密码建立基本的 WinRM 会话。
+      当你拥有 Windows 目标的有效用户凭据时，这是最常用的方法，默认连接 5985 端口，需确保远程主机已启用 WinRM 服务。
     command: "evil-winrm -i {{ip}} -u {{user}} -p {{password}}"
 
-  - title: evil-winrm - pass-the-hash authentication
+  - title: evil-winrm - 传递哈希认证
     desc: |
-      Connects to the target using an NTLM hash instead of a plaintext password. 
-      This technique is vital in post-exploitation scenarios where you have dumped hashes from SAM or NTDS.dit but cannot crack them. 
-      Ensure you only provide the NT part of the hash if the tool expects a single hash string.
+      使用 NTLM 哈希而非明文密码连接到目标。
+      在你已从 SAM 或 NTDS.dit 中转储哈希但无法破解它们的后渗透场景中至关重要，如果工具期望单个哈希字符串，请确保只提供哈希的 NT 部分。
     command: "evil-winrm -i {{ip}} -u {{user}} -H {{nthash}}"
 
-  - title: evil-winrm - secure connection with SSL
+  - title: evil-winrm - 使用 SSL 的安全连接
     desc: |
-      Connects to the target using WinRM over SSL (WinRM-HTTPS). 
-      This is typically used for port 5986 and provides an encrypted channel for your shell activities. 
-      Use this when the target environment enforces encrypted management traffic to prevent credential sniffing.
+      使用基于 SSL 的 WinRM（WinRM-HTTPS）连接到目标。
+      通常用于 5986 端口，为你的 Shell 活动提供加密通道，当目标环境强制加密管理流量以防止凭据嗅探时使用。
     command: "evil-winrm -i {{ip}} -u {{user}} -p {{password}} -S"
 
-  - title: evil-winrm - custom port connection
+  - title: evil-winrm - 自定义端口连接
     desc: |
-      Connects to a WinRM service running on a non-standard port. 
-      While 5985 (HTTP) and 5986 (HTTPS) are defaults, administrators sometimes change these to obscure the service. 
-      Always perform a port scan first to identify the correct listener port before attempting to connect.
+      连接到运行在非标准端口上的 WinRM 服务。
+      虽然 5985（HTTP）和 5986（HTTPS）是默认端口，但管理员有时会更改它们以隐蔽服务，连接前应始终先执行端口扫描以识别正确的监听端口。
     command: "evil-winrm -i {{ip}} -u {{user}} -p {{password}} -P {{port|5985}}"
 
   # === ADVANCED LOADING ===
-  - title: evil-winrm - load local powershell scripts
+  - title: evil-winrm - 加载本地 PowerShell 脚本
     desc: |
-      Automatically loads a local directory of PowerShell scripts into the remote session memory. 
-      Once the session starts, you can invoke these scripts directly by name without uploading them to the disk. 
-      This is excellent for running tools like PowerUp or Invoke-Mimikatz while bypassing some basic disk-based detection.
+      自动将本地 PowerShell 脚本目录加载到远程会话内存中。
+      会话启动后，你可直接按名称调用这些脚本而无需将其上传到磁盘，对运行 PowerUp 或 Invoke-Mimikatz 等工具并绕过一些基于磁盘的检测非常出色。
     command: "evil-winrm -i {{ip}} -u {{user}} -p {{password}} -s {{scripts_path|/usr/share/powershell-scripts/}}"
 
-  - title: evil-winrm - load local c# executables
+  - title: evil-winrm - 加载本地 C# 可执行文件
     desc: |
-      Enables the ability to run C# binaries directly from your local machine into the remote memory. 
-      After connecting, you can use the 'Bypass-4Ready' or simply type the name of the executable to run it. 
-      This "In-Memory" execution helps in evading AV/EDR solutions that primarily monitor files written to the physical drive.
+      使你能够直接从本地机器将 C# 二进制文件运行到远程内存中。
+      连接后，可用 Bypass-4Ready 或直接输入可执行文件名称来运行，这种内存执行有助于规避主要监控写入物理磁盘文件的 AV/EDR 方案。
     command: "evil-winrm -i {{ip}} -u {{user}} -p {{password}} -e {{exes_path|/opt/csharp-bins/}}"
 
   # === KERBEROS & ENCRYPTION ===
-  - title: evil-winrm - kerberos authentication
+  - title: evil-winrm - Kerberos 认证
     desc: |
-      Uses Kerberos tickets for authentication instead of NTLM or passwords. 
-      You must have a valid ticket in your local Kerberos cache and the realm must be correctly configured in /etc/krb5.conf. 
-      This is highly effective in Active Directory environments for lateral movement and avoiding NTLM-based logging.
+      使用 Kerberos 票据而非 NTLM 或密码进行认证。
+      你必须在本地 Kerberos 缓存中拥有有效票据，且 realm 需在 /etc/krb5.conf 中正确配置，在 Active Directory 环境中对横向移动和避免基于 NTLM 的日志记录非常有效。
     command: "evil-winrm -i {{fqdn}} -r {{realm}} -u {{user}}"
 
-  - title: evil-winrm - public/private key authentication
+  - title: evil-winrm - 公钥/私钥认证
     desc: |
-      Authenticates using certificate-based authentication via public and private keys. 
-      This is a more secure method of authentication often found in hardened environments. 
-      You must provide the paths to both the public certificate and the private key to establish the handshake.
+      通过公钥和私钥使用基于证书的认证。
+      这是加固环境中常见的一种更安全的认证方法，你必须提供公钥证书和私钥的路径以建立握手。
     command: "evil-winrm -i {{ip}} -c {{pub_key_path}} -k {{priv_key_path}} -S"
 
   # === SESSION UTILITIES ===
-  - title: evil-winrm - session logging
+  - title: evil-winrm - 会话日志记录
     desc: |
-      Enables local logging of all inputs and outputs during the WinRM session. 
-      This is crucial for documentation, reporting, and keeping track of commands executed during a penetration test. 
-      Logs are saved to the current working directory, allowing for easy review of long-running enumeration tasks.
+      在 WinRM 会话期间启用对所有输入和输出的本地日志记录。
+      对文档记录、报告以及跟踪渗透测试期间执行的命令至关重要，日志保存到当前工作目录，便于回顾长时间运行的枚举任务。
     command: "evil-winrm -i {{ip}} -u {{user}} -p {{password}} -l"
 
-  - title: evil-winrm - custom user agent
+  - title: evil-winrm - 自定义 User-Agent
     desc: |
-      Modifies the HTTP User-Agent header used during the WinRM connection request. 
-      Changing the default 'Microsoft WinRM Client' string can help in bypassing basic WAFs or network filtering rules. 
-      It is a simple but effective technique for blending in with normal network traffic patterns.
+      修改 WinRM 连接请求中使用的 HTTP User-Agent 请求头。
+      更改默认的 Microsoft WinRM Client 字符串可帮助绕过简单的 WAF 或网络过滤规则，这是混入正常网络流量模式的简单而有效的技术。
     command: "evil-winrm -i {{ip}} -u {{user}} -p {{password}} -a {{user_agent|Test Corp WinRM Client}}"

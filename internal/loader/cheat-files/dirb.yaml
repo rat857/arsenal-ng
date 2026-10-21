@@ -3,110 +3,84 @@ tags: [web, scanner, pentest, enumeration, reconnaissance, security, brute-force
 
 actions:
   # === BASIC SCANNING ===
-  - title: dirb - default scan
+  - title: dirb - 默认扫描
     desc: |
-      Performs a standard recursive scan on the target URL using the default wordlist provided by DIRB.
-      This is the most common starting point for web directory enumeration to identify hidden paths.
-      The tool will automatically crawl into any directories it discovers during the process.
-      Note that this can generate significant traffic depending on the size of the target and depth.
+      使用 DIRB 提供的默认字典对目标 URL 执行标准的递归扫描。
+      这是 Web 目录枚举以识别隐藏路径的最常见起点，工具会自动爬取过程中发现的任何目录。
     command: "dirb {{url}}"
 
-  - title: dirb - scan with custom wordlist
+  - title: dirb - 使用自定义字典扫描
     desc: |
-      Uses a specific wordlist file provided by the user to perform the discovery process.
-      This is highly effective when targeting specific technologies or when using comprehensive lists like those in SecLists.
-      Ensure the path to the wordlist is accessible and correctly formatted on your local system.
-      Custom wordlists often yield better results than generic ones for specific CMS or application frameworks.
+      使用用户提供的特定字典文件执行发现过程。
+      在针对特定技术或使用 SecLists 等综合列表时非常有效，自定义字典对特定 CMS 或应用框架的效果通常优于通用字典。
     command: "dirb {{url}} {{wordlist|/usr/share/wordlists/dirb/common.txt}}"
 
-  - title: dirb - search with specific extensions
+  - title: dirb - 按特定扩展名搜索
     desc: |
-      Appends specific file extensions to every word in the dictionary during the scanning process.
-      This is critical for finding backend scripts like .php, configuration files like .conf, or backup files like .bak.
-      Multiple extensions should be provided as a comma-separated list without spaces.
-      This action significantly increases the number of requests sent to the server.
+      扫描过程中为字典中的每个单词追加特定的文件扩展名。
+      对查找 .php 等后端脚本、.conf 等配置文件或 .bak 等备份文件至关重要，多个扩展名应以逗号分隔且不含空格。
     command: "dirb {{url}} -X {{extensions|.php,.txt,.config}}"
 
   # === SCAN CONTROL & OPTIMIZATION ===
-  - title: dirb - disable recursive scanning
+  - title: dirb - 禁用递归扫描
     desc: |
-      Prevents the tool from automatically entering and scanning subdirectories it finds.
-      Use this when you only want to audit the root level of a web application to save time and resources.
-      It is particularly useful for a quick initial reconnaissance phase before performing deeper dives.
-      This option helps in keeping the scope of the scan strictly limited to the base URL provided.
+      阻止工具自动进入并扫描其发现的子目录。
+      当你只想审计 Web 应用的根层以节省时间和资源时使用，尤其适合在深入之前进行快速初步侦察。
     command: "dirb {{url}} -r"
 
-  - title: dirb - ignore specific HTTP response codes
+  - title: dirb - 忽略特定 HTTP 响应码
     desc: |
-      Configures the scanner to ignore responses that return a specific HTTP status code.
-      This is useful for filtering out false positives or uninteresting results like 403 Forbidden or 302 Redirects.
-      By ignoring certain codes, you can focus purely on successful hits or specific error types.
-      Use this flag followed by the numeric HTTP code you wish to exclude from the output.
+      将扫描器配置为忽略返回特定 HTTP 状态码的响应。
+      可用于过滤掉误报或 403 Forbidden、302 重定向等不感兴趣的结果，专注于成功命中或特定错误类型。
     command: "dirb {{url}} -N {{status_code|403}}"
 
-  - title: dirb - set scan delay
+  - title: dirb - 设置扫描延迟
     desc: |
-      Introduces a delay in milliseconds between each request sent to the target web server.
-      This is a vital feature for evading rate-limiting mechanisms or simple Intrusion Detection Systems (IDS).
-      It also helps in reducing the load on the target server to prevent accidental Denial of Service (DoS).
-      Higher values make the scan much slower but significantly stealthier and safer for fragile environments.
+      在发送到目标 Web 服务器的每个请求之间引入以毫秒为单位的延迟。
+      这是规避速率限制机制或简单入侵检测系统（IDS）的重要功能，同时也有助于降低目标服务器负载。
     command: "dirb {{url}} -z {{delay_ms|100}}"
 
   # === AUTHENTICATION & HEADERS ===
-  - title: dirb - scan with basic authentication
+  - title: dirb - 使用基本认证扫描
     desc: |
-      Provides credentials to access areas of a website protected by HTTP Basic Authentication.
-      This allows the tool to enumerate files and directories that are hidden behind a login prompt.
-      The credentials must be provided in the 'username:password' format.
-      Be cautious as multiple failed attempts might trigger account lockout policies on some systems.
+      提供凭据以访问受 HTTP Basic Authentication 保护的网站区域。
+      凭据必须以 username:password 格式提供，多次失败尝试可能触发某些系统的账户锁定策略，请谨慎使用。
     command: "dirb {{url}} -u {{credentials|admin:password123}}"
 
-  - title: dirb - scan with custom cookie
+  - title: dirb - 使用自定义 Cookie 扫描
     desc: |
-      Injects a custom cookie into every HTTP request made by the DIRB scanner.
-      This is essential for scanning areas of a web application that require an active session or specific state.
-      It can be used to bypass cookie-based security filters or to scan as a specific authenticated user.
-      Ensure the cookie string is correctly formatted according to HTTP standards.
+      将自定义 Cookie 注入 DIRB 扫描器发出的每个 HTTP 请求。
+      对扫描需要活动会话或特定状态的 Web 应用区域至关重要，可绕过基于 Cookie 的安全过滤或以特定认证用户身份扫描。
     command: "dirb {{url}} -c {{cookie_string|'session_id=123456'}}"
 
-  - title: dirb - scan with custom user-agent
+  - title: dirb - 使用自定义 User-Agent 扫描
     desc: |
-      Overrides the default DIRB user-agent string with a custom one provided by the user.
-      Many web application firewalls (WAFs) block the default DIRB user-agent to prevent automated scanning.
-      Using a realistic browser string can help bypass these basic signature-based security blocks.
-      It is a recommended practice for more professional and less conspicuous penetration testing.
+      用用户提供的自定义字符串覆盖默认的 DIRB User-Agent。
+      许多 Web 应用防火墙（WAF）会屏蔽默认的 DIRB User-Agent 以防止自动化扫描，使用真实的浏览器字符串可帮助绕过这些基于签名的安全屏蔽。
     command: "dirb {{url}} -a {{user_agent|'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}}"
 
   # === PROXY & OUTPUT ===
-  - title: dirb - scan through proxy
+  - title: dirb - 通过代理扫描
     desc: |
-      Routes all traffic through a specified HTTP proxy server before it reaches the target.
-      This is commonly used to route traffic through Burp Suite for manual inspection or through SOCKS proxies for anonymity.
-      The proxy should be specified in the 'host:port' format.
-      This is also useful for bypassing IP-based restrictions if the proxy is in a trusted network.
+      在流量到达目标之前，将其全部经由指定的 HTTP 代理服务器转发。
+      常用于通过 Burp Suite 转发流量进行手动检查，或通过 SOCKS 代理实现匿名，代理应以 host:port 格式指定。
     command: "dirb {{url}} -p {{proxy_address|127.0.0.1:8080}}"
 
-  - title: dirb - save output to file
+  - title: dirb - 保存输出到文件
     desc: |
-      Writes the entire output of the scan session to a specified file on the local file system.
-      This is critical for documentation, reporting, and further analysis using grep or other parsing tools.
-      The file will contain all the discovered URLs, their status codes, and size information.
-      It ensures that no data is lost when the terminal buffer is cleared or the session ends.
+      将扫描会话的完整输出写入本地文件系统上的指定文件。
+      对文档记录、报告以及使用 grep 等解析工具进行进一步分析至关重要，文件将包含所有发现的 URL、状态码和大小信息。
     command: "dirb {{url}} -o {{output_file|scan_results.txt}}"
 
   # === RELATED UTILITIES ===
-  - title: dirb - generate custom dictionary (dirb-gendict)
+  - title: dirb - 生成自定义字典（dirb-gendict）
     desc: |
-      Uses the dirb-gendict utility to create a wordlist based on a specific incremental pattern.
-      This is useful for brute-forcing URL structures that follow a predictable naming convention, such as 'user_1', 'user_2'.
-      The 'X' character in the pattern is replaced by the incremental value during generation.
-      You can choose between numeric, character, or alphanumeric types for the replacement.
+      使用 dirb-gendict 工具基于特定的递增模式创建字典。
+      可用于暴力破解遵循可预测命名约定的 URL 结构（如 user_1、user_2），模式中的 X 字符会在生成时被递增的值替换。
     command: "dirb-gendict -{{type|n}} {{pattern|vulnerary_X}}"
 
-  - title: dirb - extract words from HTML (html2dic)
+  - title: dirb - 从 HTML 提取单词（html2dic）
     desc: |
-      Extracts all unique words from an HTML file to generate a specialized dictionary.
-      This is an excellent way to build a context-specific wordlist based on the target website's own content.
-      The output is sent to stdout, which can be redirected into a file for use with DIRB later.
-      It helps in finding hidden files that might share names with existing site terminology.
+      从 HTML 文件中提取所有唯一单词以生成专用字典。
+      这是基于目标网站自身内容构建上下文相关字典的绝佳方式，输出发送到 stdout，可重定向到文件供 DIRB 后续使用。
     command: "html2dic {{html_file}} > {{output_wordlist|custom_dic.txt}}"

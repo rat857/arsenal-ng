@@ -4,101 +4,102 @@ tags: [network, proxy, security, pentest, enumeration, debugging, web]
 actions:
 # === BASIC USAGE & NETWORK CONFIGURATION ===
 
- - title: proxify - start default proxy
+ - title: proxify - 启动默认代理
    desc: |
-     Starts the proxify tool using default settings. It listens for HTTP traffic on port 8888 and SOCKS5 traffic on port 10080 by default.
-     This is the quickest way to start intercepting local traffic for analysis.
-     Ensure that your browser or application is configured to use these ports as its proxy.
+     使用默认设置启动 proxify 工具。
+     它默认在 8888 端口监听 HTTP 流量，在 10080 端口监听 SOCKS5 流量。
+     这是开始拦截本地流量进行分析的最快方式。
+     确保你的浏览器或应用程序已配置为使用这些端口作为代理。
    command: "proxify"
 
- - title: proxify - custom listening addresses
+ - title: proxify - 自定义监听地址
    desc: |
-     Configures the tool to listen on specific IP addresses and ports for both HTTP and SOCKS traffic.
-     This is useful when the default ports are already occupied by other services or when you need to expose the proxy on a specific network interface.
-     Always verify that the chosen ports are allowed through your local firewall to prevent connection issues.
+     将工具配置为在特定 IP 地址和端口上同时监听 HTTP 和 SOCKS 流量。
+     当默认端口已被其他服务占用，或需要在特定网络接口上暴露代理时很有用。
+     务必确认所选端口已通过本地防火墙，以防止连接问题。
    command: "proxify -http-addr {{listen_ip_port|127.0.0.1:8081}} -sa {{socks_ip_port|127.0.0.1:10081}}"
 
- - title: proxify - dns server and mapping
+ - title: proxify - DNS 服务器与映射
    desc: |
-     Starts a local DNS server and applies custom domain-to-IP mappings.
-     This feature allows you to redirect traffic for specific domains to a target IP without modifying the system's hosts file.
-     It is highly effective for testing virtual hosts or bypassing DNS-based load balancers during a penetration test.
+     启动本地 DNS 服务器并应用自定义的域名到 IP 映射。
+     此功能允许你将特定域名的流量重定向到目标 IP，而无需修改系统 hosts 文件。
+     它在渗透测试中测试虚拟主机或绕过基于 DNS 的负载均衡器时非常有效。
    command: "proxify -da {{dns_addr|127.0.0.1:53}} -dm {{mapping|example.com:1.2.3.4}}"
 
 # === INTERCEPTION & LOGGING ===
 
- - title: proxify - log raw traffic to directory
+ - title: proxify - 将原始流量记录到目录
    desc: |
-     Captures and stores all raw HTTP requests and responses into a specified output directory.
-     Each request and response pair is saved as a separate file, making it easy to grep through historical traffic.
-     This is essential for long-running engagements where you need to preserve evidence or perform deep manual analysis later.
+     将所有原始 HTTP 请求和响应捕获并存储到指定的输出目录。
+     每个请求和响应对会保存为单独的文件，便于 grep 历史流量。
+     这对于需要保留证据或稍后进行深度手工分析的长期行动至关重要。
    command: "proxify -sr -o {{output_directory|proxify_logs}}"
 
- - title: proxify - structured output logging
+ - title: proxify - 结构化输出日志
    desc: |
-     Saves intercepted traffic metadata into a single structured file using JSONL or YAML format.
-     This is ideal for piping the proxy output into other tools or custom scripts for automated analysis.
-     You can specify the format and the filename to organize your reconnaissance data efficiently.
+     将拦截的流量元数据以 JSONL 或 YAML 格式保存到单个结构化文件中。
+     这非常适合将代理输出导入其他工具或自定义脚本进行自动化分析。
+     你可以指定格式和文件名，以高效地组织你的侦察数据。
    command: "proxify -o {{output_file|logs.jsonl}} -of {{format|jsonl}}"
 
- - title: proxify - dump requests only
+ - title: proxify - 仅转储请求
    desc: |
-     Filters the output to only record HTTP requests while ignoring the responses.
-     Use this when you are only interested in the outgoing payloads, headers, and endpoints being accessed.
-     It helps reduce the size of log files significantly when the server responses are large or repetitive.
+     过滤输出，只记录 HTTP 请求而忽略响应。
+     当你只关心被访问的出站载荷、头和端点时使用。
+     当服务器响应很大或重复时，这可以显著减小日志文件的大小。
    command: "proxify -dump-req -o {{output_file|requests.jsonl}}"
 
 # === UPSTREAM PROXYING & CHAINING ===
 
- - title: proxify - chain to upstream http proxy
+ - title: proxify - 链接到上游 HTTP 代理
    desc: |
-     Forwards all intercepted traffic to an upstream HTTP proxy like Burp Suite or ZAP.
-     This allows you to use Proxify for initial filtering or modification before passing the traffic to a GUI-based interceptor.
-     It is a common setup for complex workflows where you need the features of both a CLI and a GUI proxy.
+     将所有拦截的流量转发到诸如 Burp Suite 或 ZAP 等上游 HTTP 代理。
+     这允许你在将流量传递给基于 GUI 的拦截器之前，使用 Proxify 进行初步过滤或修改。
+     当你同时需要 CLI 和 GUI 代理的功能时，这是复杂工作流中的常见设置。
    command: "proxify -http-proxy {{upstream_url|http://127.0.0.1:8080}}"
 
- - title: proxify - chain to upstream socks5 proxy
+ - title: proxify - 链接到上游 SOCKS5 代理
    desc: |
-     Routes all traffic through an upstream SOCKS5 proxy, such as the TOR network or an SSH tunnel.
-     This is particularly useful for anonymizing your source IP or accessing internal resources via a pivot point.
-     Multiple upstream proxies can be provided to rotate the exit IP address for each request.
+     通过上游 SOCKS5 代理（如 TOR 网络或 SSH 隧道）路由所有流量。
+     这对于匿名化你的源 IP 或通过枢纽点访问内部资源特别有用。
+     可以提供多个上游代理，为每个请求轮换出口 IP 地址。
    command: "proxify -socks5-proxy {{upstream_socks|127.0.0.1:9050}}"
 
 # === FILTERING & MANIPULATION ===
 
- - title: proxify - request filtering with dsl
+ - title: proxify - 使用 DSL 过滤请求
    desc: |
-     Applies Domain Specific Language (DSL) filters to capture only specific types of requests.
-     This allows you to ignore noise and focus on relevant traffic, such as requests containing a specific keyword in the body or header.
-     DSL filtering is extremely powerful for targeted debugging of modern web applications.
+     应用领域特定语言（DSL）过滤器，只捕获特定类型的请求。
+     这使你能够忽略噪声并专注于相关流量，例如正文或头中包含特定关键字的请求。
+     DSL 过滤对于现代 Web 应用的有针对性调试极为强大。
    command: "proxify -req-fd {{dsl_filter|'contains(request, \"api/v1\")'}}"
 
- - title: proxify - match and replace in requests
+ - title: proxify - 在请求中匹配和替换
    desc: |
-     Automatically finds and replaces strings within requests on the fly using DSL rules.
-     This is useful for injecting custom headers, modifying User-Agents, or changing parameter values globally.
-     Be careful with regex patterns to avoid unintentionally breaking the application's logic or authentication tokens.
+     使用 DSL 规则在请求中即时自动查找和替换字符串。
+     这对于注入自定义头、修改 User-Agent 或全局更改参数值很有用。
+     使用正则表达式时要小心，以免意外破坏应用程序的逻辑或身份验证令牌。
    command: "proxify -req-mrd {{match_replace_rule|'replace(request, \"User-Agent\", \"Security-Scanner\")'}}"
 
- - title: proxify - response match and replace
+ - title: proxify - 响应匹配和替换
    desc: |
-     Modifies server responses before they reach the client based on specified DSL criteria.
-     This can be used to bypass client-side controls, disable security headers like CSP, or inject debug scripts into the HTML body.
-     It is a key technique for advanced web exploitation and testing client-side vulnerabilities.
+     根据指定的 DSL 条件，在服务器响应到达客户端之前进行修改。
+     可用于绕过客户端控制、禁用 CSP 等安全头，或向 HTML 正文注入调试脚本。
+     这是高级 Web 利用和测试客户端漏洞的关键技术。
    command: "proxify -resp-mrd {{match_replace_rule|'replace(response, \"<head>\", \"<head><script>alert(1)</script>\")'}}"
 
 # === ADVANCED CONFIGURATION ===
 
- - title: proxify - tls passthrough
+ - title: proxify - TLS 透传
    desc: |
-     Specifies domains that should pass through the proxy without TLS termination.
-     Use this for domains that utilize certificate pinning or for services where you do not want to interfere with the encrypted stream.
-     It prevents "Your connection is not private" errors in browsers for specific, trusted endpoints.
+     指定应绕过代理且不终止 TLS 的域名。
+     用于使用证书固定的域名，或你不想干扰加密流的服务。
+     它可以防止浏览器对特定受信任端点出现「你的连接不是私密连接」的错误。
    command: "proxify -pt {{domain_regex|'(.*\\.)?google\\.com.*'}}"
 
- - title: proxify - access control list
+ - title: proxify - 访问控制列表
    desc: |
-     Restricts the proxy usage to a specific list of allowed IP addresses or CIDR ranges.
-     This is a critical security measure when running Proxify on a remote server to prevent unauthorized users from using your proxy.
-     Anyone attempting to connect from an IP not in the allow list will be denied access.
+     将代理使用限制在特定的允许 IP 地址或 CIDR 范围列表内。
+     在远程服务器上运行 Proxify 时，这是防止未经授权用户使用你的代理的关键安全措施。
+     任何从未列入允许列表的 IP 尝试连接都将被拒绝访问。
    command: "proxify -allow {{allowed_ips|192.168.1.0/24,10.0.0.5}}"

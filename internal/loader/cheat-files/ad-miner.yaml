@@ -4,78 +4,78 @@ tags: [active-directory, security, pentest, enumeration, bloodhound, neo4j, wind
 # === BASIC USAGE ===
 
 actions:
-  - title: AD-miner - generate standard report
+  - title: AD-miner - 生成标准报告
     desc: |
-      This command initiates a standard analysis of Active Directory data stored in a Neo4j database. 
-      It connects to the database using the provided credentials and generates a security report based on the ingested BloodHound data. 
-      Use this as a starting point to identify common attack paths and configuration weaknesses within the domain.
+      该命令对存储在 Neo4j 数据库中的 Active Directory 数据发起标准分析。
+      它使用提供的凭据连接数据库，并根据导入的 BloodHound 数据生成安全报告。
+      可将其作为起点，识别域内常见的攻击路径与配置弱点。
     command: "AD-miner -u {{username|neo4j}} -p {{password|bloodhoundcommunityedition}} -cf {{report_name|AD_Assessment}}"
 
-  - title: AD-miner - connection to remote neo4j
+  - title: AD-miner - 连接远程 neo4j
     desc: |
-      Connect to a Neo4j database hosted on a remote server or a non-standard port using the Bolt protocol. 
-      This is useful when the analysis database is centralized rather than running on the local machine. 
-      Ensure that the network allows traffic on the specified port, typically 7687 for Bolt connections.
+      使用 Bolt 协议连接到托管在远程服务器或非标准端口上的 Neo4j 数据库。
+      当分析数据库集中部署而非运行在本地机器上时很有用。
+      请确保网络允许指定端口的流量，Bolt 连接通常使用 7687 端口。
     command: "AD-miner -b bolt://{{ip|127.0.0.1}}:{{port|7687}} -u {{username|neo4j}} -p {{password|password}} -cf {{report_name|Remote_Report}}"
 
 # === DATA MANAGEMENT & CACHING ===
 
-  - title: AD-miner - resume with cache
+  - title: AD-miner - 使用缓存继续
     desc: |
-      This command uses local cache files located in the cache_neo4j folder to speed up or resume an analysis. 
-      It is highly recommended for large environments where querying the database multiple times is time-consuming. 
-      The cache prefix provided must match the prefix used during the initial data extraction process.
+      该命令使用位于 cache_neo4j 文件夹中的本地缓存文件来加速或继续分析。
+      对于查询数据库多次耗时较长的大型环境，强烈建议使用此方式。
+      提供的缓存前缀必须与初始数据提取过程中使用的前缀一致。
     command: "AD-miner -c -cf {{report_name|My_Report}} -u {{username|neo4j}} -p {{password|password}}"
 
-  - title: AD-miner - filter by extraction date
+  - title: AD-miner - 按提取日期过滤
     desc: |
-      Specify a specific extraction date to filter the Active Directory data for the analysis. 
-      This is useful when the Neo4j database contains historical data and you want to analyze the state of the domain at a particular point in time. 
-      The date should be provided in the format YYYYMMDD, such as 20230515.
+      指定具体的提取日期以过滤用于分析的 Active Directory 数据。
+      当 Neo4j 数据库包含历史数据、而你想分析特定时间点的域状态时很有用。
+      日期应采用 YYYYMMDD 格式，例如 20230515。
     command: "AD-miner -e {{date|20230101}} -cf {{report_name|Historical_Analysis}}"
 
 # === PERFORMANCE OPTIMIZATION ===
 
-  - title: AD-miner - optimized parallel execution
+  - title: AD-miner - 优化的并行执行
     desc: |
-      Fine-tune the performance of the tool by manually specifying the number of CPU cores and data chunks for parallel processing. 
-      Increasing the number of cores can significantly reduce execution time on powerful workstations. 
-      The chunks parameter determines how the Neo4j requests are split; higher values can help manage memory usage during large queries.
+      通过手动指定 CPU 核心数与数据块数量来微调工具性能。
+      在性能强劲的工作站上，增加核心数可显著缩短执行时间。
+      chunks 参数决定 Neo4j 请求的拆分方式，数值越高越有助于在大型查询时管理内存占用。
     command: "AD-miner -cf {{report_name|Fast_Report}} -co {{cores|8}} -ch {{chunks|160}}"
 
-  - title: AD-miner - fast GPO query
+  - title: AD-miner - 快速 GPO 查询
     desc: |
-      Perform a faster but less detailed analysis of Group Policy Objects (GPOs) using the low-detail flag. 
-      Use this when you need a quick overview of the environment and are willing to sacrifice granular GPO path details for speed. 
-      This is particularly effective in environments with thousands of complex GPO links.
+      使用低细节标志对组策略对象（GPO）执行更快但更粗略的分析。
+      当你需要快速了解环境概况、愿意为速度牺牲细粒度 GPO 路径细节时使用。
+      这在拥有数千个复杂 GPO 链接的环境中尤为有效。
     command: "AD-miner --gpo_low -cf {{report_name|Quick_GPO_Report}} -u {{username|neo4j}} -p {{password|password}}"
 
 # === ADVANCED CONFIGURATION ===
 
-  - title: AD-miner - custom password renewal policy
+  - title: AD-miner - 自定义密码续期策略
     desc: |
-      Adjust the password renewal policy threshold used to calculate account staleness and risk. 
-      By default, the tool assumes a 90-day renewal policy, but many organizations use different settings like 180 or 365 days. 
-      Setting this correctly ensures that the report accurately reflects which accounts are out of compliance with the actual corporate policy.
+      调整用于计算账户陈旧度与风险的密码续期策略阈值。
+      默认情况下工具假定 90 天续期策略，但许多组织使用 180 或 365 天等不同设置。
+      正确设置可确保报告准确反映哪些账户不符合实际的企业策略。
     command: "AD-miner -r {{days|180}} -cf {{report_name|Policy_Compliance}} -u {{username|neo4j}}"
 
-  - title: AD-miner - include RDP attack paths
+  - title: AD-miner - 包含 RDP 攻击路径
     desc: |
-      Explicitly include the CanRDP edge in the generated security graphs and vulnerability analysis. 
-      This reveals lateral movement paths where users have permission to log in via Remote Desktop Protocol to various systems. 
-      It is a critical check for identifying paths that lead to sensitive servers or domain controllers via administrative jump boxes.
+      在生成的安全图与漏洞分析中显式包含 CanRDP 边。
+      这揭示了用户有权通过远程桌面协议登录各系统的横向移动路径。
+      它是识别通向敏感服务器或域控制器的管理跳板路径的关键检查。
     command: "AD-miner --rdp -cf {{report_name|RDP_Analysis}} -u {{username|neo4j}} -p {{password|password}}"
 
-  - title: AD-miner - cluster mode distribution
+  - title: AD-miner - 集群模式分发
     desc: |
-      Distribute Neo4j queries across multiple nodes in a database cluster to handle massive Active Directory datasets. 
-      The cluster string format requires the host, port, and core count for each node (e.g., host:port:cores). 
-      This is an advanced feature used in enterprise-scale assessments where a single Neo4j instance cannot handle the query load efficiently.
+      将 Neo4j 查询分发到数据库集群的多个节点，以处理海量 Active Directory 数据集。
+      集群字符串格式要求每个节点包含主机、端口与核心数（例如 host:port:cores）。
+      这是企业级评估中使用的进阶特性，适用于单个 Neo4j 实例无法高效处理查询负载的场景。
     command: "AD-miner -cf {{report_name|Cluster_Run}} --cluster {{nodes|192.168.1.10:7687:16,192.168.1.11:7687:16}}"
 
-  - title: AD-miner - temporal evolution analysis
+  - title: AD-miner - 时间演化分析
     desc: |
-      Analyze how the Active Directory security posture has evolved over time by pointing the tool to a directory of previous JSON data files. 
-      This comparison helps in tracking improvements or regressions in domain security across different assessment periods. 
-      Provide the relative or absolute path to the folder containing the historical JSON results.
+      通过将工具指向历史 JSON 数据文件目录，分析 Active Directory 安全态势随时间的演化。
+      这种比较有助于追踪不同评估周期内域安全的改进或退化情况。
+      提供包含历史 JSON 结果文件夹的相对或绝对路径。
     command: "AD-miner --evolution {{path_to_jsons|./historical_data/}} -cf {{report_name|Evolution_Report}}"

@@ -4,94 +4,61 @@ tags: [security, secrets, git, scanning, static-analysis, pentest, devsecops, re
 # === DETECTION & SCANNING ===
 
 actions:
- - title: gitleaks - detect secrets in current directory
+ - title: gitleaks - 检测当前目录中的密钥
    desc: |
-     Scans the current directory or git repository for hardcoded secrets. This command 
-     is the primary way to analyze git history and the current state of files for 
-     sensitive information like API keys or passwords. It uses the default rules 
-     unless a custom configuration is provided.
+     扫描当前目录或 git 仓库中的硬编码密钥。该命令是分析 git 历史与当前文件状态以查找 API 密钥或密码等敏感信息的主要方式。除非提供自定义配置，否则使用默认规则。
    command: "gitleaks detect"
 
- - title: gitleaks - scan a specific target source
+ - title: gitleaks - 扫描指定目标源码
    desc: |
-     Runs a detection scan on a specific path provided by the user. This is useful 
-     when you want to audit a repository that is not your current working directory. 
-     Ensure that the target directory is a valid git repository for full history scanning 
-     capabilities.
+     对用户提供的特定路径执行检测扫描。当你需要审计并非当前工作目录的仓库时非常有用。如需完整的全历史扫描能力，请确保目标目录是有效的 git 仓库。
    command: "gitleaks detect --source {{source_path}}"
 
- - title: gitleaks - verbose scan with report generation
+ - title: gitleaks - 详细扫描并生成报告
    desc: |
-     Performs a detailed scan and saves the findings into a structured report file. 
-     The verbose flag ensures that findings are printed to the console during the 
-     scanning process. The report is essential for documenting vulnerabilities 
-     during a penetration test or security audit.
+     执行详细扫描，并将发现结果保存到结构化报告文件中。verbose 参数确保扫描过程中在控制台打印发现结果。报告对于在渗透测试或安全审计中记录漏洞至关重要。
    command: "gitleaks detect --verbose --report-path {{report_name|results.json}} --report-format {{format|json}}"
 
- - title: gitleaks - scan using a custom configuration file
+ - title: gitleaks - 使用自定义配置文件扫描
    desc: |
-     Initiates a scan using a user-defined TOML configuration file. This allows 
-     you to define custom regex patterns, extend default rules, or whitelist specific 
-     false positives. It is highly recommended for enterprise environments with 
-     proprietary token formats.
+     使用用户自定义的 TOML 配置文件启动扫描。这允许你定义自定义正则模式、扩展默认规则或白名单特定的误报。对于拥有专有令牌格式的企业环境强烈推荐。
    command: "gitleaks detect --config {{config_path|.gitleaks.toml}}"
 
 # === PREVENTION & PROTECTION ===
 
- - title: gitleaks - protect uncommitted changes
+ - title: gitleaks - 保护未提交的更改
    desc: |
-     Scans only the changes that have been made but not yet committed to the git history. 
-     This command is ideal for pre-commit hooks to prevent developers from accidentally 
-     leaking secrets into the codebase. It helps in maintaining a clean repository 
-     history from the start.
+     仅扫描已修改但尚未提交到 git 历史的更改。该命令非常适合 pre-commit 钩子，可防止开发者意外将密钥泄漏到代码库中。它有助于从一开始就保持仓库历史干净。
    command: "gitleaks protect --staged"
 
- - title: gitleaks - protect with verbose output
+ - title: gitleaks - 保护并输出详细信息
    desc: |
-     Runs a protection scan on staged changes while providing detailed output for 
-     any leaks found. Use this when you need to identify exactly which line and 
-     file triggered a secret detection during development. This helps in quick 
-     remediation before a push.
+     对已暂存的更改运行保护扫描，同时为发现的任何泄漏提供详细输出。当你需要确定开发期间触发密钥检测的具体行和文件时使用。这有助于在推送前快速修复。
    command: "gitleaks protect --verbose"
 
 # === ADVANCED FILTERING & OUTPUT ===
 
- - title: gitleaks - redact secrets from output logs
+ - title: gitleaks - 在输出日志中脱敏密钥
    desc: |
-     Scans for secrets but masks the sensitive values in the terminal output and reports. 
-     This prevents the tool itself from inadvertently exposing the secrets it finds 
-     within CI/CD logs or console history. It is a best practice for automated 
-     pipeline security.
+     扫描密钥，但在终端输出和报告中掩蔽敏感值。这可防止工具自身在 CI/CD 日志或控制台历史中无意暴露其发现的密钥。这是自动化流水线安全的最佳实践。
    command: "gitleaks detect --redact"
 
- - title: gitleaks - skip large files during scan
+ - title: gitleaks - 扫描时跳过大型文件
    desc: |
-     Configures the scanner to ignore files that exceed a specific size in megabytes. 
-     This is useful for improving scan performance and avoiding crashes when 
-     dealing with repositories containing large binary blobs or datasets. Files 
-     larger than the threshold will be completely bypassed.
+     配置扫描器忽略超过指定大小（MB）的文件。处理包含大型二进制数据块或数据集的仓库时，有助于提升扫描性能并避免崩溃。超过阈值的文件将被完全跳过。
    command: "gitleaks detect --max-target-megabytes {{size|50}}"
 
- - title: gitleaks - ignore known leaks with a baseline
+ - title: gitleaks - 使用基线忽略已知泄漏
    desc: |
-     Uses a baseline report to ignore previously discovered secrets that have been 
-     vetted or accepted as risks. This reduces noise by ensuring that only new 
-     potential leaks are reported in subsequent scans. It is vital for managing 
-     large, older repositories with many legacy findings.
+     使用基线报告忽略已经过审查或接受为风险的先前发现的密钥。通过确保后续扫描只报告新的潜在泄漏来减少噪音。对于管理具有大量遗留发现的大型旧仓库至关重要。
    command: "gitleaks detect --baseline-path {{baseline_path|gitleaks-baseline.json}}"
 
- - title: gitleaks - set custom log level
+ - title: gitleaks - 设置自定义日志级别
    desc: |
-     Adjusts the granularity of the logging output during the execution of Gitleaks. 
-     Available levels include trace, debug, info, warn, error, and fatal. Higher 
-     levels like debug or trace are helpful for troubleshooting configuration 
-     issues or rule matching logic.
+     调整 Gitleaks 执行期间日志输出的粒度。可用级别包括 trace、debug、info、warn、error 和 fatal。debug 或 trace 等更高级别有助于排查配置问题或规则匹配逻辑。
    command: "gitleaks detect --log-level {{level|debug}}"
 
- - title: gitleaks - custom exit code for automation
+ - title: gitleaks - 为自动化设置自定义退出码
    desc: |
-     Sets a specific exit code for the process if leaks are found during the scan. 
-     This is particularly useful in CI/CD scripts where you want to distinguish 
-     between a tool error and a successful scan that discovered vulnerabilities. 
-     The default exit code is usually 1 if leaks are encountered.
+     当扫描中发现泄漏时，为进程设置特定退出码。这在 CI/CD 脚本中特别有用，可用于区分工具错误与发现漏洞的成功扫描。遇到泄漏时默认退出码通常为 1。
    command: "gitleaks detect --exit-code {{code|1}}"

@@ -3,68 +3,68 @@ tags: [network, file-transfer, security, pentest, exploitation, authentication, 
 
 actions:
   # === BASIC FILE SHARING ===
-  - title: impacket-smbserver - basic anonymous share
+  - title: impacket-smbserver - 基本匿名共享
     desc: |
-      Start a basic SMB server without any authentication requirements. 
-      This is the most common way to quickly transfer files from a Linux attack host to a Windows target. 
-      The share will be accessible to any user on the network, so avoid placing sensitive data here.
+      启动一个无需任何身份验证要求的基本 SMB 服务器。
+      这是将文件从 Linux 攻击主机快速传输到 Windows 目标的最常见方式。
+      该共享可供网络上的任何用户访问，因此避免在此放置敏感数据。
     command: "impacket-smbserver {{share_name|SHARE}} {{path|/tmp}}"
 
-  - title: impacket-smbserver - enable smb2 support
+  - title: impacket-smbserver - 启用 SMB2 支持
     desc: |
-      Launch the SMB server with support for the SMB2 protocol version. 
-      Modern Windows versions (Windows 10, Server 2016+) often disable SMB1 by default for security reasons. 
-      Use this flag if you encounter "protocol not supported" errors or connection timeouts on newer targets.
+      以支持 SMB2 协议版本的方式启动 SMB 服务器。
+      出于安全考虑，现代 Windows 版本（Windows 10、Server 2016+）通常默认禁用 SMB1。
+      如果在较新目标上遇到“protocol not supported”错误或连接超时，请使用此标志。
     command: "impacket-smbserver -smb2support {{share_name|SHARE}} {{path|/tmp}}"
 
-  - title: impacket-smbserver - share with custom comment
+  - title: impacket-smbserver - 带自定义注释的共享
     desc: |
-      Create a share with a specific descriptive comment that appears in network browsing. 
-      This can be used to make the share look more legitimate or to provide context for users. 
-      It is an optional metadata field that helps in organizational tasks during internal audits.
+      创建带特定描述性注释的共享，该注释会出现在网络浏览中。
+      这可用于让共享看起来更合法，或为用户提供上下文。
+      它是内部审计期间有助于组织工作的可选元数据字段。
     command: "impacket-smbserver -comment {{comment|'Public Tools'}} {{share_name|TOOLS}} {{path|/opt/tools}}"
 
   # === AUTHENTICATION & SECURITY ===
-  - title: impacket-smbserver - authenticated share with password
+  - title: impacket-smbserver - 带密码的认证共享
     desc: |
-      Set up an SMB server that requires a specific username and password for access. 
-      This prevents unauthorized users on the network from browsing your files or uploading malicious content. 
-      It is a critical step when performing engagements in environments with active blue teams or multiple testers.
+      设置一个需要特定用户名和密码才能访问的 SMB 服务器。
+      这可以防止网络上的未授权用户浏览你的文件或上传恶意内容。
+      在存在活跃蓝队或多个测试人员的环境中执行评估时，这是关键步骤。
     command: "impacket-smbserver -username {{user|admin}} -password {{pass|password123}} {{share_name|SECURE}} {{path|/root/loot}}"
 
-  - title: impacket-smbserver - authenticated share with NTLM hashes
+  - title: impacket-smbserver - 使用 NTLM 哈希的认证共享
     desc: |
-      Provide access to the SMB share using NTLM hashes instead of a plaintext password. 
-      The format for the hashes must be LMHASH:NTHASH (use a string of 32 zeros for the LM hash if only NT is known). 
-      This allows you to simulate or utilize existing compromised credentials without knowing the actual password.
+      使用 NTLM 哈希而非明文密码提供 SMB 共享的访问权限。
+      哈希格式必须为 LMHASH:NTHASH（如果只知道 NT 哈希，则 LM 哈希使用 32 个零的字符串）。
+      这允许你在不知道实际密码的情况下模拟或利用现有的已泄露凭据。
     command: "impacket-smbserver -username {{user|admin}} -hashes {{hash}} {{share_name|HASH_AUTH}} {{path|/tmp}}"
 
   # === NETWORK CONFIGURATION ===
-  - title: impacket-smbserver - custom interface and port
+  - title: impacket-smbserver - 自定义接口和端口
     desc: |
-      Bind the SMB server to a specific network interface and a non-standard port. 
-      This is useful when the default port 445 is already in use by a local Samba service or another tool. 
-      Note that Windows clients usually expect SMB on port 445, so port forwarding might be required on the target side.
+      将 SMB 服务器绑定到特定网络接口和非标准端口。
+      当默认 445 端口已被本地 Samba 服务或其他工具占用时很有用。
+      请注意，Windows 客户端通常期望 SMB 在 445 端口，因此可能需要在目标端进行端口转发。
     command: "impacket-smbserver -ip {{ip_address|0.0.0.0}} -port {{port|4445}} {{share_name|SHARE}} {{path|/tmp}}"
 
-  - title: impacket-smbserver - listen on IPv6
+  - title: impacket-smbserver - 监听 IPv6
     desc: |
-      Configure the SMB server to listen for incoming connections over the IPv6 protocol. 
-      This can be used to bypass certain IPv4-only firewall rules or to operate in IPv6-only environments. 
-      Ensure your network stack and the target machine are properly configured for IPv6 communication.
+      将 SMB 服务器配置为通过 IPv6 协议监听传入连接。
+      这可用于绕过某些仅限 IPv4 的防火墙规则，或在纯 IPv6 环境中运行。
+      确保你的网络栈和目标机器已正确配置 IPv6 通信。
     command: "impacket-smbserver -6 {{share_name|SHARE}} {{path|/tmp}}"
 
   # === LOGGING & CAPTURE ===
-  - title: impacket-smbserver - capture hashes to file
+  - title: impacket-smbserver - 将哈希捕获到文件
     desc: |
-      Redirect all output, including captured NTLM hashes from incoming authentication attempts, to a text file. 
-      When a target machine attempts to connect to this server, the NTLM challenge-response sequence is logged. 
-      These logged hashes can later be used for offline cracking with tools like Hashcat or John the Ripper.
+      将所有输出（包括来自传入身份验证尝试的捕获 NTLM 哈希）重定向到文本文件。
+      当目标机器尝试连接到此服务器时，会记录 NTLM 质询-响应序列。
+      这些记录的哈希之后可用于使用 Hashcat 或 John the Ripper 等工具进行离线破解。
     command: "impacket-smbserver -outputfile {{log_file|hashes.txt}} {{share_name|RECON}} {{path|/tmp}}"
 
-  - title: impacket-smbserver - debug mode with timestamps
+  - title: impacket-smbserver - 带时间戳的调试模式
     desc: |
-      Enable verbose debug output and add timestamps to every log entry produced by the server. 
-      This is extremely helpful for troubleshooting connection drops or understanding the negotiation process. 
-      The timestamps provide a clear timeline of events during an exploitation or data exfiltration phase.
+      启用详细调试输出，并为服务器产生的每条日志添加时间戳。
+      这对于排查连接中断或理解协商过程非常有帮助。
+      时间戳提供了利用或数据窃取阶段事件的清晰时间线。
     command: "impacket-smbserver -debug -ts {{share_name|DEBUG_SHARE}} {{path|/tmp}}"

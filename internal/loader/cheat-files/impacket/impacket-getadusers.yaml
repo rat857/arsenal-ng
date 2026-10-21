@@ -3,60 +3,60 @@ tags: [active-directory, enumeration, pentest, impacket, security, ldap, windows
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: impacket-GetADUsers - basic user enumeration
+  - title: impacket-GetADUsers - 基础用户枚举
     desc: |
-      Performs a basic enumeration of users within the target domain that have an email address configured. 
-      This is a common starting point for identifying valid usernames for further attacks like password spraying or credential stuffing. 
-      It requires valid domain credentials to successfully query the Active Directory database via the SAMR/LDAP protocols.
+      对目标域中已配置邮箱地址的用户执行基础枚举。
+      这是识别有效用户名以进行密码喷洒或撞库等后续攻击的常见起点。
+      需要有效的域凭据才能通过 SAMR/LDAP 协议成功查询 Active Directory 数据库。
     command: "impacket-GetADUsers {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-GetADUsers - enumerate all users
+  - title: impacket-GetADUsers - 枚举所有用户
     desc: |
-      Queries the domain for all user accounts, including those without email addresses and those that are currently disabled. 
-      Using the -all flag ensures that no accounts are missed during the initial reconnaissance phase, providing a complete user list. 
-      This is critical for finding service accounts or old accounts that might have been overlooked but still possess sensitive permissions.
+      查询域中的所有用户账户，包括没有邮箱地址以及当前已禁用的账户。
+      使用 -all 标志可确保初始侦察阶段不遗漏任何账户，提供完整的用户列表。
+      这对于发现可能被忽视但仍拥有敏感权限的服务账户或旧账户至关重要。
     command: "impacket-GetADUsers -all {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-GetADUsers - query specific user details
+  - title: impacket-GetADUsers - 查询特定用户详情
     desc: |
-      Requests detailed information for a single specific username instead of listing every user in the directory. 
-      This is useful when you want to verify the existence of a high-value target or check specific attributes of a single account. 
-      If the user is disabled, you should combine this command with the -all flag to ensure the data is returned.
+      请求单个特定用户名的详细信息，而不是列出目录中的所有用户。
+      适用于验证高价值目标是否存在，或检查某个账户的特定属性。
+      如果该用户已被禁用，应将此命令与 -all 标志结合使用以确保返回数据。
     command: "impacket-GetADUsers -user {{target_user}} {{domain}}/{{username}}:{{password}}"
 
   # === ADVANCED CONNECTION & AUTHENTICATION ===
-  - title: impacket-GetADUsers - specify domain controller IP
+  - title: impacket-GetADUsers - 指定域控制器 IP
     desc: |
-      Directs the tool to communicate with a specific Domain Controller IP address for the query. 
-      This is necessary in environments where the local machine cannot resolve the domain FQDN (Fully Qualified Domain Name) via DNS. 
-      It ensures the connection is established directly with the intended server, bypassing potential local name resolution issues.
+      指定工具与特定的域控制器 IP 地址通信以执行查询。
+      在本机无法通过 DNS 解析域 FQDN（完全限定域名）的环境中，这是必需的。
+      它确保直接与目标服务器建立连接，绕过潜在的本地名称解析问题。
     command: "impacket-GetADUsers -dc-ip {{dc_ip}} {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-GetADUsers - authentication via NTLM hashes
+  - title: impacket-GetADUsers - 通过 NTLM 哈希认证
     desc: |
-      Authenticates to the target domain using NTLM hashes instead of a cleartext password. 
-      This "Pass-the-Hash" technique is ideal for scenarios where you have recovered hashes from memory or local databases. 
-      The format for the hashes must be LMHASH:NTHASH; if you only have the NTHASH, provide 32 zeros for the LM part.
+      使用 NTLM 哈希而非明文密码对目标域进行身份认证。
+      这种“Pass-the-Hash”技术适用于已从内存或本地数据库恢复哈希的场景。
+      哈希格式必须为 LMHASH:NTHASH；如果只有 NTHASH，请为 LM 部分提供 32 个零。
     command: "impacket-GetADUsers -hashes {{hash}} {{domain}}/{{username}}"
 
-  - title: impacket-GetADUsers - kerberos authentication
+  - title: impacket-GetADUsers - Kerberos 身份认证
     desc: |
-      Uses Kerberos tickets stored in a CCACHE file for authentication instead of traditional NTLM. 
-      The tool will look for a valid ticket in the path specified by the KRB5CCNAME environment variable. 
-      This is highly effective for avoiding NTLM-based detections and is commonly used in post-exploitation on Linux-based attack hosts.
+      使用 CCACHE 文件中存储的 Kerberos 票据进行认证，而非传统的 NTLM。
+      工具会在 KRB5CCNAME 环境变量指定的路径中查找有效票据。
+      这对于规避基于 NTLM 的检测非常有效，常用于 Linux 攻击主机上的后渗透阶段。
     command: "impacket-GetADUsers -k -no-pass {{domain}}/{{username}}"
 
-  - title: impacket-GetADUsers - kerberos authentication via AES key
+  - title: impacket-GetADUsers - 通过 AES 密钥的 Kerberos 认证
     desc: |
-      Authenticates using a known Kerberos AES-128 or AES-256 key to request information. 
-      This is a "Pass-the-Key" method that allows for authentication without knowing the user's cleartext password. 
-      It is particularly useful when keys have been extracted from a domain controller's NTDS.dit file or from the LSASS process on a compromised host.
+      使用已知的 Kerberos AES-128 或 AES-256 密钥进行认证以请求信息。
+      这是一种“Pass-the-Key”方法，无需知道用户明文密码即可完成认证。
+      当密钥已从域控制器的 NTDS.dit 文件或失陷主机的 LSASS 进程中提取时尤为有用。
     command: "impacket-GetADUsers -aesKey {{aes_key}} {{domain}}/{{username}}"
 
   # === LOGGING AND DEBUGGING ===
-  - title: impacket-GetADUsers - debug mode with timestamps
+  - title: impacket-GetADUsers - 带时间戳的调试模式
     desc: |
-      Executes the enumeration with detailed debug output and timestamps for every log entry. 
-      This is helpful for troubleshooting connection errors, authentication failures, or understanding the underlying RPC/LDAP calls. 
-      Use this when the tool is behaving unexpectedly or when you need a detailed log for a penetration testing report.
+      以详细的调试输出执行枚举，并为每条日志记录添加时间戳。
+      有助于排查连接错误、认证失败，或理解底层的 RPC/LDAP 调用。
+      当工具行为异常，或需要为渗透测试报告生成详细日志时使用。
     command: "impacket-GetADUsers -debug -ts {{domain}}/{{username}}:{{password}}"

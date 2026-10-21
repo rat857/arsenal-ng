@@ -3,69 +3,61 @@ tags: [kerberos, active-directory, security, pentest, exploitation, authenticati
 
 actions:
   # === BASIC AUTHENTICATION ===
-  - title: impacket-getTGT - Request TGT with password
+  - title: impacket-getTGT - 使用密码请求 TGT
     desc: |
-      Requests a Kerberos Ticket Granting Ticket (TGT) using cleartext credentials for a domain user. 
-      This is a common starting point for Kerberos-based attacks or for legitimate administrative tasks from a non-joined machine. 
-      The tool authenticates with the Key Distribution Center (KDC) and saves the ticket as a .ccache file in the current directory. 
-      You can then use this file by setting the KRB5CCNAME environment variable.
+      使用域用户的明文凭据请求 Kerberos 票据授予票据（TGT）。
+      这是基于 Kerberos 的攻击或从未加入域的主机执行合法管理任务的常见起点。
+      工具与密钥分发中心（KDC）认证，并将票据保存为当前目录下的 .ccache 文件，之后可通过设置 KRB5CCNAME 环境变量使用。
     command: "impacket-getTGT {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-getTGT - Request TGT via specific Domain Controller
+  - title: impacket-getTGT - 通过特定域控制器请求 TGT
     desc: |
-      Directs the Kerberos authentication request to a specific Domain Controller (DC) IP address. 
-      This is essential when the attacking machine cannot resolve the domain name or when targeting a specific DC in a multi-DC environment. 
-      It bypasses the need for local DNS configuration or /etc/hosts entries for the domain. 
-      Ensure the DC is reachable over port 88 (Kerberos).
+      将 Kerberos 认证请求定向到特定的域控制器（DC）IP 地址。
+      当攻击机无法解析域名或需在多 DC 环境中定位特定 DC 时至关重要。
+      它无需本地 DNS 配置或 /etc/hosts 条目，请确保 DC 的 88 端口（Kerberos）可达。
     command: "impacket-getTGT -dc-ip {{dc_ip}} {{domain}}/{{username}}:{{password}}"
 
   # === ADVANCED AUTHENTICATION ===
-  - title: impacket-getTGT - Pass-the-Hash (NTLM)
+  - title: impacket-getTGT - Pass-the-Hash（NTLM）
     desc: |
-      Requests a TGT using an NTLM hash instead of a cleartext password. 
-      This is the classic Pass-the-Hash (PtH) technique applied to Kerberos authentication. 
-      If you only have the NT hash, use the format 'LMHASH:NTHASH' where LMHASH can be 32 zeros. 
-      This is highly effective for lateral movement when cleartext passwords are not available in memory.
+      使用 NTLM 哈希而非明文密码请求 TGT。
+      这是应用于 Kerberos 认证的经典 Pass-the-Hash（PtH）技术。
+      如果只有 NT 哈希，请使用“LMHASH:NTHASH”格式，其中 LMHASH 可为 32 个零，在明文密码不在内存中时对横向移动非常有效。
     command: "impacket-getTGT -hashes {{hash}} {{domain}}/{{username}}"
 
-  - title: impacket-getTGT - Authenticate with AES Key
+  - title: impacket-getTGT - 使用 AES 密钥认证
     desc: |
-      Authenticates to the KDC using a hex-encoded AES (128 or 256 bit) key. 
-      In modern Windows environments, AES keys are often used for Kerberos pre-authentication instead of NTLM. 
-      This method is stealthier and sometimes required if NTLM is disabled or if you have extracted AES keys from a computer account or NTDS.dit. 
-      Specify the full hex string of the key.
+      使用十六进制编码的 AES（128 或 256 位）密钥向 KDC 认证。
+      在现代 Windows 环境中，Kerberos 预认证通常使用 AES 密钥而非 NTLM。
+      此方法更隐蔽，在 NTLM 被禁用或已从计算机账户或 NTDS.dit 提取出 AES 密钥时有时是必需的，请提供完整的密钥十六进制字符串。
     command: "impacket-getTGT -aesKey {{aes_key}} {{domain}}/{{username}}"
 
   # === SERVICE TICKETS & SPECIAL PRINCIPALS ===
-  - title: impacket-getTGT - Direct Service Ticket Request
+  - title: impacket-getTGT - 直接请求服务票据
     desc: |
-      Requests a Service Ticket (ST) directly through an AS-REQ (Authentication Service Request) by specifying a Service Principal Name (SPN). 
-      This is useful in scenarios where you want to target a specific service like CIFS or HTTP without manually performing a TGS-REQ later. 
-      The resulting ticket is saved to a ccache file just like a standard TGT. 
-      Note that this bypasses the standard TGT -> TGS flow for the specified service.
+      通过指定服务主体名称（SPN），直接经 AS-REQ（认证服务请求）请求服务票据（ST）。
+      适用于想直接针对 CIFS 或 HTTP 等特定服务而无需稍后手动执行 TGS-REQ 的场景。
+      生成的票据与标准 TGT 一样保存到 ccache 文件，注意这会绕过指定服务的标准 TGT→TGS 流程。
     command: "impacket-getTGT -service {{spn}} {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-getTGT - Specify Principal Type
+  - title: impacket-getTGT - 指定主体类型
     desc: |
-      Allows the user to specify the Principal Type of the Kerberos token being requested. 
-      This is an advanced option used when the target account is not a standard user account (e.g., NT_SRV_INST for services). 
-      Most common types include NT_PRINCIPAL (default), NT_ENTERPRISE, or NT_SRV_HST. 
-      Changing this may be necessary for successful authentication against certain non-Windows or specialized Kerberos implementations.
+      允许用户指定所请求 Kerberos 令牌的主体类型。
+      这是目标账户不是标准用户账户（如服务的 NT_SRV_INST）时使用的高级选项。
+      常见类型包括 NT_PRINCIPAL（默认）、NT_ENTERPRISE 或 NT_SRV_HST，针对某些非 Windows 或专用 Kerberos 实现时可能需要修改。
     command: "impacket-getTGT -principalType {{principal_type|NT_PRINCIPAL}} {{domain}}/{{username}}:{{password}}"
 
   # === TROUBLESHOOTING & LOGGING ===
-  - title: impacket-getTGT - Debugging with Timestamps
+  - title: impacket-getTGT - 带时间戳的调试
     desc: |
-      Enables verbose debug output and adds timestamps to every log message. 
-      This is crucial for troubleshooting Kerberos issues such as 'KDC_ERR_S_PRINCIPAL_UNKNOWN' or clock skew problems. 
-      The timestamps help correlate Kerberos requests with packet captures (e.g., Wireshark). 
-      Use this when the tool fails silently or returns cryptic Kerberos error codes.
+      启用详细的调试输出，并为每条日志消息添加时间戳。
+      这对于排查“KDC_ERR_S_PRINCIPAL_UNKNOWN”或时钟偏差等 Kerberos 问题至关重要。
+      时间戳有助于将 Kerberos 请求与抓包（如 Wireshark）关联，当工具静默失败或返回难懂的 Kerberos 错误码时使用。
     command: "impacket-getTGT -debug -ts {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-getTGT - Use existing ccache for authentication
+  - title: impacket-getTGT - 使用现有 ccache 认证
     desc: |
-      Uses an existing Kerberos ticket from a ccache file to authenticate the request. 
-      This requires the KRB5CCNAME environment variable to be set to the path of your valid .ccache file. 
-      If the tool cannot find valid credentials in the cache, it will fall back to the credentials provided in the command line. 
-      Useful for renewing tickets or chaining Kerberos operations.
+      使用 ccache 文件中已有的 Kerberos 票据来认证请求。
+      这需要将 KRB5CCNAME 环境变量设置为有效 .ccache 文件的路径。
+      如果工具在缓存中找不到有效凭据，会回退到命令行提供的凭据，适用于续订票据或串联 Kerberos 操作。
     command: "impacket-getTGT -k -no-pass {{domain}}/{{username}}"

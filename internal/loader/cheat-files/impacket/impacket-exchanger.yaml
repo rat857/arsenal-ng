@@ -3,44 +3,29 @@ tags: [pentest, security, exchange, enumeration, active-directory, impacket, exp
 
 actions:
 # === BASIC AUTHENTICATION ===
- - title: impacket-exchanger - Basic NSPI Authentication
+ - title: impacket-exchanger - 基础 NSPI 认证
    desc: |
-     Connects to the Exchange server using the Name Service Provider Interface (NSPI) module with standard credentials. 
-     This is primarily used to interact with the Exchange Address Book and directory services to enumerate information. 
-     It is a common starting point for internal reconnaissance once initial domain credentials have been obtained. 
-     Ensure that the target name or IP address is reachable over the network and that the specified user has permissions to query Exchange.
+     使用标准凭据，通过名称服务提供程序接口（NSPI）模块连接到 Exchange 服务器。主要用于与 Exchange 通讯簿和目录服务交互以枚举信息。一旦获得初始域凭据，这是内部侦察的常见起点。请确保目标名称或 IP 地址可通过网络访问，并且指定用户具有查询 Exchange 的权限。
    command: "impacket-exchanger {{domain}}/{{username}}:{{password}}@{{target_ip}} nspi"
 
- - title: impacket-exchanger - Pass-the-Hash Authentication
+ - title: impacket-exchanger - Pass-the-Hash 认证
    desc: |
-     Authenticates to the Exchange service using NTLM hashes instead of a cleartext password. 
-     This technique is extremely useful during post-exploitation scenarios where you have extracted hashes but do not have the original password. 
-     The format for the hashes must be LMHASH:NTHASH; if the LM hash is not available, provide an empty string or the standard null filler. 
-     This command allows you to bypass password requirements while still accessing sensitive directory information via the NSPI module.
+     使用 NTLM 哈希而非明文密码认证到 Exchange 服务。此技术在你提取了哈希但没有原始密码的后渗透场景中非常有用。哈希格式必须为 LMHASH:NTHASH；如果 LM 哈希不可用，请提供空字符串或标准的空填充值。此命令允许你绕过密码要求，同时仍通过 NSPI 模块访问敏感目录信息。
    command: "impacket-exchanger -hashes {{hash}} {{domain}}/{{username}}@{{target_ip}} nspi"
 
 # === ADVANCED CONFIGURATION ===
- - title: impacket-exchanger - Custom RPC Hostname
+ - title: impacket-exchanger - 自定义 RPC 主机名
    desc: |
-     Specifies a custom RPC hostname, which can be provided in GUID or NetBIOS format. 
-     Exchange environments often rely on specific GUIDs for routing RPC traffic to the correct backend mailbox or directory server. 
-     Use this option if the default connection fails or if you are targeting a specific server in a DAG (Database Availability Group). 
-     Identifying the correct RPC hostname may require prior enumeration of the environment's configuration.
+     指定自定义 RPC 主机名，可以以 GUID 或 NetBIOS 格式提供。Exchange 环境通常依赖特定 GUID 将 RPC 流量路由到正确的后端邮箱或目录服务器。当默认连接失败，或你针对 DAG（数据库可用性组）中的特定服务器时，使用此选项。识别正确的 RPC 主机名可能需要事先枚举环境的配置。
    command: "impacket-exchanger -rpc-hostname {{rpc_hostname}} {{domain}}/{{username}}:{{password}}@{{target_ip}} nspi"
 
- - title: impacket-exchanger - Debug Mode with Timestamps
+ - title: impacket-exchanger - 带时间戳的调试模式
    desc: |
-     Runs the exchanger tool with extended debug output and timestamps enabled for every log entry. 
-     This is critical for troubleshooting connection issues, such as RPC communication errors or authentication failures. 
-     The debug output provides a detailed look at the underlying Impacket library calls and the Exchange server responses. 
-     It is highly recommended to use this when writing reports or documenting technical evidence during a penetration test.
+     运行 exchanger 工具，并为每条日志条目启用扩展调试输出和时间戳。这对于排查连接问题（如 RPC 通信错误或认证失败）至关重要。调试输出提供底层 Impacket 库调用和 Exchange 服务器响应的详细视图。在渗透测试期间撰写报告或记录技术证据时强烈推荐使用。
    command: "impacket-exchanger -debug -ts {{domain}}/{{username}}:{{password}}@{{target_ip}} nspi"
 
 # === NSPI MODULE OPERATIONS ===
- - title: impacket-exchanger - NSPI List Users (Example Action)
+ - title: impacket-exchanger - NSPI 列出用户（示例操作）
    desc: |
-     Executes the NSPI module to list directory objects or users from the Exchange Global Address List. 
-     The tool interacts directly with the Exchange address book provider to extract information about the organization's structure. 
-     Be aware that large-scale enumeration might be logged by security monitoring tools (SIEM) that track unusual directory queries. 
-     This action provides a powerful way to map out potential targets for further attacks like password spraying or phishing.
+     执行 NSPI 模块，从 Exchange 全局通讯簿列出目录对象或用户。工具直接与 Exchange 通讯簿提供程序交互，提取有关组织结构的信息。请注意，大规模枚举可能被跟踪异常目录查询的安全监控工具（SIEM）记录。此操作提供了强大的方式来绘制潜在目标，用于密码喷洒或钓鱼等进一步攻击。
    command: "impacket-exchanger {{domain}}/{{username}}:{{password}}@{{target_ip}} nspi list-users"

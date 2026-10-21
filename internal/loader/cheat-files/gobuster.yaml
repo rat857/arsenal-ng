@@ -3,102 +3,66 @@ tags: [web, scanning, enumeration, pentest, reconnaissance, dns, brute-force, s3
 
 actions:
   # === DIRECTORY AND FILE ENUMERATION ===
-  - title: gobuster - basic directory discovery
+  - title: gobuster - 基础目录发现
     desc: |
-      Perform a standard directory brute-force attack against a target URL.
-      This is the most common use case for finding hidden paths, admin panels, or configuration folders.
-      It uses the 'dir' mode and requires a wordlist to iterate through potential directory names.
-      Ensure you have a reliable wordlist like those found in SecLists or Dirbuster.
+      对目标 URL 执行标准的目录暴力破解攻击。这是寻找隐藏路径、管理面板或配置文件夹的最常见用法。它使用 dir 模式，并需要一个字典来遍历可能的目录名。请确保你有一个可靠的字典，如 SecLists 或 Dirbuster 中的字典。
     command: "gobuster dir -u {{url}} -w {{wordlist|/usr/share/wordlists/dirb/common.txt}}"
 
-  - title: gobuster - search for specific file extensions
+  - title: gobuster - 搜索特定文件扩展名
     desc: |
-      Search for both directories and files with specific extensions simultaneously.
-      This is highly effective for finding source code files, backups, or configuration files (e.g., .php, .bak, .zip).
-      The -x flag appends the extensions to every word in the wordlist.
-      It helps identify the technology stack and potential sensitive data leaks.
+      同时搜索目录和带有特定扩展名的文件。这对寻找源码文件、备份或配置文件（如 .php、.bak、.zip）非常有效。-x 参数会将扩展名附加到字典中的每个词。它有助于识别技术栈和潜在的敏感数据泄漏。
     command: "gobuster dir -u {{url}} -w {{wordlist}} -x {{extensions|php,html,txt,bak,zip}}"
 
-  - title: gobuster - directory scan with status code filtering
+  - title: gobuster - 带状态码过滤的目录扫描
     desc: |
-      Filter the output based on HTTP status codes to reduce noise.
-      Use the -b (blacklisted) flag to hide specific codes like 404 or 403, or -s (positive) to only show successes.
-      This is crucial when a server returns a 200 OK for every request or when you want to ignore forbidden areas.
-      It makes the results much cleaner and easier to analyze during a time-sensitive engagement.
+      根据 HTTP 状态码过滤输出以减少噪音。使用 -b（黑名单）参数隐藏 404 或 403 等特定状态码，或使用 -s（正选）只显示成功结果。当服务器对每个请求都返回 200 OK，或你想忽略禁止访问的区域时，这非常关键。它使结果更加清晰，便于在时间紧迫的测试中分析。
     command: "gobuster dir -u {{url}} -w {{wordlist}} -b {{status_codes|404,403}}"
 
-  - title: gobuster - authenticated directory scan
+  - title: gobuster - 带认证的目录扫描
     desc: |
-      Perform directory enumeration while authenticated using HTTP Basic Auth.
-      The -U and -P flags allow you to provide credentials for protected areas of the site.
-      This is necessary when the target has a 'dev' or 'staging' area behind a login prompt.
-      Failure to provide credentials usually results in 401 Unauthorized responses for all paths.
+      使用 HTTP Basic Auth 在认证状态下执行目录枚举。-U 和 -P 参数允许你为站点受保护区域提供凭据。当目标在登录提示后有 dev 或 staging 区域时，这是必需的。未提供凭据通常会导致所有路径返回 401 Unauthorized 响应。
     command: "gobuster dir -u {{url}} -w {{wordlist}} -U {{username}} -P {{password}}"
 
-  - title: gobuster - recursive directory scanning
+  - title: gobuster - 递归目录扫描
     desc: |
-      Automatically scan newly discovered directories in a recursive manner.
-      This is useful for deeply nested web applications where manual follow-up would be tedious.
-      Use the --depth flag to limit how deep the recursion should go to avoid infinite loops or massive scan times.
-      Be cautious as this significantly increases the number of requests sent to the server.
+      以递归方式自动扫描新发现的目录。对于手动跟进会很繁琐的深层嵌套 Web 应用非常有用。使用 --depth 参数限制递归深度，以避免无限循环或过长的扫描时间。请注意这会显著增加发送到服务器的请求数量。
     command: "gobuster dir -u {{url}} -w {{wordlist}} --recursive --depth {{depth|2}}"
 
   # === DNS SUBDOMAIN ENUMERATION ===
-  - title: gobuster - dns subdomain enumeration
+  - title: gobuster - DNS 子域名枚举
     desc: |
-      Brute-force subdomains for a specific target domain using the 'dns' mode.
-      This helps map the external attack surface of an organization by finding hidden sub-environments.
-      It relies on DNS resolution rather than HTTP requests, making it useful for finding non-web assets.
-      Always use a high-quality subdomain wordlist for better results.
+      使用 dns 模式对特定目标域暴力破解子域名。这通过发现隐藏的子环境来帮助绘制组织的外部攻击面。它依赖 DNS 解析而非 HTTP 请求，因此可用于寻找非 Web 资产。为获得更好结果，请始终使用高质量的子域名字典。
     command: "gobuster dns -d {{domain}} -w {{wordlist|/usr/share/wordlists/dirb/subdomains-top1mil-5000.txt}}"
 
-  - title: gobuster - dns scan with wildcard handling
+  - title: gobuster - 带通配符处理的 DNS 扫描
     desc: |
-      Perform a DNS scan while ignoring domains that resolve to a specific 'wildcard' IP address.
-      Many organizations use wildcard DNS records, which can lead to many false positives in a standard scan.
-      Gobuster can automatically detect wildcards, but you can also manually specify IPs to ignore.
-      This ensures that the results only contain valid, uniquely configured subdomains.
+      执行 DNS 扫描，同时忽略解析到特定“通配符”IP 地址的域名。许多组织使用通配符 DNS 记录，这会导致标准扫描出现大量误报。Gobuster 可以自动检测通配符，但你也可以手动指定要忽略的 IP。这确保结果只包含有效且独立配置的子域名。
     command: "gobuster dns -d {{domain}} -w {{wordlist}} -i"
 
   # === VIRTUAL HOST ENUMERATION ===
-  - title: gobuster - virtual host (VHOST) discovery
+  - title: gobuster - 虚拟主机（VHOST）发现
     desc: |
-      Identify virtual hosts on a web server by brute-forcing the 'Host' header.
-      This is different from DNS enumeration because it checks if the server responds differently to different Host headers on the same IP.
-      It is essential for discovering sites that are hosted on the same infrastructure but not publicly indexed in DNS.
-      Usually, you should point the URL to the direct IP address of the target server.
+      通过暴力破解 Host 请求头来识别 Web 服务器上的虚拟主机。这与 DNS 枚举不同，因为它检查服务器在同一 IP 上对不同 Host 请求头是否返回不同响应。对于发现托管在同一基础设施但未在 DNS 中公开索引的站点至关重要。通常应将 URL 指向目标服务器的直接 IP 地址。
     command: "gobuster vhost -u {{url}} -w {{wordlist}}"
 
   # === CLOUD BUCKET ENUMERATION ===
-  - title: gobuster - amazon s3 bucket enumeration
+  - title: gobuster - Amazon S3 存储桶枚举
     desc: |
-      Search for open or existing Amazon S3 buckets using a wordlist of potential bucket names.
-      This is a common method for finding leaked data, backups, or publicly accessible assets in the cloud.
-      It checks for bucket existence and tries to determine if the bucket is publicly listable.
-      Cloud security misconfigurations are a high-impact finding in modern pentesting.
+      使用潜在存储桶名称的字典搜索开放或已存在的 Amazon S3 存储桶。这是发现云端泄漏数据、备份或公开可访问资产的常用方法。它会检查存储桶是否存在，并尝试判断该存储桶是否可公开列出。云安全错误配置是现代渗透测试中的高影响发现。
     command: "gobuster s3 -w {{wordlist}}"
 
-  - title: gobuster - google cloud storage (GCS) enumeration
+  - title: gobuster - Google Cloud Storage（GCS）枚举
     desc: |
-      Search for publicly accessible Google Cloud Storage buckets.
-      Similar to the S3 module, it uses a wordlist to find bucket names that might belong to the target organization.
-      This is part of the 'gcs' command suite in newer Gobuster versions.
-      It is highly effective for identifying shadow IT or forgotten cloud resources.
+      搜索可公开访问的 Google Cloud Storage 存储桶。与 S3 模块类似，它使用字典查找可能属于目标组织的存储桶名称。这属于新版 Gobuster 的 gcs 命令套件。对于识别影子 IT 或被遗忘的云资源非常有效。
     command: "gobuster gcs -w {{wordlist}}"
 
   # === FUZZING AND OTHER MODES ===
-  - title: gobuster - custom fuzzing mode
+  - title: gobuster - 自定义模糊测试模式
     desc: |
-      Use the 'fuzz' mode to replace the 'FUZZ' keyword in a URL, Header, or Request Body.
-      This provides the most flexibility, allowing you to brute-force parameters, headers, or specific URL parts.
-      It is a lighter alternative to tools like ffuf or Burp Intruder for simple fuzzing tasks.
-      Great for testing API endpoints or specific query string parameters.
+      使用 fuzz 模式替换 URL、请求头或请求体中的 FUZZ 关键字。这提供最大的灵活性，允许你暴力破解参数、请求头或特定的 URL 部分。对于简单的模糊测试任务，它是 ffuf 或 Burp Intruder 等工具的轻量替代方案。非常适合测试 API 端点或特定的查询字符串参数。
     command: "gobuster fuzz -u {{url}}/index.php?id=FUZZ -w {{wordlist}}"
 
-  - title: gobuster - tftp server enumeration
+  - title: gobuster - TFTP 服务器枚举
     desc: |
-      Brute-force filenames on a TFTP (Trivial File Transfer Protocol) server.
-      TFTP does not provide a way to list files, so you must guess the filenames to download them.
-      This is common in internal network assessments involving VoIP phones, routers, or PXE boot servers.
-      Finding configuration files via TFTP can often lead to credential disclosure.
+      暴力破解 TFTP（简单文件传输协议）服务器上的文件名。TFTP 不提供列出文件的方法，因此你必须猜测文件名才能下载它们。这在涉及 VoIP 电话、路由器或 PXE 启动服务器的内部网络评估中很常见。通过 TFTP 找到配置文件往往会导致凭据泄露。
     command: "gobuster tftp -s {{server_ip}} -w {{wordlist}}"

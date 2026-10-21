@@ -3,82 +3,82 @@ tags: [macos, linux, package-manager, software, installation, maintenance, devel
 
 actions:
 # === SEARCH AND DISCOVERY ===
- - title: brew - search for packages
+ - title: brew - 搜索软件包
    desc: |
-     This command allows you to search for available formulas (CLI tools) and casks (GUI apps) in the Homebrew repository.
-     It accepts plain text or regular expressions to filter the results.
-     Use this when you are unsure of the exact name of a package you wish to install.
+     该命令允许你在 Homebrew 仓库中搜索可用的 formula（CLI 工具）与 cask（GUI 应用）。
+     它接受纯文本或正则表达式来过滤结果。
+     当你不确定想安装的软件包确切名称时使用。
    command: "brew search {{query|wget}}"
 
- - title: brew - display package information
+ - title: brew - 显示软件包信息
    desc: |
-     Use this command to retrieve detailed metadata about a specific formula or cask.
-     It provides information such as the current version, dependencies, conflicts, and the official project URL.
-     This is helpful for verifying the requirements of a tool before committing to an installation.
+     使用此命令检索特定 formula 或 cask 的详细元数据。
+     它提供当前版本、依赖、冲突与官方项目 URL 等信息。
+     这对于在决定安装前验证工具的要求很有帮助。
    command: "brew info {{formula_or_cask|nmap}}"
 
 # === INSTALLATION AND REMOVAL ===
- - title: brew - install a package
+ - title: brew - 安装软件包
    desc: |
-     This is the primary command for installing new software through Homebrew.
-     It downloads the source or pre-compiled "bottle," handles dependencies automatically, and links binaries to your path.
-     Note that some installations may require sudo privileges for post-install scripts, though Homebrew itself runs as a standard user.
+     这是通过 Homebrew 安装新软件的主要命令。
+     它下载源代码或预编译的 "bottle"，自动处理依赖，并将二进制文件链接到你的路径。
+     注意某些安装可能需要在安装后脚本中使用 sudo 权限，尽管 Homebrew 本身以标准用户运行。
    command: "brew install {{formula_or_cask|git}}"
 
- - title: brew - uninstall a package
+ - title: brew - 卸载软件包
    desc: |
-     This command removes an installed formula or cask from your system.
-     It deletes the binaries and associated symlinks created during the installation process.
-     Use this to clean up tools you no longer need and free up space in the Homebrew cellar.
+     该命令从系统中移除已安装的 formula 或 cask。
+     它删除安装过程中创建的二进制文件与关联符号链接。
+     使用它来清理不再需要的工具并释放 Homebrew cellar 中的空间。
    command: "brew uninstall {{formula_or_cask|wget}}"
 
- - title: brew - list installed packages
+ - title: brew - 列出已安装软件包
    desc: |
-     This command displays a list of all formulas and casks currently installed on your local system.
-     It is useful for auditing your environment or checking if a specific tool is already present.
-     Running this without arguments lists everything, but you can also provide a name to check a specific package.
+     该命令显示本地系统上当前安装的所有 formula 与 cask 列表。
+     它对于审计环境或检查特定工具是否已存在很有用。
+     不带参数运行会列出所有内容，你也可以提供名称来检查特定软件包。
    command: "brew list"
 
 # === MAINTENANCE AND UPDATES ===
- - title: brew - update homebrew
+ - title: brew - 更新 Homebrew
    desc: |
-     Running this command updates Homebrew itself along with the local list of available formulas.
-     It does not update your installed software, but it ensures you have the latest definitions from the GitHub repositories.
-     It is recommended to run this command before installing new tools or performing upgrades.
+     运行此命令会更新 Homebrew 本身以及本地的可用 formula 列表。
+     它不会更新你已安装的软件，但确保你拥有来自 GitHub 仓库的最新定义。
+     建议在安装新工具或执行升级之前运行此命令。
    command: "brew update"
 
- - title: brew - upgrade installed packages
+ - title: brew - 升级已安装软件包
    desc: |
-     This command updates all of your installed formulas and casks to their latest available versions.
-     If a specific package name is provided, only that tool will be upgraded.
-     This is the standard way to keep your command-line environment and applications secure and up to date.
+     该命令将所有已安装的 formula 与 cask 更新到最新可用版本。
+     如果提供特定软件包名称，则仅升级该工具。
+     这是保持命令行环境与应用安全且最新的标准方式。
    command: "brew upgrade {{formula_or_cask}}"
 
- - title: brew - check for outdated packages
+ - title: brew - 检查过时软件包
    desc: |
-     This command identifies which of your installed packages have newer versions available in the repository.
-     It provides a concise list of what can be upgraded without actually performing the upgrade process.
-     Use this for a quick status check of your system's software health.
+     该命令识别哪些已安装软件包在仓库中有更新版本。
+     它提供可升级内容的简明列表，而不会实际执行升级过程。
+     使用它快速检查系统软件的健康状态。
    command: "brew outdated"
 
- - title: brew - cleanup old versions
+ - title: brew - 清理旧版本
    desc: |
-     Homebrew often keeps old versions of packages and temporary download files, which can consume significant disk space.
-     This command removes outdated lock files and stale downloads for all formulas and casks.
-     It is a safe way to reclaim storage space without affecting your current software installations.
+     Homebrew 常保留旧版本软件包与临时下载文件，这会占用大量磁盘空间。
+     该命令删除所有 formula 与 cask 的过时锁文件与陈旧下载。
+     这是一种不影响当前软件安装即可回收存储空间的安全方式。
    command: "brew cleanup"
 
 # === TROUBLESHOOTING ===
- - title: brew - check system health
+ - title: brew - 检查系统健康状况
    desc: |
-     The doctor command performs a diagnostic check of your system to find common configuration issues.
-     It identifies problems like broken symlinks, unlinked kegs, and conflicting software in your path.
-     If you encounter errors during installation or updates, this should be your first troubleshooting step.
+     doctor 命令对系统执行诊断检查，以发现常见配置问题。
+     它识别损坏的符号链接、未链接的 keg 以及路径中冲突的软件等问题。
+     如果你在安装或更新过程中遇到错误，这应是你的首个排障步骤。
    command: "brew doctor"
 
- - title: brew - show configuration
+ - title: brew - 显示配置
    desc: |
-     This command outputs the current configuration of your Homebrew installation.
-     It includes environment variables, paths to the cellar and prefix, and details about your operating system.
-     This information is highly valuable when debugging issues or reporting bugs to the Homebrew maintainers.
+     该命令输出 Homebrew 安装的当前配置。
+     它包括环境变量、cellar 与 prefix 的路径，以及关于操作系统的详细信息。
+     在调试问题或向 Homebrew 维护者报告错误时，这些信息非常有价值。
    command: "brew config"

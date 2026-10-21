@@ -3,97 +3,97 @@ tags: [osint, reconnaissance, footprinting, information-gathering, pentest, secu
 
 actions:
   # === BASIC SCANNING & USE CASES ===
-  - title: spiderfoot - passive osint scan
+  - title: spiderfoot - 被动 OSINT 扫描
     desc: |
-      Perform a passive scan to gather intelligence without directly interacting with the target. 
-      This mode is ideal for stealthy reconnaissance as it only queries third-party databases, search engines, and public records. 
-      Use this when you want to avoid appearing in the target's web server or security logs.
+      执行被动扫描以在不直接与目标交互的情况下收集情报。
+      此模式非常适合隐蔽侦察，因为它只查询第三方数据库、搜索引擎和公共记录。
+      当你希望避免出现在目标的 Web 服务器或安全日志中时使用。
     command: "sf.py -s {{target}} -u passive"
 
-  - title: spiderfoot - footprinting scan
+  - title: spiderfoot - 足迹扫描
     desc: |
-      Run a footprinting scan to understand what the target exposes to the internet. 
-      This use case focuses on identifying subdomains, IP addresses, and web technologies associated with the target. 
-      It is a balanced approach that provides a broad overview of the target's digital footprint.
+      运行足迹扫描以了解目标暴露在互联网上的内容。
+      此用例侧重于识别与目标关联的子域名、IP 地址和 Web 技术。
+      这是一种平衡的方法，提供目标数字足迹的广泛概览。
     command: "sf.py -s {{target}} -u footprint"
 
-  - title: spiderfoot - investigate scan
+  - title: spiderfoot - 调查扫描
     desc: |
-      Execute an investigation scan which is typically used when you have a specific indicator of compromise or a suspicious target. 
-      This mode is more intensive than a passive scan and tries to find deeper links between data points. 
-      Be aware that this might involve more active modules that could be detected by the target.
+      执行调查扫描，通常当你拥有特定的入侵指标或可疑目标时使用。
+      此模式比被动扫描更深入，并尝试寻找数据点之间更深层的联系。
+      请注意，这可能涉及更多可能被目标检测到的活动模块。
     command: "sf.py -s {{target}} -u investigate"
 
-  - title: spiderfoot - all modules scan
+  - title: spiderfoot - 全模块扫描
     desc: |
-      Run a comprehensive scan using every available module in the SpiderFoot library. 
-      This is the most "noisy" and time-consuming scan type as it triggers all active and passive checks. 
-      It is recommended only when you have explicit permission and require a complete data dump of all possible associations.
+      使用 SpiderFoot 库中每个可用模块运行全面扫描。
+      这是最「嘈杂」且最耗时的扫描类型，因为它触发所有主动和被动检查。
+      仅当你拥有明确许可且需要所有可能关联的完整数据转储时才建议使用。
     command: "sf.py -s {{target}} -u all"
 
   # === MODULE & DATA FILTERING ===
-  - title: spiderfoot - list available modules
+  - title: spiderfoot - 列出可用模块
     desc: |
-      Display a complete list of all modules currently installed in your SpiderFoot environment. 
-      This helps you identify which modules require API keys and which are ready to use out of the box. 
-      Reviewing this list is essential for troubleshooting missing data or configuring custom scans.
+      显示你的 SpiderFoot 环境中当前安装的所有模块的完整列表。
+      这有助于你识别哪些模块需要 API 密钥，哪些可以开箱即用。
+      查看此列表对于排查缺失数据或配置自定义扫描至关重要。
     command: "sf.py -M"
 
-  - title: spiderfoot - run specific modules
+  - title: spiderfoot - 运行特定模块
     desc: |
-      Execute a scan using only a specific set of comma-separated modules. 
-      This is highly efficient when you only need data from specific sources, such as Shodan, HaveIBeenPwned, or GitHub. 
-      It reduces scan time significantly and prevents unnecessary API credit consumption.
+      仅使用一组特定的逗号分隔模块执行扫描。
+      当你只需要来自特定来源（如 Shodan、HaveIBeenPwned 或 GitHub）的数据时，这非常高效。
+      它显著减少扫描时间并避免不必要的 API 额度消耗。
     command: "sf.py -s {{target}} -m {{modules|s3bucket,google_maps,github}}"
 
-  - title: spiderfoot - collect specific event types
+  - title: spiderfoot - 收集特定事件类型
     desc: |
-      Launch a scan targeted at retrieving specific data types regardless of the module used. 
-      For example, you can request only 'EMAILADDR' or 'PHONE_NUMBER' to filter out infrastructure data. 
-      SpiderFoot will automatically enable the modules required to produce those specific event types.
+      发起针对特定数据类型的扫描，无论使用何种模块。
+      例如，你可以仅请求 EMAILADDR 或 PHONE_NUMBER 以过滤掉基础设施数据。
+      SpiderFoot 会自动启用生成这些特定事件类型所需的模块。
     command: "sf.py -s {{target}} -t {{event_types|EMAILADDR,BITCOIN_ADDRESS}}"
 
-  - title: spiderfoot - strict mode scan
+  - title: spiderfoot - 严格模式扫描
     desc: |
-      Enable strict mode to ensure that only modules capable of directly consuming the target type are used. 
-      This prevents the tool from branching out into secondary or tertiary data types that might be irrelevant. 
-      It is useful for keeping the scan focused and preventing the "spidering" effect from becoming unmanageable.
+      启用严格模式，确保只使用能够直接消费目标类型的模块。
+      这可以防止工具扩展到可能无关的次级或三级数据类型。
+      它有助于保持扫描专注，并防止「蛛网式」扩展变得难以管理。
     command: "sf.py -s {{target}} -x"
 
   # === OUTPUT & FORMATTING ===
-  - title: spiderfoot - export results to csv
+  - title: spiderfoot - 将结果导出为 CSV
     desc: |
-      Run a scan and export the results directly into a CSV file for external analysis. 
-      This is useful for importing OSINT data into spreadsheets or other reporting tools. 
-      You can define a custom delimiter if the default comma is not suitable for your data processing pipeline.
+      运行扫描并将结果直接导出到 CSV 文件以供外部分析。
+      这对于将 OSINT 数据导入电子表格或其他报告工具很有用。
+      如果默认逗号不适合你的数据处理流水线，你可以定义自定义分隔符。
     command: "sf.py -s {{target}} -u passive -o csv > {{output_file|results.csv}}"
 
-  - title: spiderfoot - json output with source data
+  - title: spiderfoot - 带源数据的 JSON 输出
     desc: |
-      Generate scan results in JSON format while including the raw source data field. 
-      JSON output is ideal for automation and integrating SpiderFoot results into other security platforms (SOAR/SIEM). 
-      The inclusion of source data allows you to verify the evidence behind each finding.
+      以 JSON 格式生成扫描结果，同时包含原始源数据字段。
+      JSON 输出非常适合自动化并将 SpiderFoot 结果集成到其他安全平台（SOAR/SIEM）。
+      包含源数据允许你验证每个发现背后的证据。
     command: "sf.py -s {{target}} -u footprint -o json -r"
 
   # === SERVER & INTERFACE ===
-  - title: spiderfoot - start web interface
+  - title: spiderfoot - 启动 Web 界面
     desc: |
-      Launch the SpiderFoot web-based GUI on a specific IP address and port. 
-      The web interface provides a much more visual experience, including node graphs and easy configuration of API keys. 
-      By default, it listens on 127.0.0.1:5001, but you can change this to allow remote access (ensure firewall rules are in place).
+      在特定 IP 地址和端口上启动 SpiderFoot 的基于 Web 的 GUI。
+      Web 界面提供更直观的体验，包括节点图和便捷的 API 密钥配置。
+      默认监听在 127.0.0.1:5001，但你可以更改以允许远程访问（确保防火墙规则就绪）。
     command: "sf.py -l {{ip_address|127.0.0.1}}:{{port|5001}}"
 
   # === ADVANCED OPERATIONS ===
-  - title: spiderfoot - correlate scan results
+  - title: spiderfoot - 关联扫描结果
     desc: |
-      Apply correlation rules to an existing scan ID to identify meaningful patterns or high-risk findings. 
-      Correlation helps filter the "noise" by highlighting connections like 'Malicious IP found in DNS records'. 
-      You must have the Scan ID from a previously completed or running scan to use this feature.
+      对现有扫描 ID 应用关联规则，以识别有意义的模式或高风险发现。
+      关联通过突出诸如「在 DNS 记录中发现恶意 IP」之类的联系来过滤噪声。
+      你必须拥有之前已完成或正在运行的扫描的扫描 ID 才能使用此功能。
     command: "sf.py -C {{scan_id}}"
 
-  - title: spiderfoot - limit concurrent threads
+  - title: spiderfoot - 限制并发线程
     desc: |
-      Manually set the maximum number of modules to run concurrently during a scan. 
-      Reducing the thread count can prevent your IP from being rate-limited by third-party services. 
-      Increasing it can speed up scans if you have a high-performance machine and stable network connection.
+      手动设置扫描期间可并发运行的模块最大数量。
+      减少线程数可以防止你的 IP 被第三方服务限速。
+      如果你有高性能机器和稳定的网络连接，增加线程数可以加快扫描速度。
     command: "sf.py -s {{target}} -u all -max-threads {{thread_count|10}}"

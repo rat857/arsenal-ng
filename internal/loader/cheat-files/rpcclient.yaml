@@ -4,99 +4,99 @@ tags: [network, smb, rpc, pentest, enumeration, windows, security]
 actions:
   # === CONNECTION & AUTHENTICATION ===
 
-  - title: rpcclient - anonymous connection
+  - title: rpcclient - 匿名连接
     desc: |
-      Establish an unauthenticated session to the target RPC service. 
-      This is primarily used to check if null sessions are enabled on a Windows or Samba host. 
-      If successful, it allows for initial information gathering like user enumeration without providing any credentials.
+      与目标 RPC 服务建立未经认证的会话。
+      主要用于检查 Windows 或 Samba 主机是否启用了空会话。
+      如果成功，它允许在无需提供任何凭据的情况下进行初始信息收集，例如用户枚举。
     command: "rpcclient -U \"\" -N {{target}}"
 
-  - title: rpcclient - authenticated connection
+  - title: rpcclient - 认证连接
     desc: |
-      Connect to the RPC service using a specific username and password. 
-      This is the standard method for interacting with the service when valid domain or local credentials have been obtained. 
-      Use the "DOMAIN/Username%Password" format to ensure the authentication context is correctly interpreted.
+      使用特定用户名和密码连接到 RPC 服务。
+      当获得有效的域或本地凭据后，这是与服务交互的标准方法。
+      使用 DOMAIN/Username%Password 格式以确保认证上下文被正确解释。
     command: "rpcclient -U \"{{domain|WORKGROUP}}/{{username}}%{{password}}\" {{target}}"
 
-  - title: rpcclient - pass-the-hash connection
+  - title: rpcclient - Pass-the-Hash 连接
     desc: |
-      Connect to the target using a user's NT hash instead of a cleartext password. 
-      This technique is essential for lateral movement after extracting hashes from memory or the SAM database. 
-      Note that the hash must be provided in the 32-character hexadecimal format.
+      使用用户的 NT 哈希而不是明文密码连接到目标。
+      在从内存或 SAM 数据库提取哈希后，此技术对于横向移动至关重要。
+      请注意，哈希必须以 32 字符的十六进制格式提供。
     command: "rpcclient -U \"{{username}}\" --pw-nt-hash --password=\"{{nt_hash}}\" {{target}}"
 
   # === USER & GROUP ENUMERATION ===
 
-  - title: rpcclient - enumerate domain users
+  - title: rpcclient - 枚举域用户
     desc: |
-      Retrieve a list of all user accounts within the target domain. 
-      This command returns the username and its corresponding Relative Identifier (RID). 
-      It is a fundamental step in mapping the target's attack surface and identifying potential targets for password spraying.
+      获取目标域内所有用户账户的列表。
+      此命令返回用户名及其对应的相对标识符（RID）。
+      它是映射目标攻击面并识别潜在密码喷洒目标的基础步骤。
     command: "rpcclient -U \"{{username}}%{{password}}\" -c \"enumdomusers\" {{target}}"
 
-  - title: rpcclient - enumerate domain groups
+  - title: rpcclient - 枚举域组
     desc: |
-      List all security and distribution groups within the domain. 
-      Identifying group names like 'Domain Admins' or 'Schema Admins' helps attackers prioritize specific accounts for exploitation. 
-      The output includes both the group name and its associated RID.
+      列出域内的所有安全组和通讯组。
+      识别诸如 Domain Admins 或 Schema Admins 之类的组名有助于攻击者优先利用特定账户。
+      输出包括组名及其关联的 RID。
     command: "rpcclient -U \"{{username}}%{{password}}\" -c \"enumdomgroups\" {{target}}"
 
-  - title: rpcclient - query detailed user info
+  - title: rpcclient - 查询详细用户信息
     desc: |
-      Get comprehensive information about a specific user account using its RID. 
-      This includes details such as password last set time, account expiration, logon count, and home directory path. 
-      It is highly useful for determining if an account is active or if it has interesting configuration flags.
+      使用用户的 RID 获取特定用户账户的全面信息。
+      这包括密码上次设置时间、账户过期时间、登录次数和主目录路径等详情。
+      它对于判断账户是否活跃或是否具有有趣的配置标志非常有用。
     command: "rpcclient -U \"{{username}}%{{password}}\" -c \"queryuser {{user_rid}}\" {{target}}"
 
-  - title: rpcclient - enumerate group members
+  - title: rpcclient - 枚举组成员
     desc: |
-      List all members of a specific group identified by its RID. 
-      This allows you to see which users belong to high-privilege groups like 'Enterprise Admins'. 
-      You must first find the group RID using the 'enumdomgroups' command.
+      列出由 RID 标识的特定组的所有成员。
+      这使你能够查看哪些用户属于 Enterprise Admins 等高权限组。
+      你必须先使用 enumdomgroups 命令找到组的 RID。
     command: "rpcclient -U \"{{username}}%{{password}}\" -c \"querygroupmem {{group_rid}}\" {{target}}"
 
   # === SID & NAME LOOKUPS ===
 
-  - title: rpcclient - lookup sid by name
+  - title: rpcclient - 按名称查找 SID
     desc: |
-      Resolve a human-readable username or group name to its unique Security Identifier (SID). 
-      This is helpful when you need the exact SID for advanced exploitation techniques or access control analysis. 
-      The command will return the full SID string and the type of account found.
+      将人类可读的用户名或组名解析为其唯一的安全标识符（SID）。
+      当你需要用于高级利用技术或访问控制分析的确切 SID 时很有帮助。
+      该命令会返回完整的 SID 字符串和找到的账户类型。
     command: "rpcclient -U \"{{username}}%{{password}}\" -c \"lookupnames {{target_account_name}}\" {{target}}"
 
-  - title: rpcclient - lookup name by sid
+  - title: rpcclient - 按 SID 查找名称
     desc: |
-      Perform a reverse lookup to find the account name associated with a specific SID. 
-      This is often used during 'SID cycling' where an attacker iterates through RIDs to find hidden or unlisted accounts. 
-      It helps in mapping out local or domain accounts that do not appear in standard lists.
+      执行反向查找，以找到与特定 SID 关联的账户名称。
+      这通常在 SID 循环期间使用，攻击者遍历 RID 以查找隐藏或未列出的账户。
+      它有助于映射标准列表中不出现的本地或域账户。
     command: "rpcclient -U \"{{username}}%{{password}}\" -c \"lookupsids {{sid}}\" {{target}}"
 
   # === SYSTEM & SHARE INFORMATION ===
 
-  - title: rpcclient - enumerate network shares
+  - title: rpcclient - 枚举网络共享
     desc: |
-      List all shared folders available on the target system using the SRVSVC pipe. 
-      This can reveal administrative shares like C$, ADMIN$, and IPC$, as well as custom organizational shares. 
-      It provides a clear view of where sensitive data might be stored across the network.
+      使用 SRVSVC 管道列出目标系统上所有可用的共享文件夹。
+      这可以揭示诸如 C$、ADMIN$ 和 IPC$ 之类的管理共享，以及自定义组织共享。
+      它提供了敏感数据可能存储在网络何处位置的清晰视图。
     command: "rpcclient -U \"{{username}}%{{password}}\" -c \"netshareenumall\" {{target}}"
 
-  - title: rpcclient - enumerate system privileges
+  - title: rpcclient - 枚举系统权限
     desc: |
-      List all privileges defined on the target system's Local Security Authority (LSA). 
-      This command shows the various rights that can be assigned to users, such as the right to back up files or debug programs. 
-      It is a key step in identifying potential privilege escalation paths.
+      列出目标系统本地安全机构（LSA）上定义的所有权限。
+      此命令显示可分配给用户的各种权利，例如备份文件或调试程序的权利。
+      它是识别潜在提权路径的关键步骤。
     command: "rpcclient -U \"{{username}}%{{password}}\" -c \"enumprivs\" {{target}}"
 
-  - title: rpcclient - query domain information
+  - title: rpcclient - 查询域信息
     desc: |
-      Retrieve basic information about the domain the target belongs to. 
-      This includes the domain name, the domain SID, and the sequence number. 
-      Knowing the domain SID is crucial for crafting manual RPC requests or performing silver/golden ticket attacks.
+      获取目标所属域的基本信息。
+      这包括域名、域 SID 和序列号。
+      了解域 SID 对于构造手动 RPC 请求或执行银票/金票攻击至关重要。
     command: "rpcclient -U \"{{username}}%{{password}}\" -c \"querydominfo\" {{target}}"
 
-  - title: rpcclient - enumerate printer information
+  - title: rpcclient - 枚举打印机信息
     desc: |
-      List information about printers and print drivers configured on the target. 
-      While seemingly benign, printer services have historically been sources of critical vulnerabilities like PrintNightmare. 
-      This enumeration helps identify potential print-related exploitation vectors.
+      列出目标上配置的打印机和打印驱动程序的相关信息。
+      虽然看似无害，但打印机服务历来是 PrintNightmare 等严重漏洞的来源。
+      此枚举有助于识别潜在的打印相关利用向量。
     command: "rpcclient -U \"{{username}}%{{password}}\" -c \"enumprinters\" {{target}}"

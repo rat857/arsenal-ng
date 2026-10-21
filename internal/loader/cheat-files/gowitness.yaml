@@ -3,89 +3,65 @@ tags: [web, screenshot, reconnaissance, pentest, reporting, scanner, security]
 
 actions:
   # === BASIC SCANNING ===
-  - title: gowitness - single url scan
+  - title: gowitness - 单 URL 扫描
     desc: |
-      Capture a screenshot of a single specified URL using the headless Chrome engine. 
-      This is the most basic command used to verify the visual state of a specific web interface. 
-      The resulting image and metadata are automatically stored in the default gowitness SQLite database.
+      使用无头 Chrome 引擎截取单个指定 URL 的屏幕截图。这是用于验证特定 Web 界面视觉状态的最基础命令。生成的图像和元数据会自动存储在默认的 gowitness SQLite 数据库中。
     command: "gowitness scan single --url {{url}}"
 
-  - title: gowitness - scan from file
+  - title: gowitness - 从文件扫描
     desc: |
-      Perform batch screenshotting by providing a text file containing a list of URLs. 
-      This is highly effective during the reconnaissance phase when you have a large list of subdomains or discovered IPs. 
-      The tool will iterate through the list and attempt to capture a screenshot for every valid entry.
+      通过提供包含 URL 列表的文本文件执行批量截图。当你在侦察阶段拥有大量子域名或已发现的 IP 列表时，这非常高效。工具会遍历列表，并为每个有效条目尝试捕获截图。
     command: "gowitness scan file --file {{targets.txt}}"
 
-  - title: gowitness - scan network range (cidr)
+  - title: gowitness - 扫描网络范围（CIDR）
     desc: |
-      Scan an entire CIDR network range to discover and screenshot active web services. 
-      It automatically probes common web ports to identify reachable web servers across the network segment. 
-      This is particularly useful for internal penetration tests to identify "shadow IT" or forgotten management interfaces.
+      扫描整个 CIDR 网络范围，发现活跃的 Web 服务并截图。它会自动探测常见 Web 端口，以识别网段内可访问的 Web 服务器。对于内部渗透测试中识别“影子 IT”或被遗忘的管理界面特别有用。
     command: "gowitness scan cidr --cidr {{192.168.1.0/24}}"
 
   # === THIRD PARTY INTEGRATION ===
-  - title: gowitness - scan from nmap xml
+  - title: gowitness - 从 Nmap XML 扫描
     desc: |
-      Import and scan targets based on an existing Nmap XML output file. 
-      The tool parses the XML to find open ports associated with HTTP/HTTPS services and takes screenshots of them. 
-      This workflow saves time by avoiding redundant scanning of non-web ports already identified by Nmap.
+      基于现有的 Nmap XML 输出文件导入并扫描目标。工具解析 XML 以查找与 HTTP/HTTPS 服务相关的开放端口，并对其截图。此工作流通过避免重复扫描 Nmap 已识别的非 Web 端口来节省时间。
     command: "gowitness scan nmap --file {{scan.xml}}"
 
-  - title: gowitness - scan from nessus file
+  - title: gowitness - 从 Nessus 文件扫描
     desc: |
-      Capture screenshots of web services identified within a Nessus scan file. 
-      This helps security professionals visually validate findings and web interfaces discovered during vulnerability assessments. 
-      It ensures that visual evidence is collected for all web-related assets found in the Nessus report.
+      截取 Nessus 扫描文件中识别的 Web 服务的截图。这有助于安全专业人员直观验证漏洞评估期间发现的 Web 界面和发现结果。它确保为 Nessus 报告中所有与 Web 相关的资产收集视觉证据。
     command: "gowitness scan nessus --file {{report.nessus}}"
 
   # === SCAN CONFIGURATION & OPTIMIZATION ===
-  - title: gowitness - custom resolution
+  - title: gowitness - 自定义分辨率
     desc: |
-      Set a specific browser window size for the screenshots to simulate different devices. 
-      This is helpful when testing responsive web designs or targeting mobile-specific layouts. 
-      Users can define both width (X) and height (Y) to ensure the entire page content is properly captured.
+      为截图设置特定的浏览器窗口大小，以模拟不同设备。在测试响应式 Web 设计或针对移动端布局时非常有用。用户可以定义宽度（X）和高度（Y），确保整个页面内容被正确捕获。
     command: "gowitness scan single --url {{url}} --resolution-x {{1920}} --resolution-y {{1080}}"
 
-  - title: gowitness - scan with delay and timeout
+  - title: gowitness - 带延迟和超时的扫描
     desc: |
-      Apply a delay before taking the screenshot and set a maximum timeout for page loads. 
-      A delay is often necessary for modern Single Page Applications (SPAs) to allow JavaScript to finish rendering content. 
-      Increasing the timeout helps in successfully capturing screenshots from slow-responding servers or high-latency networks.
+      在截图前应用延迟，并为页面加载设置最大超时。对于现代单页应用（SPA），延迟通常是让 JavaScript 完成内容渲染所必需的。增加超时有助于成功捕获响应缓慢的服务器或高延迟网络的截图。
     command: "gowitness scan single --url {{url}} --delay {{5}} --timeout {{30}}"
 
-  - title: gowitness - multi-threaded scan
+  - title: gowitness - 多线程扫描
     desc: |
-      Adjust the number of concurrent threads to significantly speed up large-scale scanning operations. 
-      Each thread launches an instance of headless Chrome, so higher thread counts require more system memory and CPU power. 
-      Monitor system resources carefully when using high thread counts to prevent the local machine from becoming unresponsive.
+      调整并发线程数以显著加快大规模扫描操作。每个线程都会启动一个无头 Chrome 实例，因此更高的线程数需要更多系统内存和 CPU。使用高线程数时请仔细监控系统资源，防止本地机器变得无响应。
     command: "gowitness scan file --file {{targets.txt}} --threads {{10}}"
 
-  - title: gowitness - scan through proxy
+  - title: gowitness - 通过代理扫描
     desc: |
-      Route all scanning traffic through a specified HTTP or SOCKS5 proxy server. 
-      This is essential for bypassing network restrictions, testing from different geographic locations, or anonymizing the scan source. 
-      Ensure the proxy is stable, as intermittent connections can lead to failed screenshots or timeouts.
+      通过指定的 HTTP 或 SOCKS5 代理服务器转发所有扫描流量。这对于绕过网络限制、从不同地理位置测试或匿名化扫描来源至关重要。请确保代理稳定，因为间歇性连接可能导致截图失败或超时。
     command: "gowitness scan single --url {{url}} --proxy {{http://127.0.0.1:8080}}"
 
   # === REPORTING & DATA MANAGEMENT ===
-  - title: gowitness - start report server
+  - title: gowitness - 启动报告服务器
     desc: |
-      Launch a local web-based interface to view and organize all captured screenshots and metadata. 
-      The report viewer provides a searchable gallery, allowing users to filter results by status code, title, or domain. 
-      This is the preferred way to analyze large datasets and quickly identify interesting targets for further exploitation.
+      启动本地 Web 界面以查看和组织所有捕获的截图与元数据。报告查看器提供可搜索的画廊，允许用户按状态码、标题或域名过滤结果。这是分析大型数据集并快速识别有趣目标以进一步利用的首选方式。
     command: "gowitness report server --address {{127.0.0.1:8080}}"
 
-  - title: gowitness - export to csv
+  - title: gowitness - 导出为 CSV
     desc: |
-      Export the metadata from the gowitness database into a CSV file format. 
-      This data includes URLs, response status codes, page titles, and file paths to the screenshots. 
-      Exporting to CSV is useful for creating custom reports or importing data into other tools like Excel or specialized pentest dashboards.
+      将 gowitness 数据库中的元数据导出为 CSV 文件格式。这些数据包括 URL、响应状态码、页面标题以及截图文件的路径。导出为 CSV 有助于创建自定义报告，或将数据导入 Excel 或专用渗透测试仪表板等其他工具。
     command: "gowitness report export --format csv --file {{results.csv}}"
 
-  - title: gowitness - custom database path
+  - title: gowitness - 自定义数据库路径
     desc: |
-      Specify a custom location for the SQLite database used to store scan results. 
-      By default, gowitness creates a database in the current directory, but a custom path allows for better organization across different projects. 
-      This is useful when you want to keep data for different clients or engagements separated.
+      为用于存储扫描结果的 SQLite 数据库指定自定义位置。默认情况下 gowitness 在当前目录创建数据库，但自定义路径可以在不同项目之间更好地组织。当你想将不同客户或项目的测试数据分开保存时非常有用。
     command: "gowitness scan file --file {{targets.txt}} --db {{/path/to/project.sqlite}}"

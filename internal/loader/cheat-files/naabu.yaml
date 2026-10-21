@@ -4,106 +4,92 @@ tags: [network, scanner, security, pentest, enumeration, reconnaissance, port-sc
 actions:
 # === BASIC SCANNING ===
 
- - title: naabu - basic scan of a single host
+ - title: naabu - 单主机基础扫描
    desc: |
-     Performs a basic port scan on a single target host. By default, it scans the top 100 most common ports. 
-     This is the most straightforward way to quickly check for common services on a target. 
-     It is ideal for a quick initial reconnaissance phase.
+     对单个目标主机执行基础端口扫描。默认扫描前 100 个最常见端口。这是快速检查目标常见服务的最直接方式。
+     非常适合快速的初步侦察阶段。
    command: "naabu -host {{target}}"
 
- - title: naabu - scan multiple hosts from a list
+ - title: naabu - 从列表扫描多个主机
    desc: |
-     Reads a list of targets from a file and performs port scanning on all of them. 
-     The input file should contain one host, IP, or CIDR per line. 
-     This is highly efficient for large-scale infrastructure scanning projects.
+     从文件读取目标列表并对其全部执行端口扫描。输入文件每行应包含一个主机、IP 或 CIDR。
+     这对大规模基础设施扫描项目非常高效。
    command: "naabu -list {{file|targets.txt}}"
 
- - title: naabu - scan specific ports or ranges
+ - title: naabu - 扫描特定端口或范围
    desc: |
-     Scans specific ports or a range of ports defined by the user. 
-     You can provide individual ports separated by commas or define a range using a hyphen. 
-     Useful when you are looking for specific services like web servers (80, 443) or databases (3306, 5432).
+     扫描用户定义的特定端口或端口范围。你可以提供以逗号分隔的单个端口，或用短横线定义范围。
+     当你在寻找 Web 服务器（80、443）或数据库（3306、5432）等特定服务时很有用。
    command: "naabu -p {{ports|80,443,1000-2000}}"
 
- - title: naabu - scan top ports
+ - title: naabu - 扫描常用端口
    desc: |
-     Scans the most common ports based on frequency. 
-     Supported values are '100', '1000', or 'full' (all 65535 ports). 
-     Using 'full' takes significantly longer but ensures no hidden services are missed.
+     按频率扫描最常见的端口。支持的值有 100、1000 或 full（全部 65535 个端口）。
+     使用 full 耗时显著更长，但确保不遗漏任何隐藏服务。
    command: "naabu -top-ports {{count|1000}}"
 
 # === DISCOVERY & TYPES ===
 
- - title: naabu - passive port scanning
+ - title: naabu - 被动端口扫描
    desc: |
-     Retrieves port information using the Shodan InternetDB API instead of sending packets to the target. 
-     This is a completely stealthy method as no direct connection is made to the target infrastructure. 
-     It is extremely fast but may contain slightly outdated information depending on Shodan's last crawl.
+     使用 Shodan InternetDB API 获取端口信息，而不是向目标发送数据包。这是完全隐蔽的方法，因为不与目标基础设施建立直接连接。
+     速度极快，但根据 Shodan 上次抓取时间，信息可能略有滞后。
    command: "naabu -host {{target}} -passive"
 
- - title: naabu - connect scan (TCP)
+ - title: naabu - 连接扫描（TCP）
    desc: |
-     Forces the use of a TCP Connect scan instead of the default SYN scan. 
-     Connect scans complete the three-way handshake and are generally slower and more visible in logs. 
-     Use this mode if you do not have raw socket permissions (non-root user) or if SYN scans are being dropped by a firewall.
+     强制使用 TCP Connect 扫描而非默认的 SYN 扫描。Connect 扫描完成三次握手，通常更慢且在日志中更显眼。
+     若你没有原始套接字权限（非 root 用户）或 SYN 扫描被防火墙丢弃，使用此模式。
    command: "naabu -host {{target}} -scan-type c"
 
- - title: naabu - service discovery and versioning
+ - title: naabu - 服务发现与版本识别
    desc: |
-     Attempts to identify the service running on the open ports and determine its version. 
-     This adds a layer of fingerprinting to the fast port scanning process. 
-     It helps in identifying vulnerable software versions immediately after finding an open port.
+     尝试识别开放端口上运行的服务并确定其版本。这在快速端口扫描基础上增加一层指纹识别。
+     有助于在发现开放端口后立即识别存在漏洞的软件版本。
    command: "naabu -host {{target}} -sV"
 
- - title: naabu - skip host discovery (Pn)
+ - title: naabu - 跳过主机发现（Pn）
    desc: |
-     Treats all hosts as online and skips the initial host discovery phase. 
-     This is useful when targets are protected by firewalls that block ICMP (ping) requests. 
-     Ensures that the tool attempts to scan ports even if the host doesn't respond to pings.
+     将所有主机视为在线，跳过初始主机发现阶段。当目标受阻止 ICMP（ping）请求的防火墙保护时很有用。
+     确保即使主机不响应 ping，工具也会尝试扫描端口。
    command: "naabu -host {{target}} -Pn"
 
 # === OPTIMIZATION & PERFORMANCE ===
 
- - title: naabu - rate limited scan
+ - title: naabu - 限速扫描
    desc: |
-     Controls the speed of the scan by limiting the number of packets sent per second. 
-     Setting a lower rate helps in avoiding network congestion and bypassing some basic rate-limiting IDS/IPS. 
-     Default is 1000, but it can be adjusted based on the stability of the target network.
+     通过限制每秒发送的数据包数来控制扫描速度。设置较低的速率有助于避免网络拥塞并绕过一些基本的限速 IDS/IPS。
+     默认为 1000，但可根据目标网络的稳定性调整。
    command: "naabu -host {{target}} -rate {{rate|500}}"
 
- - title: naabu - exclude CDN and WAF ports
+ - title: naabu - 排除 CDN 和 WAF 端口
    desc: |
-     Automatically skips full port scans for hosts identified as belonging to a CDN or WAF. 
-     When enabled, it typically only scans ports 80 and 443 for these hosts to save time. 
-     This prevents wasting resources on infrastructure like Cloudflare or Akamai where most ports are closed or filtered.
+     自动跳过对识别为属于 CDN 或 WAF 的主机的全端口扫描。启用后，对这些主机通常只扫描 80 和 443 端口以节省时间。
+     这避免在 Cloudflare 或 Akamai 等基础设施上浪费资源，因为这些地方大多数端口是关闭或过滤的。
    command: "naabu -host {{target}} -exclude-cdn"
 
- - title: naabu - scan all IPs associated with DNS
+ - title: naabu - 扫描与 DNS 关联的所有 IP
    desc: |
-     Scans every IP address associated with a single hostname. 
-     Many large websites use multiple IP addresses for load balancing. 
-     This ensures that you check the security posture of every underlying server in the cluster.
+     扫描与单个主机名关联的每个 IP 地址。许多大型网站使用多个 IP 地址进行负载均衡。
+     这确保你检查集群中每个底层服务器的安全态势。
    command: "naabu -host {{target}} -scan-all-ips"
 
 # === INTEGRATION & OUTPUT ===
 
- - title: naabu - pipe to nmap for advanced analysis
+ - title: naabu - 管道到 nmap 进行高级分析
    desc: |
-     Uses naabu for fast port discovery and then automatically triggers nmap for detailed versioning and scripting. 
-     This is the "best of both worlds" approach: speed of Go-based scanning combined with Nmap's powerful NSE engine. 
-     Requires nmap to be installed on the local system.
+     使用 naabu 进行快速端口发现，然后自动触发 nmap 进行详细版本识别和脚本扫描。这是两全其美的方法：Go 扫描的速度结合 Nmap 强大的 NSE 引擎。
+     要求本地系统已安装 nmap。
    command: "naabu -host {{target}} -nmap-cli 'nmap -sV -sC -oN nmap_output.txt'"
 
- - title: naabu - json output for automation
+ - title: naabu - 用于自动化的 JSON 输出
    desc: |
-     Saves the scan results in a JSON lines format. 
-     This is ideal for integrating naabu into automated pipelines or custom scripts. 
-     Each line in the output file will be a valid JSON object containing host, port, and protocol info.
+     以 JSON lines 格式保存扫描结果。适合将 naabu 集成到自动化流水线或自定义脚本中。
+     输出文件的每一行都是一个包含主机、端口和协议信息的有效 JSON 对象。
    command: "naabu -host {{target}} -json -o {{output_file|results.json}}"
 
- - title: naabu - exclude specific hosts or ports
+ - title: naabu - 排除特定主机或端口
    desc: |
-     Excludes certain hosts or ports from the current scan. 
-     Useful for avoiding sensitive production systems or noisy ports that you've already investigated. 
-     Supports comma-separated lists for both hosts and ports.
+     从当前扫描中排除某些主机或端口。用于避开敏感生产系统或已调查过的噪音端口。
+     主机和端口都支持以逗号分隔的列表。
    command: "naabu -list {{file}} -exclude-hosts {{bad_ips}} -exclude-ports {{noisy_ports|80,443}}"

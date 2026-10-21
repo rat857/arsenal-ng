@@ -3,81 +3,59 @@ tags: [forensics, security, hashing, integrity, checksum, incident-response]
 
 actions:
   # === BASIC HASHING ===
-  - title: hashdeep - compute hashes for a single file
+  - title: hashdeep - 计算单个文件的哈希
     desc: |
-      Generates digital signatures for a specific file using the default algorithms MD5 and SHA-256. 
-      This is the most common way to obtain a quick hash of a file to ensure its integrity or to verify it against a known value. 
-      It outputs the file size, the hashes, and the file path in a formatted string.
+      使用默认算法 MD5 和 SHA-256 为特定文件生成数字签名。这是快速获取文件哈希以确保其完整性或对照已知值进行验证的最常见方式。它以格式化字符串输出文件大小、哈希值和文件路径。
     command: "hashdeep {{file_path}}"
 
-  - title: hashdeep - recursive directory hashing
+  - title: hashdeep - 递归目录哈希
     desc: |
-      Traverses all subdirectories starting from the specified path and computes hashes for every file found. 
-      This is a standard procedure during forensic imaging or system auditing to baseline a directory's state. 
-      It provides a comprehensive list of all files and their corresponding hashes, which can be redirected to a file for storage.
+      从指定路径开始遍历所有子目录，并为找到的每个文件计算哈希。这是取证镜像或系统审计期间建立目录状态基线的标准流程。它提供所有文件及其对应哈希的完整列表，可重定向到文件保存。
     command: "hashdeep -r {{directory_path}}"
 
-  - title: hashdeep - hash with specific algorithms
+  - title: hashdeep - 使用指定算法哈希
     desc: |
-      Computes hashes using only the specified algorithms instead of the default MD5/SHA-256 pair. 
-      Supported algorithms include md5, sha1, sha256, tiger, and whirlpool, which can be provided as a comma-separated list. 
-      Use this when a specific compliance standard or tool requirement dictates a certain hashing method.
+      仅使用指定的算法计算哈希，而非默认的 MD5/SHA-256 组合。支持的算法包括 md5、sha1、sha256、tiger 和 whirlpool，可以逗号分隔列表提供。当特定合规标准或工具要求指定特定哈希方法时使用。
     command: "hashdeep -c {{algorithms|sha256,sha1}} {{file_path}}"
 
   # === AUDITING AND MATCHING ===
-  - title: hashdeep - generate hash list for auditing
+  - title: hashdeep - 生成用于审计的哈希列表
     desc: |
-      Creates a hash list and saves it to a file for later use in auditing or matching scenarios. 
-      The generated baseline file serves as the "source of truth" for verifying file integrity across different systems or points in time. 
-      Users should ensure they have write permissions to the destination path before executing this command.
+      创建哈希列表并将其保存到文件，以供后续审计或匹配场景使用。生成的基线文件作为跨不同系统或时间点验证文件完整性的“事实来源”。执行此命令前，用户应确保对目标路径具有写入权限。
     command: "hashdeep -r {{directory_path}} > {{hash_list|known_hashes.txt}}"
 
-  - title: hashdeep - audit files against known hashes
+  - title: hashdeep - 对照已知哈希审计文件
     desc: |
-      Compares the files in a target directory against a previously generated list of known-good hashes. 
-      This mode will report any files that have been modified, deleted, or moved, as well as any new files that were not in the original list. 
-      It is an essential tool for detecting unauthorized file modifications or identifying malware persistence on a filesystem.
+      将目标目录中的文件与先前生成的已知良好哈希列表进行比较。此模式会报告任何被修改、删除或移动的文件，以及不在原始列表中的任何新文件。它是检测未授权文件修改或识别文件系统上恶意软件持久化的重要工具。
     command: "hashdeep -a -k {{hash_list|known_hashes.txt}} -r {{directory_path}}"
 
-  - title: hashdeep - identify known files (Matching Mode)
+  - title: hashdeep - 识别已知文件（匹配模式）
     desc: |
-      Searches for files in the target directory that match any of the hashes provided in the known-hashes file. 
-      This is particularly useful in forensics to find known malware, specific OS binaries, or sensitive documents that have been renamed. 
-      Unlike audit mode, matching mode focuses specifically on identifying signatures rather than finding differences.
+      在目标目录中搜索与已知哈希文件中提供的任何哈希匹配的文件。这在取证中特别有用，可用于查找已知恶意软件、特定系统二进制文件或已重命名的敏感文档。与审计模式不同，匹配模式专注于识别签名而非查找差异。
     command: "hashdeep -m -k {{hash_list|known_hashes.txt}} -r {{directory_path}}"
 
-  - title: hashdeep - find unknown or modified files (Negative Match)
+  - title: hashdeep - 查找未知或已修改的文件（反向匹配）
     desc: |
-      Identifies files that do not match any of the hashes in the provided known-hashes list. 
-      This is extremely effective for finding "outlier" files in a system, such as suspicious binaries, scripts, or unauthorized configuration changes. 
-      It helps investigators filter out thousands of known-good system files to focus only on anomalies.
+      识别与所提供的已知哈希列表中任何哈希都不匹配的文件。这对于在系统中查找“异常”文件非常有效，例如可疑二进制文件、脚本或未授权的配置更改。它帮助调查人员过滤掉数千个已知良好的系统文件，只聚焦异常。
     command: "hashdeep -x -k {{hash_list|known_hashes.txt}} -r {{directory_path}}"
 
   # === ADVANCED FEATURES ===
-  - title: hashdeep - piecewise hashing for large files
+  - title: hashdeep - 大文件的分块哈希
     desc: |
-      Breaks files into smaller blocks of a specified size and hashes each block individually. 
-      This is useful for identifying partial matches in large files or forensic images where only specific sectors might have changed. 
-      It provides a more granular view of file contents compared to standard whole-file hashing techniques.
+      将文件拆分为指定大小的较小块，并对每个块单独计算哈希。这对于识别大型文件或取证镜像中的部分匹配非常有用，这些地方可能只有特定扇区发生了变化。与标准的整文件哈希技术相比，它提供更细粒度的文件内容视图。
     command: "hashdeep -p {{block_size|1024}} {{file_path}}"
 
-  - title: hashdeep - multithreaded hash computation
+  - title: hashdeep - 多线程哈希计算
     desc: |
-      Utilizes multiple CPU threads to speed up the hashing process across a large number of files. 
-      By default, hashdeep uses 6 threads, but this can be adjusted based on the hardware capabilities of the workstation. 
-      Increasing threads can significantly reduce the time required to process large datasets or high-capacity storage drives.
+      利用多个 CPU 线程加快大量文件的哈希处理速度。默认情况下 hashdeep 使用 6 个线程，但可以根据工作站的硬件能力调整。增加线程可显著减少处理大型数据集或大容量存储驱动器所需的时间。
     command: "hashdeep -j {{thread_count|8}} -r {{directory_path}}"
 
-  - title: hashdeep - output in DFXML format
+  - title: hashdeep - 以 DFXML 格式输出
     desc: |
-      Generates the output in Digital Forensics XML (DFXML) format, which is a standard for forensic tool interoperability. 
-      This format is machine-readable and can be easily ingested by other forensic analysis platforms or custom scripts. 
-      It includes extensive metadata about the files and the environment in which the hashes were generated.
+      以数字取证 XML（DFXML）格式生成输出，这是取证工具互操作性的标准。此格式机器可读，可轻松被其他取证分析平台或自定义脚本摄取。它包含有关文件以及生成哈希时环境的广泛元数据。
     command: "hashdeep -d -r {{directory_path}}"
 
-  - title: hashdeep - display relative paths and bare names
+  - title: hashdeep - 显示相对路径和裸文件名
     desc: |
-      Changes the output format to display only the relative path or the bare filename without any path information. 
-      This is helpful when you need to compare files across different systems where the absolute paths might differ. 
-      The `-b` flag is especially useful for creating scripts that process file names directly without needing to strip directory strings.
+      更改输出格式，仅显示相对路径或不带任何路径信息的裸文件名。当需要跨绝对路径可能不同的系统比较文件时，这很有帮助。-b 参数对于创建直接处理文件名而无需剥离目录字符串的脚本特别有用。
     command: "hashdeep -r -l -b {{directory_path}}"

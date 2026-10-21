@@ -3,101 +3,86 @@ tags: [security, scanner, vulnerabilities, container, devops, kubernetes, pentes
 
 actions:
 # === IMAGE SCANNING ===
- - title: trivy - basic image scan
+ - title: trivy - 基础镜像扫描
    desc: |
-     Scan a container image for OS and library vulnerabilities. This is the most common starting point for 
-     securing containerized applications. It downloads the vulnerability database automatically if it is 
-     missing or outdated. Use this to get a quick summary of CVEs present in your target image.
+     扫描容器镜像中的操作系统和库漏洞。这是保护容器化应用最常见的起点。如果漏洞数据库缺失或过时，它会自动下载。
+     用它快速获取目标镜像中存在的 CVE 摘要。
    command: "trivy image {{image_name}}"
 
- - title: trivy - scan image with severity filter
+ - title: trivy - 按严重性过滤扫描镜像
    desc: |
-     Scan a container image while filtering results by specific severity levels. This allows security 
-     teams to focus on the most critical risks, such as HIGH and CRITICAL vulnerabilities, while 
-     ignoring lower-risk issues. It is highly recommended for CI/CD pipelines to fail builds only 
-     on high-risk findings.
+     扫描容器镜像并按特定严重性级别过滤结果。这使安全团队能够专注于最严重的风险，如 HIGH 和 CRITICAL 漏洞，同时忽略较低风险问题。
+     强烈建议在 CI/CD 流水线中使用，以便仅在高风险发现时使构建失败。
    command: "trivy image --severity {{severity|HIGH,CRITICAL}} {{image_name}}"
 
- - title: trivy - scan image from tar archive
+ - title: trivy - 从 tar 归档扫描镜像
    desc: |
-     Scan a container image that has been saved as a tarball. This is particularly useful for 
-     air-gapped environments or when scanning images produced by build tools like Docker save or Skopeo. 
-     The tool will inspect the layers within the archive without needing a running Docker daemon.
+     扫描已保存为 tarball 的容器镜像。这在隔离环境中或扫描 Docker save 或 Skopeo 等构建工具生成的镜像时特别有用。
+     工具会检查归档内的层，无需运行 Docker 守护进程。
    command: "trivy image --input {{tar_file|image.tar}}"
 
 # === FILESYSTEM AND REPOSITORY SCANNING ===
- - title: trivy - local filesystem scan
+ - title: trivy - 本地文件系统扫描
    desc: |
-     Scan a local directory or project root for vulnerabilities in dependency lock files. This command 
-     is used during development to identify vulnerable libraries before they are built into an image. 
-     It supports various package managers including npm, pip, cargo, and go.mod.
+     扫描本地目录或项目根目录中依赖锁文件的漏洞。此命令在开发期间用于在构建成镜像之前识别易受攻击的库。
+     它支持各种包管理器，包括 npm、pip、cargo 和 go.mod。
    command: "trivy fs {{path|.}}"
 
- - title: trivy - remote repository scan
+ - title: trivy - 远程仓库扫描
    desc: |
-     Scan a remote Git repository for vulnerabilities and hard-coded secrets. This allows for 
-     security auditing of third-party or internal codebases without manually cloning them first. 
-     Trivy will temporarily clone the repository to perform the analysis.
+     扫描远程 Git 仓库中的漏洞和硬编码密钥。这允许对第三方或内部代码库进行安全审计，而无需先手动克隆。
+     Trivy 会临时克隆仓库以执行分析。
    command: "trivy repo {{repo_url}}"
 
 # === CONFIGURATION AND SECRET SCANNING ===
- - title: trivy - infrastructure as code scan
+ - title: trivy - 基础设施即代码扫描
    desc: |
-     Scan configuration files such as Terraform, Kubernetes manifests, and Dockerfiles for misconfigurations. 
-     This helps identify security gaps like running as root, missing resource limits, or open ports. 
-     It is a key component of DevSecOps to ensure compliance with security best practices.
+     扫描 Terraform、Kubernetes 清单和 Dockerfile 等配置文件中的错误配置。这有助于识别安全缺口，如以 root 运行、缺少资源限制或开放端口。
+     它是 DevSecOps 的关键组成部分，可确保符合安全最佳实践。
    command: "trivy config {{config_path}}"
 
- - title: trivy - secret scanning in filesystem
+ - title: trivy - 文件系统中的密钥扫描
    desc: |
-     Scan the specified path specifically for hard-coded secrets, tokens, and API keys. 
-     Trivy uses a set of built-in rules to detect sensitive information that might have been 
-     accidentally committed. This is essential for preventing credential leaks in source code.
+     在指定路径中专门扫描硬编码密钥、令牌和 API key。Trivy 使用一组内置规则检测可能被意外提交的敏感信息。
+     这对于防止源代码中的凭据泄露至关重要。
    command: "trivy fs --scanners {{scanners|vuln,secret}} {{path|.}}"
 
 # === KUBERNETES SCANNING ===
- - title: trivy - kubernetes cluster scan
+ - title: trivy - Kubernetes 集群扫描
    desc: |
-     Scan an entire Kubernetes cluster for vulnerabilities and misconfigurations in running workloads. 
-     This command requires valid kubeconfig credentials and sufficient permissions to list resources. 
-     It provides a high-level overview of the security posture of your active environment.
+     扫描整个 Kubernetes 集群，查找运行工作负载中的漏洞和错误配置。此命令需要有效的 kubeconfig 凭据以及列出资源的足够权限。
+     它提供活跃环境安全态势的高层概览。
    command: "trivy kubernetes {{context|cluster}}"
 
 # === OUTPUT AND REPORTING ===
- - title: trivy - generate report in specific format
+ - title: trivy - 以特定格式生成报告
    desc: |
-     Export scan results into machine-readable formats like JSON, SARIF, or CycloneDX. 
-     This is necessary for integrating Trivy findings with other security platforms or CI/CD dashboards. 
-     The output file can then be parsed by automated scripts or uploaded to vulnerability management tools.
+     将扫描结果导出为 JSON、SARIF 或 CycloneDX 等机器可读格式。这对于将 Trivy 发现与其他安全平台或 CI/CD 仪表盘集成是必要的。
+     输出文件随后可被自动化脚本解析或上传到漏洞管理工具。
    command: "trivy image --format {{format|json}} --output {{output_file|result.json}} {{image_name}}"
 
- - title: trivy - generate SBOM (Software Bill of Materials)
+ - title: trivy - 生成 SBOM（软件物料清单）
    desc: |
-     Generate a Software Bill of Materials (SBOM) for an image or directory. 
-     An SBOM provides a comprehensive list of all components, libraries, and dependencies used in a project. 
-     This is increasingly required for compliance and supply chain security transparency.
+     为镜像或目录生成软件物料清单（SBOM）。SBOM 提供项目中使用的所有组件、库和依赖项的完整列表。
+     这对于合规性和供应链安全透明度越来越必要。
    command: "trivy image --format {{sbom_format|cyclonedx}} --output {{output_file|sbom.json}} {{image_name}}"
 
 # === SERVER MODE ===
- - title: trivy - start in server mode
+ - title: trivy - 以服务器模式启动
    desc: |
-     Run Trivy as a persistent server to centralize the vulnerability database. 
-     In this mode, clients can send scan requests to the server, which avoids the need for 
-     each client to download and maintain its own copy of the database. This significantly 
-     speeds up scans in large-scale CI/CD environments.
+     将 Trivy 作为持久服务器运行，以集中管理漏洞数据库。在此模式下客户端可以向服务器发送扫描请求，从而避免每个客户端下载并维护自己的数据库副本。
+     这显著加快大规模 CI/CD 环境中的扫描速度。
    command: "trivy server --listen {{listen_addr|0.0.0.0:4954}}"
 
- - title: trivy - scan using a remote server
+ - title: trivy - 使用远程服务器扫描
    desc: |
-     Perform a scan by connecting to a remote Trivy server. 
-     This client-side command offloads the processing and database management to the server. 
-     It is the most efficient way to run scans in environments with many distributed agents.
+     通过连接到远程 Trivy 服务器执行扫描。此客户端侧命令将处理和数据库管理卸载到服务器。
+     在拥有许多分布式代理的环境中，这是运行扫描的最高效方式。
    command: "trivy image --server {{server_url|http://localhost:4954}} {{image_name}}"
 
 # === UTILITIES ===
- - title: trivy - clean cache
+ - title: trivy - 清理缓存
    desc: |
-     Remove cached files, including the vulnerability database and image layers. 
-     Use this command if you encounter database corruption or if you want to reclaim disk space. 
-     Note that the next scan will take longer as it must re-download the database.
+     删除缓存文件，包括漏洞数据库和镜像层。如果遇到数据库损坏或想回收磁盘空间，请使用此命令。
+     注意下一次扫描会耗时更长，因为必须重新下载数据库。
    command: "trivy clean --all"

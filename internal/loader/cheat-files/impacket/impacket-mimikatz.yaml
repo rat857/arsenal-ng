@@ -4,62 +4,55 @@ tags: [pentest, security, credentials, exploitation, smb, windows, lateral-movem
 actions:
 # === AUTHENTICATION & CONNECTION ===
 
- - title: impacket-mimikatz - basic interactive session
+ - title: impacket-mimikatz - 基础交互式会话
    desc: |
-     Establish an interactive Mimikatz shell on the remote target using cleartext credentials.
-     This command is the most common way to start a session when administrative credentials are known.
-     It allows the operator to execute various Mimikatz commands directly on the remote system via RPC.
-     Ensure you have local administrator rights on the target machine for successful execution.
+     使用明文凭据在远程目标上建立交互式 Mimikatz shell。
+     当已知管理员凭据时，这是启动会话最常见的方式。
+     它允许操作员通过 RPC 直接在远程系统上执行各种 Mimikatz 命令，请确保对目标机器拥有本地管理员权限。
    command: "impacket-mimikatz {{domain}}/{{username}}:{{password}}@{{target}}"
 
- - title: impacket-mimikatz - pass-the-hash authentication
+ - title: impacket-mimikatz - Pass-the-Hash 认证
    desc: |
-     Perform authentication using NTLM hashes instead of a cleartext password.
-     This is a critical technique for lateral movement when only the NT hash of an administrator has been recovered.
-     The LM hash can be padded with zeros if it is unknown or not required.
-     It bypasses the need for the original password while providing full administrative access to the remote Mimikatz RPC server.
+     使用 NTLM 哈希而非明文密码进行认证。
+     当仅恢复了管理员的 NT 哈希时，这是横向移动的关键技术。
+     LM 哈希未知或不需要时可补零，此方法无需原始密码即可获得对远程 Mimikatz RPC 服务器的完全管理访问。
    command: "impacket-mimikatz -hashes {{lmhash|00000000000000000000000000000000}}:{{nthash}} {{domain}}/{{username}}@{{target}}"
 
- - title: impacket-mimikatz - kerberos authentication
+ - title: impacket-mimikatz - Kerberos 身份认证
    desc: |
-     Use Kerberos tickets for authentication instead of NTLM.
-     The command will attempt to use the ticket defined in the KRB5CCNAME environment variable.
-     This method is often stealthier and is required in environments where NTLM authentication is strictly disabled.
-     The -no-pass flag ensures the tool does not prompt for a password when using the cached ticket.
+     使用 Kerberos 票据而非 NTLM 进行认证。
+     命令会尝试使用 KRB5CCNAME 环境变量指定的票据。
+     此方法通常更隐蔽，在 NTLM 认证被严格禁用的环境中是必需的，-no-pass 标志确保使用缓存票据时不提示密码。
    command: "impacket-mimikatz -k -no-pass -dc-ip {{dc_ip}} {{domain}}/{{username}}@{{target}}"
 
- - title: impacket-mimikatz - aes key authentication
+ - title: impacket-mimikatz - AES 密钥认证
    desc: |
-     Authenticate using a specific AES hex key (128 or 256 bit) for Kerberos.
-     This is useful when you have extracted a user's AES keys and want to authenticate without the cleartext password.
-     The tool will handle the Kerberos exchange using the provided key to establish the session.
-     This provides a robust alternative for authentication in modern Active Directory environments.
+     使用特定的 AES 十六进制密钥（128 或 256 位）进行 Kerberos 认证。
+     当你已提取用户的 AES 密钥并想在没有明文密码的情况下认证时很有用。
+     工具会使用提供的密钥处理 Kerberos 交互以建立会话，是现代 Active Directory 环境中稳健的认证替代方案。
    command: "impacket-mimikatz -aesKey {{hex_key}} {{domain}}/{{username}}@{{target}}"
 
 # === AUTOMATION & EXECUTION ===
 
- - title: impacket-mimikatz - execute commands from file
+ - title: impacket-mimikatz - 从文件执行命令
    desc: |
-     Read and execute a sequence of Mimikatz commands from a local text file.
-     This is highly effective for automating credential harvesting, such as running "sekurlsa::logonpasswords" across multiple hosts.
-     Using a file prevents manual entry errors and speeds up the post-exploitation workflow.
-     The output of each command in the file will be displayed in the terminal session.
+     从本地文本文件读取并执行一系列 Mimikatz 命令。
+     对于自动化凭据收集非常有效，例如在多个主机上运行“sekurlsa::logonpasswords”。
+     使用文件可避免手动输入错误并加快后渗透流程，文件中每条命令的输出会显示在终端会话中。
    command: "impacket-mimikatz -file {{commands_file|commands.txt}} {{domain}}/{{username}}:{{password}}@{{target}}"
 
- - title: impacket-mimikatz - force target ip address
+ - title: impacket-mimikatz - 强制指定目标 IP 地址
    desc: |
-     Connect to a specific IP address while maintaining the target's NetBIOS or DNS name.
-     This is particularly useful when name resolution is failing or when targeting a specific multi-homed machine.
-     It ensures that the SMB/RPC traffic is routed to the exact network interface intended by the operator.
-     This flag helps avoid issues with misconfigured DNS in internal environments.
+     在保留目标 NetBIOS 或 DNS 名称的同时连接到特定 IP 地址。
+     当名称解析失败或定位到特定多宿主机器时尤为有用。
+     它确保 SMB/RPC 流量被路由到操作员指定的确切网络接口，有助于规避内部环境中 DNS 配置错误的问题。
    command: "impacket-mimikatz -target-ip {{target_ip}} {{domain}}/{{username}}:{{password}}@{{target_name}}"
 
 # === DEBUGGING & LOGGING ===
 
- - title: impacket-mimikatz - debug mode with timestamps
+ - title: impacket-mimikatz - 带时间戳的调试模式
    desc: |
-     Run the tool with debug output enabled and timestamps on every log entry.
-     This is essential for troubleshooting connection issues or understanding RPC errors during execution.
-     The debug flag provides verbose information about the underlying Impacket library operations.
-     Timestamps help in correlating the tool's actions with system logs on the target or domain controller.
+     启用调试输出运行工具，并为每条日志记录添加时间戳。
+     对于排查连接问题或理解执行期间的 RPC 错误至关重要。
+     调试标志提供底层 Impacket 库操作的详细信息，时间戳有助于将工具行为与目标或域控制器上的系统日志关联。
    command: "impacket-mimikatz -debug -ts {{domain}}/{{username}}:{{password}}@{{target}}"

@@ -3,69 +3,60 @@ tags: [pentest, reconnaissance, enumeration, usernames, osint, brute-force]
 
 actions:
   # === BASIC NAME GENERATION ===
-  - title: username-anarchy - basic single name generation
+  - title: username-anarchy - 基础单名生成
     desc: |
-      Generates a wide variety of username permutations for a single individual's name. 
-      This is the most common starting point during reconnaissance to identify potential login IDs for a target person.
-      The output includes standard patterns like first initial followed by last name, full names, and various delimiters.
+      为单个个人的姓名生成大量用户名变体。这是侦察期间最常见的起点，用于识别目标人物的潜在登录 ID。
+      输出包括标准模式，如名字首字母加姓氏、全名和各种分隔符。
     command: "username-anarchy {{first_name}} {{last_name}}"
 
-  - title: username-anarchy - generation from input file
+  - title: username-anarchy - 从输入文件生成
     desc: |
-      Processes a list of names from a file to generate usernames for multiple targets at once.
-      The input file can be space, CSV, or TAB delimited and should ideally contain first and last names.
-      This is highly efficient for generating bulk wordlists during an internal or external network penetration test.
+      从文件处理姓名列表，一次性为多个目标生成用户名。输入文件可以是以空格、CSV 或 TAB 分隔，最好包含名字和姓氏。
+      在内部或外部网络渗透测试期间生成批量字典非常高效。
     command: "username-anarchy -i {{input_file}}"
 
   # === AUTOMATED DISCOVERY ===
-  - title: username-anarchy - auto-generate by country
+  - title: username-anarchy - 按国家自动生成
     desc: |
-      Automatically generates a list of likely usernames based on common names from a specific country.
-      This uses datasets like PublicProfiler to create a broad dictionary of names when specific target names are unknown.
-      Supported countries include 'us', 'uk', 'germany', 'france', and many others listed in the tool's help.
+      根据特定国家的常见姓名自动生成可能用户名列表。当特定目标姓名未知时，它使用 PublicProfiler 等数据集创建广泛的姓名字典。
+      支持的国家包括 us、uk、germany、france 等，工具帮助中列出的更多。
     command: "username-anarchy -a -c {{country|us}}"
 
-  - title: username-anarchy - recognize username format
+  - title: username-anarchy - 识别用户名格式
     desc: |
-      Attempts to identify the naming convention used by an organization based on a known valid username.
-      It cross-references the input against common name datasets to determine if the format is "first.last", "flast", or others.
-      Use the verbose flag (-v) to see the progress and detailed analysis of the recognition process.
+      基于已知有效用户名，尝试识别组织使用的命名约定。它将输入与常见姓名数据集交叉引用，判断格式是 first.last、flast 还是其他。
+      使用详细参数（-v）查看识别过程的进度和详细分析。
     command: "username-anarchy -r {{known_username}}"
 
   # === FORMATTING AND FILTERING ===
-  - title: username-anarchy - select specific format plugins
+  - title: username-anarchy - 选择特定格式插件
     desc: |
-      Limits the output to specific, known username formats to keep the wordlist concise and targeted.
-      This is useful when you have identified the target's naming convention and want to avoid unnecessary permutations.
-      Common plugins include 'flastname', 'first.l', or 'first.last'; multiple plugins can be comma-separated.
+      将输出限制在特定已知用户名格式，使字典保持简洁和针对性。当你已识别目标的命名约定并想避免不必要的排列时很有用。
+      常见插件包括 flastname、first.l 或 first.last；多个插件可以用逗号分隔。
     command: "username-anarchy -f {{format_list|flastname,first.last}} {{first_name}} {{last_name}}"
 
-  - title: username-anarchy - define custom format string
+  - title: username-anarchy - 定义自定义格式字符串
     desc: |
-      Provides the ability to define a highly specific naming convention using a format string.
-      This is used when the target organization utilizes a non-standard pattern that is not covered by built-in plugins.
-      The format string uses identifiers like 'f' for first initial and 'last' for the full surname (e.g., 'f.last').
+      提供使用格式字符串定义高度特定命名约定的能力。当目标组织使用内置插件未覆盖的非标准模式时使用。
+      格式字符串使用 f 表示名字首字母，last 表示完整姓氏等标识符（如 f.last）。
     command: "username-anarchy -F {{format_string|f.last}} {{first_name}} {{last_name}}"
 
   # === OUTPUT MODIFICATIONS ===
-  - title: username-anarchy - append email domain suffix
+  - title: username-anarchy - 追加邮箱域名后缀
     desc: |
-      Appends a domain suffix to every generated username, essentially creating an email address list.
-      This is perfect for preparing candidate lists for phishing simulations or attacking cloud services like Office 365.
-      Ensure the domain provided does not include the '@' symbol as the tool handles the prefixing automatically.
+      为每个生成的用户名追加域名后缀，实质上创建电子邮件地址列表。这非常适合为网络钓鱼模拟或攻击 Office 365 等云服务准备候选列表。
+      确保提供的域名不包含 @ 符号，因为工具会自动处理前缀。
     command: "username-anarchy -@ {{domain|example.com}} -i {{input_file}}"
 
-  - title: username-anarchy - case insensitive output
+  - title: username-anarchy - 大小写不敏感输出
     desc: |
-      Controls the casing of the generated usernames, defaulting to lowercase.
-      Setting the case-insensitive option to False can be useful if the target system distinguishes between uppercase and lowercase.
-      By default, usernames are generated in all lowercase to match the most common Unix and Active Directory behaviors.
+      控制生成用户名的大小写，默认为小写。如果目标系统区分大小写，将大小写不敏感选项设置为 False 会很有用。
+      默认情况下用户名全部以小写生成，以匹配最常见的 Unix 和 Active Directory 行为。
     command: "username-anarchy --case-insensitive {{boolean|True}} {{first_name}} {{last_name}}"
 
   # === ADVANCED MANIPULATION ===
-  - title: username-anarchy - name substitution
+  - title: username-anarchy - 名称替换
     desc: |
-      Enables or disables name substitutions to handle common nicknames or variations.
-      When turned on, the tool may substitute names like 'Robert' with 'Bob' to catch more potential username variations.
-      This increases the list size but significantly improves the chances of finding valid usernames in diverse environments.
+      启用或禁用名称替换，以处理常见昵称或变体。开启后工具可能将 Robert 替换为 Bob，以捕获更多潜在的用户名变体。
+      这会增加列表大小，但显著提高在不同环境中找到有效用户名的几率。
     command: "username-anarchy -s {{state|on}} -m {{max_sub|3}} -i {{input_file}}"

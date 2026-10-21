@@ -3,75 +3,65 @@ tags: [osint, reconnaissance, usernames, social-media, pentest, information-gath
 
 actions:
   # === BASIC USAGE ===
-  - title: tookie-osint - basic username scan
+  - title: tookie-osint - 基础用户名扫描
     desc: |
-      Perform a standard search for a specific username across various social media platforms and websites. 
-      This is the primary method for identifying an individual's digital footprint across the internet. 
-      The tool will return a list of URLs where the username was successfully found.
+      在各种社交媒体平台和网站上对特定用户名执行标准搜索。这是识别个人在互联网上数字足迹的主要方法。
+      工具将返回成功找到该用户名的 URL 列表。
     command: "tookie-osint -u {{username}}"
 
-  - title: tookie-osint - scan multiple usernames
+  - title: tookie-osint - 扫描多个用户名
     desc: |
-      Read a list of usernames from a local file and perform a bulk scan for each entry. 
-      This is highly efficient for large-scale investigations involving multiple targets or different handle variations. 
-      The input file should contain one username per line to ensure the tool parses them correctly.
+      从本地文件读取用户名列表，并对每个条目执行批量扫描。这对于涉及多个目标或不同账号变体的大规模调查非常高效。
+      输入文件应每行一个用户名，以确保工具正确解析。
     command: "tookie-osint -U {{user_file}}"
 
   # === OUTPUT AND LOGGING ===
-  - title: tookie-osint - export results to json
+  - title: tookie-osint - 导出结果为 JSON
     desc: |
-      Execute a scan and save the findings into a structured JSON file. 
-      This format is ideal for automated workflows or for importing results into other OSINT analysis tools. 
-      The resulting file will contain detailed metadata about each discovered account.
+      执行扫描并将发现保存到结构化 JSON 文件。此格式非常适合自动化工作流，或用于将结果导入其他 OSINT 分析工具。
+      生成的文件将包含每个已发现账户的详细元数据。
     command: "tookie-osint -u {{username}} -o json"
 
-  - title: tookie-osint - export results to csv
+  - title: tookie-osint - 导出结果为 CSV
     desc: |
-      Run the enumeration process and save the output in CSV format. 
-      Use this option when you need to view results in spreadsheet software like Excel or Google Sheets. 
-      It provides a clean, tabular representation of the platforms where the username exists.
+      运行枚举过程并将输出保存为 CSV 格式。当你需要在 Excel 或 Google Sheets 等电子表格软件中查看结果时使用此选项。
+      它提供用户名所在平台的清晰表格化表示。
     command: "tookie-osint -u {{username}} -o csv"
 
-  - title: tookie-osint - show all results
+  - title: tookie-osint - 显示所有结果
     desc: |
-      Display both positive matches and negative attempts in the terminal output. 
-      By default, the tool only shows sites where the user was found; this flag provides full transparency of the scanning process. 
-      Use this to verify that specific high-interest sites were actually checked during the run.
+      在终端输出中同时显示正向匹配和负向尝试。默认情况下工具仅显示找到用户的站点；此参数提供扫描过程的完全透明度。
+      用它来验证运行期间是否确实检查了特定的高关注站点。
     command: "tookie-osint -u {{username}} -a"
 
   # === PERFORMANCE AND ANONYMITY ===
-  - title: tookie-osint - multi-threaded scan
+  - title: tookie-osint - 多线程扫描
     desc: |
-      Increase the speed of the username lookup by utilizing multiple concurrent threads. 
-      The default thread count is 2, but increasing this value can significantly reduce the time required for a full scan. 
-      Be cautious as very high thread counts may trigger rate-limiting or temporary bans from certain websites.
+      通过使用多个并发线程提高用户名查找速度。默认线程数为 2，但增加该值可以显著缩短完整扫描所需时间。
+      请注意过高的线程数可能触发某些网站的限速或临时封禁。
     command: "tookie-osint -u {{username}} -t {{threads|15}}"
 
-  - title: tookie-osint - proxy configuration
+  - title: tookie-osint - 代理配置
     desc: |
-      Route all network requests through a specified proxy server to mask your original IP address. 
-      This is useful for bypassing geographic restrictions or avoiding IP-based blocks during intensive scanning. 
-      Ensure the proxy URL is formatted correctly (e.g., http://127.0.0.1:8080) before starting.
+      将所有网络请求路由到指定代理服务器，以掩盖你的原始 IP 地址。这对于绕过地理限制或在密集扫描期间避免基于 IP 的封禁很有用。
+      开始前请确保代理 URL 格式正确（如 http://127.0.0.1:8080）。
     command: "tookie-osint -u {{username}} -p {{proxy_url}}"
 
-  - title: tookie-osint - skip random headers
+  - title: tookie-osint - 跳过随机请求头
     desc: |
-      Disable the use of randomized User-Agent headers during the scanning process. 
-      This can be useful if a specific network environment or WAF is sensitive to frequently changing browser signatures. 
-      However, using fixed headers might increase the likelihood of being detected as a bot by some services.
+      在扫描过程中禁用随机化 User-Agent 请求头。如果特定网络环境或 WAF 对频繁变化的浏览器签名敏感，这会很有用。
+      然而使用固定请求头可能增加被某些服务检测为机器人的可能性。
     command: "tookie-osint -u {{username}} -sk"
 
   # === ADVANCED SCRAPING ===
-  - title: tookie-osint - webscraper and data harvesting
+  - title: tookie-osint - 网页抓取与数据收集
     desc: |
-      Enable the built-in webscraper to extract additional data from the discovered profile pages. 
-      The harvest flag specifically tells the tool to gather content and details from the site rather than just checking for account existence. 
-      This provides deeper intelligence, such as bio descriptions or profile images, depending on the platform.
+      启用内置网页抓取器，从发现的个人资料页面提取额外数据。harvest 参数专门告诉工具收集站点内容与详情，而不仅仅是检查账户是否存在。
+      根据平台不同，它可提供更深层情报，如简介描述或个人资料图片。
     command: "tookie-osint -u {{username}} -W -H"
 
-  - title: tookie-osint - webscraper with custom delay
+  - title: tookie-osint - 带自定义延迟的网页抓取
     desc: |
-      Set a specific delay for the webscraper to wait for pages to fully load before attempting to extract data. 
-      This is particularly important for heavy, JavaScript-driven websites that do not render content immediately. 
-      A longer delay ensures higher accuracy in data harvesting at the cost of overall scan speed.
+      为网页抓取器设置特定延迟，等待页面完全加载后再尝试提取数据。这对于不会立即渲染内容的重型 JavaScript 驱动网站尤为重要。
+      更长的延迟可确保数据收集的更高准确性，代价是整体扫描速度。
     command: "tookie-osint -u {{username}} -W -D {{delay_seconds|5}}"

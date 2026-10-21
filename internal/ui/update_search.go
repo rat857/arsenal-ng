@@ -299,10 +299,10 @@ func (m App) handleSetCommand(query string) (bool, App) {
 		if name != "" && value != "" {
 			if err := m.globals.Set(name, value); err != nil {
 				log.Printf("ERROR: Failed to set variable %s: %v", name, err)
-				m.statusMsg = fmt.Sprintf("✗ Failed to save variable: %v", err)
+				m.statusMsg = fmt.Sprintf("✗ 保存变量失败：%v", err)
 				m.statusIsError = true
 			} else {
-				m.statusMsg = fmt.Sprintf("✓ Set %s = %s", name, value)
+				m.statusMsg = fmt.Sprintf("✓ 已设置 %s = %s", name, value)
 				// Reinitialize vars table if in variables view
 				if m.state == stateShowVars {
 					m = m.initVarsTable()
@@ -314,7 +314,7 @@ func (m App) handleSetCommand(query string) (bool, App) {
 		}
 	}
 	log.Printf("Invalid set command format: %s", query)
-	m.statusMsg = "✗ Usage: set name=value"
+	m.statusMsg = "✗ 用法：set 名称=值"
 	m.statusIsError = true
 	return true, m
 }
@@ -326,17 +326,17 @@ func (m App) handleUnsetCommand(query string) (bool, App) {
 		existed, err := m.globals.Unset(name)
 		if err != nil {
 			log.Printf("ERROR: Failed to unset variable %s: %v", name, err)
-			m.statusMsg = fmt.Sprintf("✗ Failed to save changes: %v", err)
+			m.statusMsg = fmt.Sprintf("✗ 保存更改失败：%v", err)
 			m.statusIsError = true
 		} else if existed {
-			m.statusMsg = fmt.Sprintf("✓ Unset %s", name)
+			m.statusMsg = fmt.Sprintf("✓ 已删除 %s", name)
 			// Reinitialize vars table if in variables view
 			if m.state == stateShowVars {
 				m = m.initVarsTable()
 			}
 		} else {
 			log.Printf("Attempted to unset non-existent variable: %s", name)
-			m.statusMsg = fmt.Sprintf("✗ Variable '%s' not found", name)
+			m.statusMsg = fmt.Sprintf("✗ 变量 '%s' 不存在", name)
 			m.statusIsError = true
 		}
 		m.searchInput.SetValue("")
@@ -344,7 +344,7 @@ func (m App) handleUnsetCommand(query string) (bool, App) {
 		return true, m
 	}
 	log.Printf("Invalid unset command format: %s", query)
-	m.statusMsg = "✗ Usage: unset name"
+	m.statusMsg = "✗ 用法：unset 名称"
 	m.statusIsError = true
 	return true, m
 }

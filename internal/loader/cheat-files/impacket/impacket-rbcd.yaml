@@ -3,69 +3,69 @@ tags: [active-directory, kerberos, pentest, exploitation, privilege-escalation, 
 
 actions:
   # === RECONNAISSANCE AND READING ===
-  - title: impacket-rbcd - Read RBCD status
+  - title: impacket-rbcd - 读取 RBCD 状态
     desc: |
-      Reads the msDS-AllowedToActOnBehalfOfOtherIdentity attribute of a target computer account. 
-      This is the initial step to verify existing delegations or to confirm if a previous write operation was successful.
-      It helps identify if the target is already vulnerable or has been tampered with during an engagement.
-      You must have sufficient privileges to read the DACL of the target computer object.
+      读取目标计算机帐户的 msDS-AllowedToActOnBehalfOfOtherIdentity 属性。
+      这是验证现有委派或确认之前写入操作是否成功的初始步骤。
+      它有助于识别目标是否已经存在漏洞，或在评估期间是否被篡改。
+      你必须拥有足够权限读取目标计算机对象的 DACL。
     command: "impacket-rbcd -delegate-to {{target_computer}} -action read -dc-ip {{dc_ip}} {{domain}}/{{username}}:{{password}}"
 
   # === EXPLOITATION / WRITING ===
-  - title: impacket-rbcd - Grant delegation permission (Write)
+  - title: impacket-rbcd - 授予委派权限（写入）
     desc: |
-      Configures Resource-Based Constrained Delegation by writing to the msDS-AllowedToActOnBehalfOfOtherIdentity attribute.
-      This command allows the 'delegate-from' account (usually an attacker-controlled machine account) to impersonate users against the 'delegate-to' target.
-      This is the core command used in the RBCD attack path once a machine account is created or compromised.
-      Note that this requires 'GenericWrite' or 'WriteProperty' permissions over the target computer object.
+      通过写入 msDS-AllowedToActOnBehalfOfOtherIdentity 属性来配置基于资源的约束委派。
+      此命令允许“delegate-from”帐户（通常是攻击者控制的计算机帐户）针对“delegate-to”目标模拟用户。
+      一旦创建或攻陷计算机帐户，这就是 RBCD 攻击路径中的核心命令。
+      请注意，这需要拥有目标计算机对象的“GenericWrite”或“WriteProperty”权限。
     command: "impacket-rbcd -delegate-to {{target_computer}} -delegate-from {{attacker_computer}} -action write -dc-ip {{dc_ip}} {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-rbcd - Write delegation using NTLM hashes
+  - title: impacket-rbcd - 使用 NTLM 哈希写入委派
     desc: |
-      Performs the RBCD write action using NTLM hashes for authentication instead of a plaintext password.
-      This is particularly useful when you have performed credential dumping and only possess the NT hash of a user.
-      The LM hash can be filled with zeroes if it is not available or disabled in the environment.
-      Always ensure the 'dc-ip' points to a valid Domain Controller reachable from your current network position.
+      使用 NTLM 哈希而非明文密码执行 RBCD 写入操作。
+      当你已进行凭据转储且只拥有用户的 NT 哈希时特别有用。
+      如果 LM 哈希不可用或环境中已禁用，可将其填充为零。
+      务必确保“dc-ip”指向从你当前网络位置可达的有效域控制器。
     command: "impacket-rbcd -delegate-to {{target_computer}} -delegate-from {{attacker_computer}} -action write -hashes {{lmhash|00000000000000000000000000000000}}:{{nthash}} -dc-ip {{dc_ip}} {{domain}}/{{username}}"
 
-  - title: impacket-rbcd - Write delegation via LDAPS
+  - title: impacket-rbcd - 通过 LDAPS 写入委派
     desc: |
-      Executes the RBCD write operation over an encrypted LDAPS (LDAP over SSL) connection.
-      Many modern Domain Controllers enforce LDAP signing or require LDAPS for certain attribute modifications for security reasons.
-      Use the -use-ldaps flag to bypass issues related to "LDAP Signing Required" errors.
-      Ensure you are using the correct port (usually 636) or that the DC-IP provided supports SSL.
+      通过加密的 LDAPS（基于 SSL 的 LDAP）连接执行 RBCD 写入操作。
+      出于安全考虑，许多现代域控制器强制要求 LDAP 签名，或要求某些属性修改必须使用 LDAPS。
+      使用 -use-ldaps 标志可绕过与“LDAP Signing Required”相关的问题。
+      确保使用正确的端口（通常是 636），或所提供的 DC-IP 支持 SSL。
     command: "impacket-rbcd -delegate-to {{target_computer}} -delegate-from {{attacker_computer}} -action write -use-ldaps -dc-ip {{dc_ip}} {{domain}}/{{username}}:{{password}}"
 
   # === POST-EXPLOITATION / CLEANUP ===
-  - title: impacket-rbcd - Remove specific delegation
+  - title: impacket-rbcd - 移除特定委派
     desc: |
-      Removes a specific attacker-controlled machine account from the target's delegation list.
-      This is used for surgical cleanup to remove only your specific entry while leaving other potential delegations intact.
-      It is a critical step in maintaining stealth and restoring the environment to its original configuration after testing.
-      This action requires the same write permissions as the initial delegation setup.
+      从目标委派列表中移除特定攻击者控制的计算机帐户。
+      这用于精确清理，只移除你的特定条目，同时保留其他可能的委派。
+      这是保持隐蔽并在测试后将环境恢复到原始配置的关键步骤。
+      此操作需要与初始委派设置相同的写入权限。
     command: "impacket-rbcd -delegate-to {{target_computer}} -delegate-from {{attacker_computer}} -action remove -dc-ip {{dc_ip}} {{domain}}/{{username}}:{{password}}"
 
-  - title: impacket-rbcd - Flush all delegations
+  - title: impacket-rbcd - 清除所有委派
     desc: |
-      Completely clears the msDS-AllowedToActOnBehalfOfOtherIdentity attribute on the target computer.
-      Use this command to remove all configured RBCD entries at once, effectively resetting the attribute to null.
-      Be careful when using this in production environments, as it might remove legitimate delegations configured by admins.
-      It is the most thorough way to ensure no accounts can act on behalf of others for the specified target.
+      完全清空目标计算机上的 msDS-AllowedToActOnBehalfOfOtherIdentity 属性。
+      使用此命令一次性移除所有已配置的 RBCD 条目，从而将该属性重置为空。
+      在生产环境中使用时要小心，因为它可能会移除管理员配置的合法委派。
+      这是确保任何帐户都无法代表他人对指定目标进行操作的最彻底方式。
     command: "impacket-rbcd -delegate-to {{target_computer}} -action flush -dc-ip {{dc_ip}} {{domain}}/{{username}}:{{password}}"
 
   # === ADVANCED AUTHENTICATION ===
-  - title: impacket-rbcd - Kerberos authentication (Pass-the-Ticket)
+  - title: impacket-rbcd - Kerberos 身份验证（传递票据）
     desc: |
-      Uses Kerberos tickets for authentication instead of providing a password or hash on the command line.
-      This requires a valid Kerberos cache file (ccache) to be exported to the KRB5CCNAME environment variable.
-      The -k flag tells the tool to use Kerberos, and -no-pass prevents it from prompting for a password.
-      This is the preferred method when operating in environments with Kerberos enforcement or when using tools like Rubeus for ticket management.
+      使用 Kerberos 票据进行身份验证，而非在命令行上提供密码或哈希。
+      这需要一个有效的 Kerberos 缓存文件（ccache）导出到 KRB5CCNAME 环境变量。
+      -k 标志告诉工具使用 Kerberos，-no-pass 阻止其提示输入密码。
+      在启用 Kerberos 强制要求的环境或使用 Rubeus 等工具管理票据时，这是首选方法。
     command: "impacket-rbcd -delegate-to {{target_computer|TARGET_SRV}} -delegate-from {{attacker_computer|EVIL_PC}} -action write -k -no-pass -dc-ip {{dc_ip}} {{domain}}/{{username}}"
 
-  - title: impacket-rbcd - Debugging and Timestamps
+  - title: impacket-rbcd - 调试和时间戳
     desc: |
-      Enables verbose debug output and adds timestamps to the logging information.
-      This is extremely helpful for troubleshooting connection issues, authentication failures, or LDAP errors.
-      The debug output reveals the underlying Impacket logic and precise error codes returned by the Domain Controller.
-      Use this when the tool fails silently or returns generic "Access Denied" messages to find the root cause.
+      启用详细调试输出并为日志信息添加时间戳。
+      这对于排查连接问题、身份验证失败或 LDAP 错误非常有帮助。
+      调试输出会揭示底层的 Impacket 逻辑以及域控制器返回的精确错误代码。
+      当工具静默失败或返回通用的“Access Denied”消息时，使用此选项查找根本原因。
     command: "impacket-rbcd -delegate-to {{target_computer}} -action read -debug -ts -dc-ip {{dc_ip}} {{domain}}/{{username}}:{{password}}"

@@ -4,46 +4,46 @@ tags: [network, sniffing, packets, impacket, security, pentest, traffic-analysis
 actions:
 # === BASIC CAPTURE ===
 
- - title: impacket-sniff - interactive interface selection
+ - title: impacket-sniff - 交互式接口选择
    desc: |
-     Starts the tool in interactive mode to list available network interfaces. 
-     This is the most common way to start the tool when the interface index is unknown. 
-     The user will be prompted to select an interface (e.g., eth0, lo, docker0) by entering its corresponding number. 
-     Note that this functionality requires root or administrative privileges to access raw network sockets.
+     以交互模式启动工具，列出可用的网络接口。
+     当接口索引未知时，这是启动工具的最常见方式。
+     系统会提示用户通过输入相应编号来选择接口（例如 eth0、lo、docker0）。
+     请注意，此功能需要 root 或管理员权限才能访问原始网络套接字。
    command: "impacket-sniff"
 
- - title: impacket-sniff - capture on specific interface
+ - title: impacket-sniff - 在特定接口上捕获
    desc: |
-     Directly initiates packet sniffing on a specific interface identified by its index number. 
-     This bypasses the initial interactive prompt, making it suitable for automated scripts or repeated testing. 
-     The interface index usually matches the list provided by the tool's help or initial run (e.g., 0 for eth0). 
-     Ensure you have the correct permissions, as sniffing on network interfaces is restricted to privileged users.
+     直接在由其索引号标识的特定接口上启动数据包嗅探。
+     这绕过了最初的交互提示，适合自动化脚本或重复测试。
+     接口索引通常与工具帮助或初次运行所提供的列表匹配（例如 eth0 为 0）。
+     确保你拥有正确的权限，因为网络接口嗅探仅限于特权用户。
    command: "impacket-sniff -i {{interface_index|0}}"
 
 # === FILTERING AND LIMITS ===
 
- - title: impacket-sniff - capture with BPF filter
+ - title: impacket-sniff - 使用 BPF 过滤器捕获
    desc: |
-     Applies a Berkeley Packet Filter (BPF) to the capture session to isolate specific network traffic. 
-     This is essential for focusing on relevant protocols like SMB, HTTP, or specific IP addresses in noisy environments. 
-     Standard BPF syntax is used, such as "tcp port 445" or "host 192.168.1.1". 
-     Using filters significantly reduces the volume of data processed and displayed on the terminal.
+     将伯克利数据包过滤器（BPF）应用于捕获会话，以隔离特定网络流量。
+     这对于在嘈杂环境中专注于 SMB、HTTP 或特定 IP 地址等相关协议至关重要。
+     使用标准 BPF 语法，例如“tcp port 445”或“host 192.168.1.1”。
+     使用过滤器可显著减少在终端上处理和显示的数据量。
    command: "impacket-sniff -i {{interface_index|0}} -f \"{{bpf_filter|tcp port 445}}\""
 
- - title: impacket-sniff - limit captured packet count
+ - title: impacket-sniff - 限制捕获的数据包数量
    desc: |
-     Restricts the sniffing session to a specific number of captured packets before exiting. 
-     This is useful for gathering a small sample of traffic for quick analysis without manually interrupting the process. 
-     Once the specified count is reached, the tool will automatically stop and return to the command prompt. 
-     It is a safe way to prevent logs or terminal output from growing uncontrollably during long sessions.
+     将嗅探会话限制为在退出前捕获指定数量的数据包。
+     这对于收集少量流量样本进行快速分析而无需手动中断进程很有用。
+     一旦达到指定数量，工具将自动停止并返回命令提示符。
+     这是一种安全的方式，可防止长时间会话中日志或终端输出无节制增长。
    command: "impacket-sniff -i {{interface_index|0}} -c {{packet_count|100}}"
 
 # === ADVANCED USAGE ===
 
- - title: impacket-sniff - filtered capture with packet limit
+ - title: impacket-sniff - 带数据包限制的过滤捕获
    desc: |
-     Combines both BPF filtering and packet count limits for a highly targeted capture session. 
-     This command is ideal for capturing a specific sequence of packets, such as a single handshake or a specific set of requests. 
-     It ensures that only relevant traffic is captured and that the tool stops once the necessary data is collected. 
-     Be aware that if the filter is too restrictive, the tool may take a long time to reach the specified packet count.
+     结合 BPF 过滤和数据包数量限制，进行高度定向的捕获会话。
+     此命令非常适合捕获特定序列的数据包，例如单次握手或一组特定请求。
+     它确保只捕获相关流量，并在收集到必要数据后停止。
+     请注意，如果过滤器过于严格，工具可能需要很长时间才能达到指定的数据包数量。
    command: "impacket-sniff -i {{interface_index|0}} -f \"{{bpf_filter|port 80}}\" -c {{packet_count|50}}"

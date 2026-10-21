@@ -3,77 +3,68 @@ tags: [subdomain, reconnaissance, wordlist, pentest, automation, dsl, enumeratio
 
 actions:
 # === BASIC PERMUTATIONS ===
- - title: alterx - generate permutations from list
+ - title: alterx - 从列表生成排列组合
    desc: |
-     Generate permutations and alterations for a list of subdomains. This is the primary 
-     method for discovering hidden subdomains based on existing ones by applying common 
-     transformation rules. It reads from a file and outputs results to the console, allowing 
-     researchers to find variations like dev-target.com from target.com.
+     为子域列表生成排列组合与变体。这是基于现有子域发现隐藏子域的主要方法，
+     通过应用常见的转换规则实现。它从文件读取并将结果输出到控制台，
+     使研究人员能够从 target.com 找到诸如 dev-target.com 之类的变体。
    command: "alterx -list {{subdomains_file}}"
 
- - title: alterx - save results to file
+ - title: alterx - 将结果保存到文件
    desc: |
-     Generate alterations from a subdomain list and save the results to a specific file. 
-     This is crucial for automation pipelines where the output needs to be passed to 
-     other tools like httpx or dnsx. Saving to a file ensures that large wordlists 
-     are preserved for future analysis without rerunning the generation process.
+     从子域列表生成变体并将结果保存到指定文件。
+     这对于需要将输出传递给 httpx 或 dnsx 等其他工具的自动化管道至关重要。
+     保存到文件可确保大型字典得以保留以便日后分析，而无需重新运行生成过程。
    command: "alterx -list {{subdomains_file}} -output {{output_file|output.txt}}"
 
 # === PATTERN & PAYLOAD MANIPULATION ===
- - title: alterx - custom pattern permutation
+ - title: alterx - 自定义模式排列组合
    desc: |
-     Use a Domain Specific Language (DSL) pattern to generate highly targeted subdomains. 
-     This allows the user to define exactly how suffixes, prefixes, and separators 
-     are combined with the base domain. It is extremely effective when targeting 
-     specific naming conventions within an organization, such as environment-based prefixes.
+     使用领域特定语言（DSL）模式生成高度定向的子域。
+     这使用户能够精确定义后缀、前缀与分隔符如何与基础域名组合。
+     在针对组织内特定命名约定（如基于环境的前缀）时极为有效。
    command: "alterx -list {{subdomains_file}} -pattern {{custom_pattern|'{{word}}-{{sub}}.{{suffix}}'}}"
 
- - title: alterx - custom payload wordlist
+ - title: alterx - 自定义载荷字典
    desc: |
-     Inject custom words from a local text file into the permutation engine using a 
-     key-value format. By using the payload flag, you can replace specific variables 
-     defined in your patterns with custom values from your own wordlists. This is 
-     essential for testing organizational-specific department names or internal codes.
+     使用键值格式将本地文本文件中的自定义单词注入排列组合引擎。
+     通过使用 payload 标志，你可以用自有字典中的自定义值替换模式中定义的特定变量。
+     这对于测试组织特定的部门名称或内部代号至关重要。
    command: "alterx -list {{subdomains_file}} -pp {{payload_mapping|'word=words.txt'}}"
 
 # === ADVANCED CONFIGURATION ===
- - title: alterx - enrich wordlist from input
+ - title: alterx - 从输入扩充字典
    desc: |
-     Extract unique words from the provided subdomain list to create more relevant 
-     permutations dynamically. The enrichment process analyzes the input file to 
-     identify common naming strings and adds them to the internal wordlist used for 
-     generation. This makes the tool context-aware for the specific target infrastructure.
+     从提供的子域列表中提取唯一单词，动态创建更相关的排列组合。
+     扩充过程会分析输入文件，识别常见命名字符串并将其加入用于生成的内部字典。
+     这使工具对特定目标基础设施具有上下文感知能力。
    command: "alterx -list {{subdomains_file}} -enrich"
 
- - title: alterx - estimate permutation count
+ - title: alterx - 估算排列组合数量
    desc: |
-     Calculate the total number of subdomains that would be generated without actually 
-     running the permutation process. This prevents filling up disk space or 
-     overwhelming network resources with massive, unmanageable wordlists. It is a 
-     highly recommended first step before executing complex or broad patterns.
+     计算将生成的子域总数，而不实际运行排列组合过程。
+     这可防止用庞大且难以管理的字典填满磁盘空间或压垮网络资源。
+     在执行复杂或宽泛的模式之前，强烈建议先运行此命令。
    command: "alterx -list {{subdomains_file}} -estimate"
 
- - title: alterx - limit output results
+ - title: alterx - 限制输出结果
    desc: |
-     Restrict the number of generated subdomains to a specific integer count. 
-     This is useful when you only want a quick sample of potential subdomains 
-     rather than an exhaustive list that might take too long to resolve. It 
-     helps in managing the speed and scope of subsequent DNS resolution phases.
+     将生成的子域数量限制为特定的整数计数。
+     当你只想快速采样潜在子域、而非生成可能需要很久才能解析的穷尽列表时很有用。
+     它有助于管理后续 DNS 解析阶段的速度与范围。
    command: "alterx -list {{subdomains_file}} -limit {{result_limit|1000}}"
 
 # === WORKFLOW INTEGRATION ===
- - title: alterx - silent mode for piping
+ - title: alterx - 用于管道输出的静默模式
    desc: |
-     Run the tool in silent mode to only display the generated results in the standard output. 
-     This is the preferred method when piping the output directly into other command-line 
-     tools like dnsx for immediate resolution. It removes headers, banners, and 
-     informational logs that would otherwise break the input of the next tool.
+     以静默模式运行工具，仅在标准输出中显示生成的结果。
+     这是将输出直接管道到 dnsx 等其他命令行工具进行立即解析的首选方式。
+     它会移除原本会破坏下一个工具输入的头部、横幅与信息性日志。
    command: "alterx -list {{subdomains_file}} -silent | {{next_tool|dnsx}}"
 
- - title: alterx - update to latest version
+ - title: alterx - 更新到最新版本
    desc: |
-     Check for and install the latest version of the tool directly from the source repository. 
-     Keeping the tool updated ensures you have the latest permutation patterns and 
-     DSL features. It is a good practice to run this periodically to maintain 
-     the efficiency of your reconnaissance toolkit.
+     直接从源仓库检查并安装工具的最新版本。
+     保持工具更新可确保你获得最新的排列组合模式与 DSL 特性。
+     建议定期运行此命令，以维持侦察工具集的效率。
    command: "alterx -update"

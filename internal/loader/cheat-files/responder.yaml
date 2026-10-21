@@ -3,94 +3,94 @@ tags: [network, security, pentest, poisoning, ntlm, enumeration, exploitation]
 
 actions:
   # === RECONNAISSANCE & ANALYSIS ===
-  - title: responder - analyze mode
+  - title: responder - 分析模式
     desc: |
-      Analyze mode allows you to see NBT-NS, BROWSER, and LLMNR requests without actively responding to them. 
-      This is a passive reconnaissance step used to identify if there is any vulnerable traffic on the network.
-      It is highly recommended to run this first to avoid detection and understand the network dynamics.
-      No hashes will be captured in this mode as it does not poison the requests.
+      分析模式允许你查看 NBT-NS、BROWSER 和 LLMNR 请求，而不会主动响应它们。
+      这是一种被动侦察步骤，用于识别网络上是否存在易受攻击的流量。
+      强烈建议先运行此模式，以避免检测并了解网络动态。
+      此模式不会捕获任何哈希，因为它不会毒化请求。
     command: "responder -I {{interface|eth0}} -A"
 
   # === CORE POISONING ACTIONS ===
-  - title: responder - basic poisoning
+  - title: responder - 基础毒化
     desc: |
-      Starts the default poisoning process for LLMNR, NBT-NS, and MDNS protocols. 
-      This is the most common usage of the tool to capture NTLMv1/v2 hashes from network clients.
-      The tool will automatically start various servers like SMB, HTTP, and SQL to collect credentials.
-      Ensure you are running this in an environment where you have permission, as it can be disruptive.
+      启动 LLMNR、NBT-NS 和 MDNS 协议的默认毒化过程。
+      这是该工具捕获网络客户端 NTLMv1/v2 哈希的最常见用法。
+      该工具会自动启动 SMB、HTTP 和 SQL 等各种服务器以收集凭据。
+      确保在你有权限的环境中运行，因为它可能具有破坏性。
     command: "responder -I {{interface|eth0}}"
 
-  - title: responder - basic poisoning with verbosity
+  - title: responder - 带详细输出的基础毒化
     desc: |
-      Runs the standard poisoning modules with increased verbosity to see more detailed output.
-      This is helpful for troubleshooting connection issues or seeing specific request details from targets.
-      It helps in identifying which specific protocol (e.g., SMB vs HTTP) a target is using to communicate.
-      The verbose mode provides real-time feedback on every packet intercepted and processed.
+      运行标准毒化模块并提高详细级别以查看更详细的输出。
+      这有助于排查连接问题或查看目标的特定请求详情。
+      它有助于识别目标正在使用哪个特定协议（例如 SMB 还是 HTTP）进行通信。
+      详细模式提供对每个被拦截和处理的数据包的实时反馈。
     command: "responder -I {{interface|eth0}} -v"
 
   # === WPAD & PROXY EXPLOITATION ===
-  - title: responder - wpad exploitation
+  - title: responder - WPAD 利用
     desc: |
-      Starts a rogue WPAD (Web Proxy Auto-Discovery) server to intercept web traffic.
-      When clients attempt to discover proxy settings, Responder will provide a malicious wpad.dat file.
-      This directs the client's web traffic through the attacker's machine for credential harvesting.
-      This is one of the most effective ways to capture credentials from modern Windows environments.
+      启动恶意 WPAD（Web 代理自动发现）服务器以拦截 Web 流量。
+      当客户端尝试发现代理设置时，Responder 会提供恶意的 wpad.dat 文件。
+      这会将客户端的 Web 流量导向攻击者的机器以收集凭据。
+      这是从现代 Windows 环境捕获凭据的最有效方式之一。
     command: "responder -I {{interface|eth0}} -w"
 
-  - title: responder - force wpad authentication
+  - title: responder - 强制 WPAD 认证
     desc: |
-      Forces NTLM or Basic authentication when a target attempts to retrieve the wpad.dat file.
-      While this may cause a login prompt to appear on the victim's machine, it significantly increases the chance of hash capture.
-      Use this when standard WPAD poisoning is not yielding results.
-      Be aware that a login prompt might alert more technically savvy users to the attack.
+      当目标尝试获取 wpad.dat 文件时强制 NTLM 或 Basic 认证。
+      虽然这可能在受害者机器上弹出登录提示，但会显著增加哈希捕获的机会。
+      当标准 WPAD 毒化没有结果时使用此方式。
+      请注意，登录提示可能使更具技术意识的用户警觉到攻击。
     command: "responder -I {{interface|eth0}} -wF"
 
-  - title: responder - force proxy authentication
+  - title: responder - 强制代理认证
     desc: |
-      Forces NTLM (transparently) or Basic (via prompt) authentication for the rogue proxy.
-      This option is highly effective because it doesn't strictly require the WPAD server to be active.
-      It intercepts proxy-aware applications and forces them to authenticate against the attacker.
-      Note that this can be very intrusive and might break internet connectivity for the victim if handled improperly.
+      为恶意代理强制 NTLM（透明）或 Basic（通过提示）认证。
+      此选项非常有效，因为它不严格要求 WPAD 服务器处于活动状态。
+      它会拦截感知代理的应用程序并迫使它们向攻击者认证。
+      请注意，这可能非常具有侵入性，如果处理不当可能破坏受害者的互联网连接。
     command: "responder -I {{interface|eth0}} -P"
 
   # === DHCP EXPLOITATION ===
-  - title: responder - dhcp poisoning
+  - title: responder - DHCP 毒化
     desc: |
-      Enables answers for DHCP broadcast requests to inject a rogue WPAD server in the DHCP response.
-      This is a powerful technique that works even if LLMNR or NBT-NS are disabled on the network.
-      By becoming the "DHCP server" for a moment, you can tell the client exactly where to look for proxy settings.
-      Requires the attacker to be on the same broadcast domain as the victim requesting an IP.
+      启用对 DHCP 广播请求的应答，在 DHCP 响应中注入恶意 WPAD 服务器。
+      这是一种强大的技术，即使网络上禁用了 LLMNR 或 NBT-NS 也能工作。
+      通过暂时成为「DHCP 服务器」，你可以告诉客户端在哪里查找代理设置。
+      要求攻击者与请求 IP 的受害者处于同一广播域。
     command: "responder -I {{interface|eth0}} -d"
 
-  - title: responder - dhcp dns poisoning
+  - title: responder - DHCP DNS 毒化
     desc: |
-      Injects a rogue DNS server address into the DHCP response instead of a WPAD server.
-      This can allow for further DNS spoofing attacks against the target machine.
-      It is an alternative to the standard DHCP WPAD injection method.
-      Use this when you want to redirect all DNS queries from the target to a controlled DNS server.
+      在 DHCP 响应中注入恶意 DNS 服务器地址，而不是 WPAD 服务器。
+      这可以允许对目标机器进行进一步的 DNS 欺骗攻击。
+      它是标准 DHCP WPAD 注入方法的替代方案。
+      当你希望将目标的所有 DNS 查询重定向到受控的 DNS 服务器时使用。
     command: "responder -I {{interface|eth0}} -D"
 
   # === ADVANCED CONFIGURATIONS ===
-  - title: responder - use external ip redirection
+  - title: responder - 使用外部 IP 重定向
     desc: |
-      Tells Responder to poison requests with a specific external IP address rather than its own interface IP.
-      This is useful when the attacker's machine is behind a NAT or when traffic needs to be redirected to a different server.
-      Ensure the external IP provided is reachable by the victims on the network.
-      It is commonly used in complex pivoting scenarios during internal engagements.
+      告诉 Responder 用特定的外部 IP 地址毒化请求，而不是其自身的接口 IP。
+      当攻击者的机器位于 NAT 之后，或需要将流量重定向到其他服务器时很有用。
+      确保提供的外部 IP 对网络上的受害者可达。
+      它通常用于内部行动中复杂的枢纽场景。
     command: "responder -I {{interface|eth0}} -e {{external_ip}}"
 
-  - title: responder - force lm hashing downgrade
+  - title: responder - 强制 LM 哈希降级
     desc: |
-      Forces a downgrade to the older and much weaker LM (LAN Manager) hashing for Windows XP/2003 and earlier.
-      LM hashes are significantly easier to crack than modern NTLMv2 hashes.
-      This is generally only useful in legacy environments where old Windows versions are still in use.
-      Modern Windows systems will typically ignore this downgrade attempt due to security policies.
+      对 Windows XP/2003 及更早版本强制降级到更旧且弱得多的 LM（LAN Manager）哈希。
+      LM 哈希比现代 NTLMv2 哈希容易破解得多。
+      这通常只在仍使用旧版 Windows 的遗留环境中有用。
+      由于安全策略，现代 Windows 系统通常会忽略此降级尝试。
     command: "responder -I {{interface|eth0}} --lm"
 
-  - title: responder - webdav authentication prompt
+  - title: responder - WebDAV 认证提示
     desc: |
-      Changes the SMB error code to STATUS_LOGON_FAILURE to trigger WebDAV authentications.
-      By default, Responder returns ACCESS_DENIED, but some services like WebClient require a logon failure to prompt.
-      This is particularly useful for capturing hashes from the Windows WebClient service.
-      It can help bypass certain SMB signing requirements by forcing the client to use HTTP-based WebDAV.
+      将 SMB 错误代码更改为 STATUS_LOGON_FAILURE 以触发 WebDAV 认证。
+      默认情况下 Responder 返回 ACCESS_DENIED，但 WebClient 等某些服务需要登录失败才会提示。
+      这对于从 Windows WebClient 服务捕获哈希特别有用。
+      它可以通过强制客户端使用基于 HTTP 的 WebDAV 来帮助绕过某些 SMB 签名要求。
     command: "responder -I {{interface|eth0}} -E"

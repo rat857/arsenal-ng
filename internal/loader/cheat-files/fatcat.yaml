@@ -3,96 +3,83 @@ tags: [forensics, filesystem, security, recovery, pentest, disk-analysis]
 
 actions:
   # === INFORMATION & EXPLORATION ===
-  - title: fatcat - display disk information
+  - title: fatcat - 显示磁盘信息
     desc: |
-      Displays general information about the FAT filesystem within the provided image.
-      This command is typically the first step in an investigation to identify the FAT type (FAT12, FAT16, or FAT32) and verify the boot sector integrity.
-      It shows details such as sector size, cluster size, and the number of FAT tables present.
+      显示所提供镜像中 FAT 文件系统的一般信息。
+      此命令通常是调查的第一步，用于识别 FAT 类型（FAT12、FAT16 或 FAT32）并验证引导扇区完整性，会显示扇区大小、簇大小和 FAT 表数量等详细信息。
     command: "fatcat {{image}} -i"
 
-  - title: fatcat - list files and directories
+  - title: fatcat - 列出文件和目录
     desc: |
-      Lists the contents of a specific directory path within the disk image.
-      If no path is specified, it usually defaults to the root directory.
-      This is useful for mapping the file structure and identifying interesting files for further analysis.
+      列出磁盘镜像内特定目录路径的内容。
+      如果未指定路径，通常默认根目录，对映射文件结构并识别值得进一步分析的有趣文件非常有用。
     command: "fatcat {{image}} -l {{path|/}}"
 
-  - title: fatcat - list files in a specific cluster
+  - title: fatcat - 列出特定簇中的文件
     desc: |
-      Lists all entries found within a specific cluster number on the disk.
-      This is a low-level operation used when you suspect a directory exists at a specific location but it is not linked in the standard tree.
-      It bypasses the directory path logic and reads the cluster's raw entry data directly.
+      列出磁盘上特定簇号内发现的所有条目。
+      当你怀疑某目录位于特定位置但未链接到标准树中时，使用这种底层操作，它绕过目录路径逻辑直接读取簇的原始条目数据。
     command: "fatcat {{image}} -L {{cluster}}"
 
-  - title: fatcat - list deleted files
+  - title: fatcat - 列出已删除文件
     desc: |
-      Lists directory contents while specifically including entries that have been marked as deleted.
-      FAT systems mark files as deleted by changing the first character of the filename, but the data often remains.
-      This command helps forensic investigators identify potential evidence that a user attempted to hide or remove.
+      列出目录内容，同时特别包含被标记为已删除的条目。
+      FAT 系统通过更改文件名的第一个字符来标记删除，但数据往往仍然存在，此命令帮助取证调查人员识别用户试图隐藏或删除的潜在证据。
     command: "fatcat {{image}} -l {{path|/}} -d"
 
   # === EXTRACTION & RECOVERY ===
-  - title: fatcat - extract all files
+  - title: fatcat - 提取所有文件
     desc: |
-      Extracts the entire content of the disk image to a specified local directory.
-      The -d flag ensures that even deleted files are attempted to be recovered during the process.
-      Note that recovered deleted files may be corrupted if their clusters have been overwritten by newer data.
+      将磁盘镜像的完整内容提取到指定的本地目录。
+      -d 标志确保在提取过程中也尝试恢复已删除的文件，注意如果已删除文件的簇被较新数据覆盖，恢复的文件可能会损坏。
     command: "fatcat {{image}} -x {{output_directory}} -d"
 
-  - title: fatcat - read a specific file
+  - title: fatcat - 读取特定文件
     desc: |
-      Reads the content of a single file and outputs it to the standard output.
-      You can redirect this output to a local file on your machine to extract specific evidence without extracting the whole disk.
-      This is highly efficient for targeting known configuration files or logs.
+      读取单个文件的内容并输出到标准输出。
+      你可以将此输出重定向到本地机器上的文件，从而在不提取整个磁盘的情况下提取特定证据，对定位已知配置文件或日志非常高效。
     command: "fatcat {{image}} -r {{path}} > {{output_file}}"
 
-  - title: fatcat - read raw data from cluster
+  - title: fatcat - 从簇读取原始数据
     desc: |
-      Reads raw data directly from a specific cluster and a specified size.
-      This is crucial for manual forensic reconstruction when the filesystem metadata is severely damaged.
-      It allows you to pull raw bytes from the disk image regardless of what the FAT table says.
+      直接从特定簇读取指定大小的原始数据。
+      当文件系统元数据严重损坏时，这对手动取证重建至关重要，无论 FAT 表怎么说，都可从磁盘镜像中提取原始字节。
     command: "fatcat {{image}} -R {{cluster}} -s {{size|512}}"
 
   # === FAT TABLE ANALYSIS ===
-  - title: fatcat - compare FAT tables
+  - title: fatcat - 比较 FAT 表
     desc: |
-      Analyses and compares the primary and secondary FAT tables for discrepancies.
-      Standard FAT filesystems keep two copies of the allocation table; if they differ, it indicates corruption or manual tampering.
-      This command is essential for verifying the structural integrity of the partition.
+      分析并比较主 FAT 表和次 FAT 表之间的差异。
+      标准 FAT 文件系统保留两份分配表，若它们不同，则表明存在损坏或人为篡改，此命令对验证分区的结构完整性至关重要。
     command: "fatcat {{image}} -2"
 
-  - title: fatcat - search for orphan files
+  - title: fatcat - 搜索孤立文件
     desc: |
-      Performs a search for orphan files and directories that are not linked to the root directory structure.
-      Orphan files often occur due to improper unmounting or intentional manipulation of the directory entries.
-      This is a powerful forensic feature to find hidden data that doesn't appear in a standard file listing.
+      搜索未链接到根目录结构的孤立文件和目录。
+      孤立文件通常由不当卸载或对目录条目的故意操作造成，这是发现标准文件列表中不出现的隐藏数据的强大取证功能。
     command: "fatcat {{image}} -o"
 
-  - title: fatcat - backup FAT tables
+  - title: fatcat - 备份 FAT 表
     desc: |
-      Creates a backup of the FAT tables into a separate file.
-      This should be done before performing any write operations or "hacking" the entry tables to avoid permanent data loss.
-      The -t flag can specify which table to back up (0 for both, 1 for first, 2 for second).
+      将 FAT 表备份到单独的文件。
+      在执行任何写入操作或修改条目表之前都应这样做以避免永久数据丢失，-t 标志可指定备份哪张表（0 表示两张、1 表示第一张、2 表示第二张）。
     command: "fatcat {{image}} -b {{backup_file}} -t {{table|0}}"
 
   # === FILESYSTEM HACKING (WRITING) ===
-  - title: fatcat - change entry cluster (Risky)
+  - title: fatcat - 修改目录项起始簇（有风险）
     desc: |
-      Manually changes the starting cluster of a specific file or directory entry.
-      This is a "hacking" command that modifies the disk image directly and can lead to corruption if used incorrectly.
-      It is used in advanced forensics to manually point a filename to a different data area on the disk.
+      手动更改特定文件或目录条目的起始簇。
+      这是一条直接修改磁盘镜像的修改命令，使用不当可能导致损坏，在高级取证中用于手动将文件名指向磁盘上的不同数据区域。
     command: "fatcat {{image}} -e {{path}} -c {{new_cluster}}"
 
-  - title: fatcat - modify file size (Risky)
+  - title: fatcat - 修改文件大小（有风险）
     desc: |
-      Manually sets the size of a file entry in the directory structure.
-      Use this when a file's metadata reports a wrong size, preventing full extraction of the underlying data.
-      Warning: This command writes to the disk image; ensure you have a backup before proceeding.
+      手动设置目录结构中文件条目的大小。
+      当文件元数据报告的大小错误、导致底层数据无法完整提取时使用，警告：此命令会写入磁盘镜像，操作前请确保已有备份。
     command: "fatcat {{image}} -e {{path}} -s {{new_size}}"
 
-  - title: fatcat - fix reachable directories
+  - title: fatcat - 修复可达目录
     desc: |
-      Attempts to automatically fix directory structures that are reachable but logically inconsistent.
-      This can repair certain types of filesystem corruption where the directory links are broken.
-      This command modifies the image and should only be used after manual analysis and backing up the FAT.
+      尝试自动修复可达但逻辑上不一致的目录结构。
+      可修复目录链接损坏的某些类型的文件系统损坏，此命令会修改镜像，仅应在手动分析并备份 FAT 后使用。
     command: "fatcat {{image}} -f"

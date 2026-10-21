@@ -3,74 +3,74 @@ tags: [network, windows, security, pentest, enumeration, exploitation, authentic
 
 actions:
   # === AUTHENTICATION METHODS ===
-  - title: impacket-smbclient - basic authentication
+  - title: impacket-smbclient - 基本身份验证
     desc: |
-      Connects to a remote SMB share using a standard username and password. 
-      This is the most common way to interact with Windows shares to list directories or manage files. 
-      The command opens an interactive mini-shell that supports operations like 'ls', 'cd', 'get', and 'put'.
+      使用标准用户名和密码连接远程 SMB 共享。
+      这是与 Windows 共享交互以列出目录或管理文件的最常见方式。
+      该命令会打开一个交互式迷你 shell，支持“ls”“cd”“get”和“put”等操作。
     command: "impacket-smbclient {{domain|.}}/{{username}}:{{password}}@{{target}}"
 
-  - title: impacket-smbclient - anonymous login
+  - title: impacket-smbclient - 匿名登录
     desc: |
-      Attempts to connect to the SMB service without providing a password or using a null session.
-      This is useful for identifying misconfigured servers that allow unauthenticated access to sensitive shares like IPC$ or public backups.
-      Note that many modern Windows systems have anonymous access disabled by default for security.
+      尝试在不提供密码或使用空会话的情况下连接 SMB 服务。
+      这有助于识别配置错误的服务器，这些服务器允许对 IPC$ 或公共备份等敏感共享进行未认证访问。
+      请注意，出于安全考虑，许多现代 Windows 系统默认禁用匿名访问。
     command: "impacket-smbclient {{target}} -no-pass"
 
-  - title: impacket-smbclient - pass-the-hash authentication
+  - title: impacket-smbclient - 传递哈希身份验证
     desc: |
-      Authenticates to the target using NTLM hashes instead of a plaintext password.
-      This technique is vital in post-exploitation scenarios where you have extracted hashes but cannot crack them.
-      The hash must be provided in the format 'LMHASH:NTHASH', though the LM part can be empty (e.g., 'aad3b435b51404eeaad3b435b51404ee:NTHASH').
+      使用 NTLM 哈希而非明文密码对目标进行身份验证。
+      当你已提取哈希但无法破解时，此技术在后利用场景中至关重要。
+      哈希必须以“LMHASH:NTHASH”格式提供，但 LM 部分可以为空（例如“aad3b435b51404eeaad3b435b51404ee:NTHASH”）。
     command: "impacket-smbclient {{domain|.}}/{{username}}@{{target}} -hashes {{lmhash:nthash}}"
 
-  - title: impacket-smbclient - kerberos authentication
+  - title: impacket-smbclient - Kerberos 身份验证
     desc: |
-      Uses Kerberos tickets for authentication instead of NTLM.
-      This requires a valid Kerberos ticket-granting ticket (TGT) to be present in the environment (KRB5CCNAME).
-      It is highly effective in Active Directory environments where NTLM is disabled or to avoid generating NTLM-based alerts.
+      使用 Kerberos 票据而非 NTLM 进行身份验证。
+      这要求环境中存在有效的 Kerberos 票据授予票据（TGT，即 KRB5CCNAME）。
+      在禁用 NTLM 的 Active Directory 环境中，或为避免产生基于 NTLM 的告警时，它非常有效。
     command: "impacket-smbclient -k -no-pass {{domain}}/{{username}}@{{target}}"
 
   # === CONNECTION SETTINGS ===
-  - title: impacket-smbclient - specify domain controller ip
+  - title: impacket-smbclient - 指定域控制器 IP
     desc: |
-      Explicitly defines the IP address of the Domain Controller (DC) for authentication purposes.
-      This is necessary when the target machine cannot resolve the domain name or when you are in a different network segment.
-      It ensures that the authentication request is sent directly to the authoritative DC.
+      显式定义用于身份验证的域控制器（DC）IP 地址。
+      当目标机器无法解析域名，或你位于不同网段时，这是必需的。
+      它确保身份验证请求直接发送到权威 DC。
     command: "impacket-smbclient {{domain}}/{{username}}@{{target}} -dc-ip {{dc_ip}}"
 
-  - title: impacket-smbclient - connection on custom port
+  - title: impacket-smbclient - 在自定义端口上连接
     desc: |
-      Connects to the SMB service using a non-standard port instead of the default 445.
-      This is useful when the target is behind a port forwarder, a proxy, or an SSH tunnel.
-      Specify the destination port to ensure the client reaches the intended service.
+      使用非标准端口而非默认的 445 连接 SMB 服务。
+      当目标位于端口转发器、代理或 SSH 隧道之后时很有用。
+      指定目的端口以确保客户端到达预期的服务。
     command: "impacket-smbclient {{domain|.}}/{{username}}@{{target}} -port {{port|445}}"
 
-  - title: impacket-smbclient - separate target ip from netbios name
+  - title: impacket-smbclient - 将目标 IP 与 NetBIOS 名称分离
     desc: |
-      Specifies a target IP address that differs from the NetBIOS name or FQDN used in the target string.
-      This is useful when the target's hostname does not resolve via DNS but is required for the SMB protocol to function correctly.
-      It forces the connection to the provided IP while maintaining the specified target name for the session.
+      指定一个与目标字符串中 NetBIOS 名称或 FQDN 不同的目标 IP 地址。
+      当目标主机名无法通过 DNS 解析，但 SMB 协议需要它才能正常工作时很有用。
+      它在保持会话指定目标名称的同时，强制连接到所提供的 IP。
     command: "impacket-smbclient {{domain|.}}/{{username}}@{{hostname}} -target-ip {{target_ip}}"
 
   # === AUTOMATION & LOGGING ===
-  - title: impacket-smbclient - execute commands from file
+  - title: impacket-smbclient - 从文件执行命令
     desc: |
-      Reads a series of commands from a local text file and executes them automatically in the SMB session.
-      This is excellent for automating data exfiltration or routine enumeration tasks across multiple shares.
-      It reduces manual interaction and minimizes the time spent in the interactive shell.
+      从本地文本文件读取一系列命令，并在 SMB 会话中自动执行。
+      这对于跨多个共享自动化数据窃取或常规枚举任务非常出色。
+      它减少了手动交互，并最大程度缩短在交互式 shell 中花费的时间。
     command: "impacket-smbclient {{domain|.}}/{{username}}@{{target}} -inputfile {{commands_file}}"
 
-  - title: impacket-smbclient - log session to file
+  - title: impacket-smbclient - 将会话记录到文件
     desc: |
-      Logs all actions and output from the smbclient session to a specified local file.
-      This is crucial for maintaining an audit trail during penetration tests or for later analysis of share contents.
-      The output file will contain every command entered and every response received from the server.
+      将 smbclient 会话的所有操作和输出记录到指定的本地文件。
+      这对于在渗透测试期间维护审计轨迹或之后分析共享内容至关重要。
+      输出文件将包含输入的每条命令以及从服务器收到的每条响应。
     command: "impacket-smbclient {{domain|.}}/{{username}}@{{target}} -outputfile {{log_filename|smb_session.log}}"
 
-  - title: impacket-smbclient - debug mode and timestamps
+  - title: impacket-smbclient - 调试模式和时间戳
     desc: |
-      Enables verbose debug output and adds timestamps to every log entry.
-      This is used for troubleshooting connection issues or understanding protocol negotiation failures.
-      Debug mode provides a deeper look into the underlying Impacket library's interaction with the remote SMB provider.
+      启用详细调试输出并为每条日志添加时间戳。
+      这用于排查连接问题或理解协议协商失败。
+      调试模式可以更深入地了解底层 Impacket 库与远程 SMB 提供方的交互。
     command: "impacket-smbclient -debug -ts {{domain|.}}/{{username}}@{{target}}"

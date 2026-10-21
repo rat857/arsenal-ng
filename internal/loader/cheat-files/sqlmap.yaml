@@ -3,119 +3,119 @@ tags: [security, pentest, exploitation, vulnerability-scanner, database, sql-inj
 
 actions:
   # === TARGET SPECIFICATION ===
-  - title: sqlmap - basic GET request scan
+  - title: sqlmap - 基础 GET 请求扫描
     desc: |
-      Performs a standard automated scan against a specific URL with GET parameters. 
-      It is the most common entry point for testing a suspected SQL injection vulnerability. 
-      The tool will automatically test all parameters in the query string to find injectable points.
+      对带有 GET 参数的特定 URL 执行标准自动化扫描。
+      这是测试疑似 SQL 注入漏洞的最常见入口。
+      该工具会自动测试查询字符串中的所有参数以查找注入点。
     command: "sqlmap -u \"{{url}}\""
 
-  - title: sqlmap - scan POST request
+  - title: sqlmap - 扫描 POST 请求
     desc: |
-      Tests a target using POST data instead of URL parameters. 
-      This is essential for testing login forms, search boxes, or any data submission that doesn't appear in the URL. 
-      The data string should be formatted exactly as it is sent in the HTTP body (e.g., "id=1&user=admin").
+      使用 POST 数据而不是 URL 参数测试目标。
+      这对于测试登录表单、搜索框或任何不出现在 URL 中的数据提交至关重要。
+      数据字符串的格式应与 HTTP 正文中发送的完全一致（例如 id=1&user=admin）。
     command: "sqlmap -u \"{{url}}\" --data=\"{{post_data}}\""
 
-  - title: sqlmap - scan from HTTP request file
+  - title: sqlmap - 从 HTTP 请求文件扫描
     desc: |
-      Loads a full HTTP request from a text file for comprehensive testing. 
-      This is the most professional way to use sqlmap as it preserves all headers, cookies, and complex structures captured from tools like Burp Suite. 
-      Simply copy the raw request into a file and point sqlmap to it using the -r flag.
+      从文本文件加载完整 HTTP 请求以进行全面测试。
+      这是使用 sqlmap 最专业的方式，因为它保留了从 Burp Suite 等工具捕获的所有头、Cookie 和复杂结构。
+      只需将原始请求复制到文件中，并使用 -r 标志将 sqlmap 指向它。
     command: "sqlmap -r {{request_file|request.txt}}"
 
   # === REQUEST CONFIGURATION ===
-  - title: sqlmap - scan with authenticated session
+  - title: sqlmap - 使用认证会话扫描
     desc: |
-      Specifies a session cookie to access pages that require authentication. 
-      Without this, sqlmap might be redirected to a login page, preventing it from reaching the vulnerable code. 
-      Ensure the cookie is valid and hasn't expired before starting the scan.
+      指定会话 Cookie 以访问需要认证的页面。
+      没有它，sqlmap 可能被重定向到登录页面，从而无法到达易受攻击的代码。
+      在开始扫描之前确保 Cookie 有效且未过期。
     command: "sqlmap -u \"{{url}}\" --cookie=\"{{cookie_string}}\""
 
-  - title: sqlmap - use random user-agent
+  - title: sqlmap - 使用随机 User-Agent
     desc: |
-      Sends a randomly selected User-Agent header with every request. 
-      This helps in bypassing basic security filters that block the default 'sqlmap' user-agent string. 
-      It makes the automated traffic look more like a variety of legitimate web browsers.
+      为每个请求发送随机选择的 User-Agent 头。
+      这有助于绕过阻止默认 sqlmap user-agent 字符串的基础安全过滤器。
+      它使自动化流量看起来更像各种合法的 Web 浏览器。
     command: "sqlmap -u \"{{url}}\" --random-agent"
 
-  - title: sqlmap - route through Tor
+  - title: sqlmap - 通过 Tor 路由
     desc: |
-      Routes all scanning traffic through the Tor anonymity network. 
-      This hides the attacker's real IP address but significantly slows down the testing process due to network latency. 
-      Requires the Tor service to be running locally on the default port.
+      通过 Tor 匿名网络路由所有扫描流量。
+      这会隐藏攻击者的真实 IP 地址，但由于网络延迟会显著减慢测试过程。
+      需要 Tor 服务在本地默认端口上运行。
     command: "sqlmap -u \"{{url}}\" --tor"
 
   # === DETECTION AND TUNING ===
-  - title: sqlmap - increase detection level and risk
+  - title: sqlmap - 提高检测级别和风险
     desc: |
-      Increases the depth and aggressiveness of the tests. 
-      Level 3 adds testing for HTTP headers like Referer and User-Agent, while risk 3 adds heavy OR-based tests which can potentially modify database content. 
-      Use higher values only if the default settings fail to find a confirmed vulnerability.
+      增加测试的深度和激进程度。
+      级别 3 增加对 Referer 和 User-Agent 等 HTTP 头的测试，而风险 3 增加可能修改数据库内容的重型 OR 测试。
+      仅在默认设置无法找到确认漏洞时才使用更高的值。
     command: "sqlmap -u \"{{url}}\" --level={{level|3}} --risk={{risk|2}}"
 
-  - title: sqlmap - bypass WAF with tamper scripts
+  - title: sqlmap - 使用 tamper 脚本绕过 WAF
     desc: |
-      Uses obfuscation scripts to bypass Web Application Firewalls (WAF) and Intrusion Prevention Systems (IPS). 
-      Tamper scripts like 'space2comment' or 'randomcase' modify the payloads to evade signature-based detection. 
-      Multiple scripts can be combined with commas if necessary.
+      使用混淆脚本绕过 Web 应用防火墙（WAF）和入侵防御系统（IPS）。
+      诸如 space2comment 或 randomcase 之类的 tamper 脚本会修改载荷以规避基于特征的检测。
+      如有必要，可以用逗号组合多个脚本。
     command: "sqlmap -u \"{{url}}\" --tamper=\"{{script_name|space2comment}}\""
 
   # === ENUMERATION ===
-  - title: sqlmap - list all databases
+  - title: sqlmap - 列出所有数据库
     desc: |
-      Retrieves a list of all databases available on the backend Database Management System (DBMS). 
-      This is typically the first step of enumeration after a vulnerability is successfully exploited. 
-      It allows the pentester to identify the primary application database versus system databases.
+      获取后端数据库管理系统（DBMS）上所有可用数据库的列表。
+      这通常是漏洞被成功利用后枚举的第一步。
+      它允许渗透测试者识别主要应用数据库与系统数据库。
     command: "sqlmap -u \"{{url}}\" --dbs"
 
-  - title: sqlmap - list tables in a database
+  - title: sqlmap - 列出数据库中的表
     desc: |
-      Enumerates all tables within a specific database. 
-      The database name must be specified using the -D flag to narrow down the scope. 
-      Identifying table names helps in locating sensitive data like 'users', 'passwords', or 'configurations'.
+      枚举特定数据库中的所有表。
+      必须使用 -D 标志指定数据库名称以缩小范围。
+      识别表名有助于定位 users、passwords 或 configurations 等敏感数据。
     command: "sqlmap -u \"{{url}}\" -D {{database_name}} --tables"
 
-  - title: sqlmap - dump table content
+  - title: sqlmap - 转储表内容
     desc: |
-      Downloads and saves all records from a specific table. 
-      This command effectively exfiltrates the data from the remote database to a local CSV or SQLite file. 
-      Be cautious when dumping large tables as it can be very slow and generate a massive amount of logs on the target server.
+      下载并保存特定表中的所有记录。
+      此命令实际上将数据从远程数据库外带到本地 CSV 或 SQLite 文件。
+      转储大型表时要谨慎，因为它可能非常缓慢并在目标服务器上产生大量日志。
     command: "sqlmap -u \"{{url}}\" -D {{database_name}} -T {{table_name}} --dump"
 
-  - title: sqlmap - retrieve database user passwords
+  - title: sqlmap - 获取数据库用户密码
     desc: |
-      Attempts to extract the password hashes for the database users. 
-      If successful, sqlmap will often offer to perform a dictionary attack to crack the hashes. 
-      This can lead to full administrative control over the database server if the DBA account is compromised.
+      尝试提取数据库用户的密码哈希。
+      如果成功，sqlmap 通常会提议执行字典攻击来破解哈希。
+      如果 DBA 账户被攻陷，这可能导致对数据库服务器的完全管理控制。
     command: "sqlmap -u \"{{url}}\" --passwords"
 
   # === OPERATING SYSTEM ACCESS ===
-  - title: sqlmap - interactive OS shell
+  - title: sqlmap - 交互式 OS shell
     desc: |
-      Attempts to gain a command-line shell on the underlying operating system. 
-      This requires high database privileges (like FILE or administrative rights) and specific DBMS configurations. 
-      If successful, it allows the attacker to execute OS commands directly on the server.
+      尝试在底层操作系统上获得命令行 shell。
+      这需要高数据库权限（如 FILE 或管理权限）和特定的 DBMS 配置。
+      如果成功，它允许攻击者直接在服务器上执行操作系统命令。
     command: "sqlmap -u \"{{url}}\" --os-shell"
 
-  - title: sqlmap - read local file
+  - title: sqlmap - 读取本地文件
     desc: |
-      Reads a specific file from the server's local file system via the database. 
-      This is useful for retrieving sensitive configuration files like /etc/passwd or web.config. 
-      The database user must have the necessary 'FILE' read permissions for this action to succeed.
+      通过数据库读取服务器本地文件系统中的特定文件。
+      这对于获取 /etc/passwd 或 web.config 等敏感配置文件很有用。
+      此操作要成功，数据库用户必须具有必要的 FILE 读取权限。
     command: "sqlmap -u \"{{url}}\" --file-read=\"{{remote_file|/etc/passwd}}\""
 
   # === MISCELLANEOUS ===
-  - title: sqlmap - automated batch mode
+  - title: sqlmap - 自动化批处理模式
     desc: |
-      Runs the tool without prompting for any user input. 
-      It automatically chooses the default behavior for every question asked during the process. 
-      This is ideal for automated scripts or CI/CD pipelines where manual intervention is not possible.
+      运行工具而不提示任何用户输入。
+      它会自动为过程中的每个问题选择默认行为。
+      这非常适合无法手动干预的自动化脚本或 CI/CD 流水线。
     command: "sqlmap -u \"{{url}}\" --batch"
 
-  - title: sqlmap - flush session/cache
+  - title: sqlmap - 刷新会话/缓存
     desc: |
-      Clears the session files and cache for the current target. 
-      Use this if you want to start a fresh scan from scratch, ignoring results from previous runs. 
-      This is helpful if the target environment has changed or if previous results were corrupted.
+      清除当前目标的会话文件和缓存。
+      如果你想从头开始全新扫描，忽略之前运行的结果，请使用。
+      当目标环境已更改或之前的结果已损坏时，这很有帮助。
     command: "sqlmap -u \"{{url}}\" --flush-session"

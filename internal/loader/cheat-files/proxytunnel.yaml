@@ -4,96 +4,96 @@ tags: [network, proxy, tunnel, security, pentest, connectivity, enumeration]
 # === BASIC TUNNELING ===
 
 actions:
-  - title: proxytunnel - basic ssh tunnel
+  - title: proxytunnel - 基础 SSH 隧道
     desc: |
-      Establishes a basic tunnel through a local HTTP proxy to a destination. 
-      This is typically used as a ProxyCommand in SSH configuration files to bypass restrictive firewalls that only allow HTTP traffic. 
-      It encapsulates the SSH protocol within an HTTP CONNECT request to reach the target server. 
-      Ensure the proxy server permits CONNECT requests to the specified destination port.
+      通过本地 HTTP 代理建立到达目标的基础隧道。
+      这通常作为 SSH 配置文件中的 ProxyCommand 使用，以绕过只允许 HTTP 流量的限制性防火墙。
+      它把 SSH 协议封装在 HTTP CONNECT 请求中以到达目标服务器。
+      确保代理服务器允许对指定目标端口的 CONNECT 请求。
     command: "proxytunnel -p {{proxy_host}}:{{proxy_port|8080}} -d {{dest_host}}:{{dest_port|22}}"
 
-  - title: proxytunnel - tunnel via standalone daemon
+  - title: proxytunnel - 通过独立守护进程建立隧道
     desc: |
-      Runs proxytunnel as a standalone background daemon listening on a local port. 
-      This allows other applications to connect to the local port and have their traffic automatically routed through the proxy. 
-      It is an excellent alternative to using proxytunnel as an SSH sub-command for every session. 
-      You can bind to a specific interface by providing an address:port combination.
+      将 proxytunnel 作为独立的后台守护进程运行，监听本地端口。
+      这允许其他应用程序连接到本地端口，并让其流量自动经由代理路由。
+      这是代替每个会话都将 proxytunnel 作为 SSH 子命令的绝佳方案。
+      你可以通过提供 address:port 组合来绑定到特定接口。
     command: "proxytunnel -a {{local_port|1080}} -p {{proxy_host}}:{{proxy_port|8080}} -d {{dest_host}}:{{dest_port|22}}"
 
 # === AUTHENTICATION ===
 
-  - title: proxytunnel - basic proxy authentication
+  - title: proxytunnel - 基础代理认证
     desc: |
-      Connects through an HTTP proxy that requires standard username and password authentication. 
-      This is required for corporate environments where proxy access is restricted to authorized users. 
-      The credentials are sent using the Basic authentication method in the HTTP headers. 
-      Be aware that passing passwords in the command line may be visible to other users on the system via process lists.
+      通过需要标准用户名和密码认证的 HTTP 代理连接。
+      这适用于代理访问仅限于授权用户的企业环境。
+      凭据使用 HTTP 头中的 Basic 认证方法发送。
+      请注意，在命令行中传递密码可能通过进程列表对系统上的其他用户可见。
     command: "proxytunnel -p {{proxy_host}}:{{proxy_port|8080}} -P {{username}}:{{password}} -d {{dest_host}}:{{dest_port|443}}"
 
-  - title: proxytunnel - ntlm authentication
+  - title: proxytunnel - NTLM 认证
     desc: |
-      Uses NTLM authentication to bypass Microsoft ISA or Forefront TMG proxy servers. 
-      NTLM is often required in Active Directory environments where standard Basic authentication is disabled for security reasons. 
-      The -t flag is used to specify the NTLM domain required for the challenge-response handshake. 
-      This method is specifically designed for interoperability with Windows-based network infrastructure.
+      使用 NTLM 认证绕过 Microsoft ISA 或 Forefront TMG 代理服务器。
+      在出于安全原因禁用标准 Basic 认证的 Active Directory 环境中，通常需要 NTLM。
+      -t 标志用于指定质询响应握手所需的 NTLM 域。
+      此方法专为与基于 Windows 的网络基础设施互操作而设计。
     command: "proxytunnel -p {{proxy_host}}:{{proxy_port|8080}} -N -t {{domain}} -P {{username}}:{{password}} -d {{dest_host}}:{{dest_port|22}}"
 
-  - title: proxytunnel - authentication using a passfile
+  - title: proxytunnel - 使用口令文件认证
     desc: |
-      Reads proxy credentials from a specified file instead of the command line. 
-      Using a passfile is a more secure practice as it prevents passwords from appearing in the shell history or process list. 
-      The file should contain the username and password in a format recognized by the tool. 
-      This is highly recommended for automated scripts or persistent tunnel configurations.
+      从指定文件读取代理凭据，而不是从命令行读取。
+      使用口令文件是更安全的做法，因为它可以防止密码出现在 shell 历史或进程列表中。
+      该文件应以工具识别的格式包含用户名和密码。
+      对于自动化脚本或持久隧道配置，强烈建议使用此方式。
     command: "proxytunnel -p {{proxy_host}}:{{proxy_port|8080}} -F {{credential_file}} -d {{dest_host}}:{{dest_port|22}}"
 
 # === ENCRYPTION AND SECURITY ===
 
-  - title: proxytunnel - encrypted proxy connection (SSL)
+  - title: proxytunnel - 加密的代理连接（SSL）
     desc: |
-      Encrypts the traffic between the local client and the local proxy server. 
-      Use this when the proxy server supports HTTPS connections on its listening port (e.g., port 443). 
-      This adds a layer of TLS encryption that hides the HTTP CONNECT request from local network sniffers. 
-      It is useful for bypassing Deep Packet Inspection (DPI) that might identify and block proxytunnel traffic.
+      加密本地客户端与本地代理服务器之间的流量。
+      当代理服务器在其监听端口（例如 443 端口）支持 HTTPS 连接时使用。
+      这会增加一层 TLS 加密，向本地网络嗅探者隐藏 HTTP CONNECT 请求。
+      它可用于绕过可能识别并阻止 proxytunnel 流量的深度包检测（DPI）。
     command: "proxytunnel -E -p {{proxy_host}}:{{proxy_port|443}} -d {{dest_host}}:{{dest_port|22}}"
 
-  - title: proxytunnel - encrypt end-to-end destination
+  - title: proxytunnel - 端到端加密目标
     desc: |
-      Ensures the connection between the proxy and the final destination is encrypted via SSL. 
-      This is useful when the target service is an SSL-wrapped protocol and the proxy needs to handle the handshake. 
-      If the destination server uses a self-signed certificate, you may need to use the -z flag to skip verification. 
-      It provides security for the "second leg" of the tunnel connection.
+      确保代理与最终目标之间的连接通过 SSL 加密。
+      当目标服务是 SSL 封装的协议且代理需要处理握手时很有用。
+      如果目标服务器使用自签名证书，你可能需要使用 -z 标志跳过验证。
+      它为隧道连接的「第二段」提供安全保护。
     command: "proxytunnel -e -p {{proxy_host}}:{{proxy_port|8080}} -d {{dest_host}}:{{dest_port|443}}"
 
-  - title: proxytunnel - ignore SSL certificate errors
+  - title: proxytunnel - 忽略 SSL 证书错误
     desc: |
-      Disables the verification of SSL certificates for encrypted proxy connections. 
-      This is necessary when connecting to proxies or destinations that use self-signed, expired, or otherwise invalid certificates. 
-      Use this option with caution, as it makes the connection vulnerable to man-in-the-middle (MITM) attacks. 
-      It is primarily intended for testing or internal environments where certificate trust is not established.
+      为加密的代理连接禁用 SSL 证书验证。
+      当连接使用自签名、已过期或其他无效证书的代理或目标时，这是必需的。
+      使用此选项时要谨慎，因为它会使连接容易受到中间人（MITM）攻击。
+      它主要用于未建立证书信任的测试或内部环境。
     command: "proxytunnel -E -z -p {{proxy_host}}:{{proxy_port|443}} -d {{dest_host}}:{{dest_port|22}}"
 
 # === ADVANCED USAGE ===
 
-  - title: proxytunnel - double proxy chaining
+  - title: proxytunnel - 双代理链
     desc: |
-      Chains two separate HTTP proxies together to reach a final destination. 
-      The traffic flows from your machine to the local proxy, then to the remote proxy, and finally to the destination. 
-      This is useful for complex network pivoting or when a specific destination is only reachable from a secondary proxy. 
-      Both proxies must be configured to allow the CONNECT method for the subsequent hops.
+      将两个独立的 HTTP 代理串联起来以到达最终目标。
+      流量从你的机器流向本地代理，再到远程代理，最后到达目标。
+      这对于复杂的网络枢纽或当特定目标只能通过辅助代理访问时很有用。
+      两个代理都必须配置为允许后续跳的 CONNECT 方法。
     command: "proxytunnel -p {{local_proxy}}:{{l_port|8080}} -r {{remote_proxy}}:{{r_port|8080}} -d {{dest_host}}:{{dest_port|22}}"
 
-  - title: proxytunnel - custom http headers
+  - title: proxytunnel - 自定义 HTTP 头
     desc: |
-      Injects custom HTTP headers into the tunnel request sent to the proxy. 
-      This can be used to impersonate specific browsers using a User-Agent header or to pass custom metadata required by the proxy. 
-      It is a powerful feature for bypassing filters that look for the default proxytunnel header signatures. 
-      Multiple headers can be specified by repeating the -H flag as needed.
+      向发送到代理的隧道请求注入自定义 HTTP 头。
+      可用于使用 User-Agent 头模拟特定浏览器，或传递代理所需的自定义元数据。
+      这是绕过查找默认 proxytunnel 头特征的过滤器的强大功能。
+      可根据需要重复 -H 标志来指定多个头。
     command: "proxytunnel -p {{proxy_host}}:{{proxy_port|8080}} -H \"{{header_name|User-Agent}}: {{header_value|Mozilla/5.0}}\" -d {{dest_host}}:{{dest_port|80}}"
 
-  - title: proxytunnel - verbose debugging
+  - title: proxytunnel - 详细调试
     desc: |
-      Enables verbose output to provide detailed information about the connection process. 
-      This is essential for troubleshooting failed connections, authentication errors, or proxy rejections. 
-      It displays the HTTP headers exchanged during the CONNECT handshake. 
-      Use this during the initial setup to verify that all parameters and credentials are being sent correctly.
+      启用详细输出，提供关于连接过程的详细信息。
+      这对于排查连接失败、认证错误或代理拒绝至关重要。
+      它会显示 CONNECT 握手期间交换的 HTTP 头。
+      在初始设置期间使用，以验证所有参数和凭据是否正确发送。
     command: "proxytunnel -v -p {{proxy_host}}:{{proxy_port|8080}} -d {{dest_host}}:{{dest_port|22}}"

@@ -3,125 +3,125 @@ tags: [forensics, reverse-engineering, firmware, analysis, extraction, security,
 
 actions:
   # === ANALYSIS & IDENTIFICATION ===
-  - title: binwalk - basic signature scan
+  - title: binwalk - 基础签名扫描
     desc: |
-      Performs a basic signature scan of the target file to identify embedded files and filesystems. 
-      This is the most common starting point for firmware analysis and reconnaissance. 
-      It searches for magic numbers and headers defined in the binwalk signature database.
+      对目标文件执行基础签名扫描，识别内嵌文件与文件系统。
+      这是固件分析与侦察最常见的起点。
+      它搜索 binwalk 签名数据库中定义的魔数与文件头。
     command: "binwalk {{file_path}}"
 
-  - title: binwalk - identify cpu architecture
+  - title: binwalk - 识别 CPU 架构
     desc: |
-      Identifies the CPU architecture of a file using the capstone disassembler. 
-      This is extremely useful when analyzing raw binary blobs where the architecture (e.g., ARM, MIPS, x86) is unknown. 
-      It helps determine how the binary should be loaded into specialized tools like IDA Pro or Ghidra.
+      使用 capstone 反汇编器识别文件的 CPU 架构。
+      在分析架构（如 ARM、MIPS、x86）未知的原始二进制块时极为有用。
+      它有助于确定应如何将二进制加载到 IDA Pro 或 Ghidra 等专用工具中。
     command: "binwalk -Y {{file_path}}"
 
-  - title: binwalk - opcode scanning
+  - title: binwalk - 操作码扫描
     desc: |
-      Scans the target file for common executable opcode signatures across various architectures. 
-      This helps in locating code segments within a binary that might not have a clear file header. 
-      It is particularly useful for finding entry points or shellcode within a large data dump.
+      扫描目标文件，查找各种架构中常见的可执行操作码签名。
+      这有助于在可能没有清晰文件头的二进制中定位代码段。
+      它对于在大型数据转储中查找入口点或 Shellcode 特别有用。
     command: "binwalk -A {{file_path}}"
 
-  - title: binwalk - entropy analysis
+  - title: binwalk - 熵分析
     desc: |
-      Calculates and analyzes the entropy of the file to identify regions of compressed or encrypted data. 
-      High entropy (approaching 1.0) typically indicates encrypted data or compressed archives, while low entropy indicates structured data or padding. 
-      This is a vital step for identifying hidden data that doesn't match known signatures.
+      计算并分析文件熵，以识别压缩或加密数据的区域。
+      高熵（接近 1.0）通常表示加密数据或压缩归档，低熵则表示结构化数据或填充。
+      这是识别与已知签名不符的隐藏数据的关键步骤。
     command: "binwalk -E {{file_path}}"
 
-  - title: binwalk - fast entropy plot
+  - title: binwalk - 快速熵图
     desc: |
-      Generates an entropy analysis using the fast method and saves the resulting plot as a PNG image. 
-      This provides a visual representation of data density, making it easier to spot patterns and boundaries in the file. 
-      The resulting image is saved in the current working directory by default.
+      使用快速方法生成熵分析，并将生成的图保存为 PNG 图像。
+      它提供数据密度的可视化表示，使发现文件中的模式与边界更容易。
+      生成的图像默认保存在当前工作目录中。
     command: "binwalk -EJ {{file_path}}"
 
   # === EXTRACTION ===
-  - title: binwalk - automatic extraction
+  - title: binwalk - 自动提取
     desc: |
-      Automatically extracts any recognized file types found during the signature scan. 
-      The tool uses internal extractors and external utilities to carve out files and directories into a new folder. 
-      Be aware that some extraction utilities might require root privileges or specific dependencies installed on the host.
+      自动提取签名扫描期间发现的任何已识别文件类型。
+      工具使用内部提取器与外部工具将文件与目录切分到新文件夹中。
+      注意某些提取工具可能需要 root 权限或主机上安装特定依赖。
     command: "binwalk -e {{file_path}}"
 
-  - title: binwalk - recursive extraction
+  - title: binwalk - 递归提取
     desc: |
-      Performs a "matryoshka" style recursive scan and extraction. 
-      It will scan the results of the initial extraction and extract any files found within those, which is essential for deeply nested firmware images. 
-      You can limit the depth of recursion using the --depth flag if the process becomes too resource-intensive.
+      执行 "matryoshka"（套娃）式的递归扫描与提取。
+      它会扫描初始提取的结果并提取其中发现的任何文件，这对深度嵌套的固件镜像至关重要。
+      如果过程过于消耗资源，可以使用 --depth 标志限制递归深度。
     command: "binwalk -eM {{file_path}}"
 
-  - title: binwalk - extract to custom directory
+  - title: binwalk - 提取到自定义目录
     desc: |
-      Extracts files discovered in the signature scan to a specific target directory. 
-      By default, binwalk creates a folder named after the file with an extraction suffix; this command overrides that behavior. 
-      This is useful for maintaining organization during complex forensic investigations.
+      将签名扫描中发现的文件提取到特定的目标目录。
+      默认情况下 binwalk 会创建以文件名加提取后缀命名的文件夹；此命令覆盖该行为。
+      这在复杂的取证调查中有助于保持组织性。
     command: "binwalk -e -C {{output_directory|extracted_data}} {{file_path}}"
 
-  - title: binwalk - extract specific signature
+  - title: binwalk - 提取特定签名
     desc: |
-      Extracts only specific types of signatures based on a regular expression. 
-      This is highly efficient when you are only interested in a specific type of data, such as JPEG images or SquashFS filesystems. 
-      It prevents the creation of unnecessary files that would result from a full extraction.
+      根据正则表达式仅提取特定类型的签名。
+      当你只对特定类型的数据（如 JPEG 图像或 SquashFS 文件系统）感兴趣时非常高效。
+      它可避免完整提取所产生的不必要文件。
     command: "binwalk -D {{signature_type|'filesystem:squashfs'}} {{file_path}}"
 
   # === BINARY DIFFING ===
-  - title: binwalk - binary diffing (hexdump)
+  - title: binwalk - 二进制对比（十六进制转储）
     desc: |
-      Performs a binary diff between two or more files and displays a colored hexdump. 
-      This is useful for identifying changes between different versions of the same firmware image. 
-      It highlights differences in red, similarities in green, and unique bytes in blue.
+      在两个或更多文件之间执行二进制对比，并显示彩色的十六进制转储。
+      这对于识别同一固件镜像不同版本之间的变化很有用。
+      它用红色突出差异、绿色突出相似、蓝色突出独有字节。
     command: "binwalk -W {{file1}} {{file2}}"
 
-  - title: binwalk - show similarities only
+  - title: binwalk - 仅显示相似部分
     desc: |
-      Filters the binary diffing output to show only the lines that are identical between all compared files. 
-      This is helpful when searching for constant patterns, static configurations, or shared headers across multiple firmware samples. 
-      It reduces noise by hiding all changing data.
+      过滤二进制对比输出，仅显示所有对比文件之间相同的行。
+      这在搜索多个固件样本中的常量模式、静态配置或共享文件头时很有帮助。
+      它通过隐藏所有变化的数据来降低噪音。
     command: "binwalk -Wu {{file1}} {{file2}}"
 
   # === ADVANCED SCANS & COMPRESSION ===
-  - title: binwalk - scan for raw deflate streams
+  - title: binwalk - 扫描原始 deflate 流
     desc: |
-      Specially scans the file for raw deflate (zlib) compression streams. 
-      Some firmware formats use raw compression without standard headers that would be caught by a signature scan. 
-      Note that this can produce many false positives, so it is often used with the --stop or --partial flags.
+      专门扫描文件中的原始 deflate（zlib）压缩流。
+      某些固件格式使用无标准头的原始压缩，签名扫描无法捕获。
+      注意这可能产生许多误报，因此常与 --stop 或 --partial 标志一起使用。
     command: "binwalk -X {{file_path}}"
 
-  - title: binwalk - raw byte sequence search
+  - title: binwalk - 原始字节序列搜索
     desc: |
-      Scans the binary for a specific, user-defined sequence of raw bytes. 
-      This is perfect for finding hardcoded secrets, specific developer strings, or unique byte patterns across a file. 
-      The sequence should be provided in hex format within quotes.
+      在二进制中扫描用户定义的特定原始字节序列。
+      这非常适合查找硬编码密钥、特定开发人员字符串或文件中的独特字节模式。
+      序列应以十六进制格式提供并置于引号内。
     command: "binwalk -R {{hex_pattern|'\\x00\\x01\\x02'}} {{file_path}}"
 
   # === FILTERING & LOGGING ===
-  - title: binwalk - include specific signatures only
+  - title: binwalk - 仅包含特定签名
     desc: |
-      Only displays results that match the specified string or regular expression. 
-      This filters out irrelevant noise from the signature scan, allowing you to focus on specific components like bootloaders or kernel images. 
-      It is an excellent way to clean up output for reporting.
+      仅显示与指定字符串或正则表达式匹配的结果。
+      这会过滤掉签名扫描中无关的噪音，使你能够聚焦于引导加载程序或内核镜像等特定组件。
+      它是清理输出以便报告的绝佳方式。
     command: "binwalk -y {{filter_text|'filesystem'}} {{file_path}}"
 
-  - title: binwalk - exclude specific signatures
+  - title: binwalk - 排除特定签名
     desc: |
-      Excludes results that match the specified string from the scan output. 
-      This is useful when a file contains many repetitive false positives or known uninteresting data types. 
-      It helps in identifying unique or unusual headers that might otherwise be buried.
+      从扫描输出中排除与指定字符串匹配的结果。
+      当文件包含许多重复的误报或已知无趣的数据类型时很有用。
+      它有助于识别可能被淹没的独特或不寻常的文件头。
     command: "binwalk -x {{exclude_text|'invalid'}} {{file_path}}"
 
-  - title: binwalk - log results to csv
+  - title: binwalk - 将结果记录到 CSV
     desc: |
-      Logs all scan results to a file in CSV format for later analysis. 
-      This is ideal for automated workflows or for importing data into spreadsheets for documentation. 
-      It captures the offset, description, and other metadata in a structured way.
+      将所有扫描结果记录到 CSV 格式的文件中，以供后续分析。
+      这对于自动化工作流或将数据导入电子表格进行文档化非常理想。
+      它以结构化的方式捕获偏移、描述与其他元数据。
     command: "binwalk -c -f {{log_file|results.csv}} {{file_path}}"
 
-  - title: binwalk - scan specific range
+  - title: binwalk - 扫描特定范围
     desc: |
-      Starts the scan at a specific offset and limits the number of bytes read. 
-      This is crucial when dealing with extremely large images where you only suspect interesting data in a certain region. 
-      It saves time and system resources by ignoring the rest of the file.
+      从特定偏移开始扫描，并限制读取的字节数。
+      在处理超大镜像且只怀疑特定区域有有趣数据时至关重要。
+      它通过忽略文件的其余部分来节省时间与系统资源。
     command: "binwalk -o {{start_offset|0x100}} -l {{length|1024}} {{file_path}}"

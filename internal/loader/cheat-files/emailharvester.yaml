@@ -3,49 +3,58 @@ tags: [osint, reconnaissance, email, enumeration, pentest, gathering]
 
 actions:
   # === RECONNAISSANCE & DISCOVERY ===
-  - title: emailharvester - list plugins
+  - title: emailharvester - 列出插件
     desc: |
-      List all available search engine plugins currently supported by the tool. This command allows the user to see which platforms (e.g., Google, Bing, LinkedIn, etc.) are available for harvesting. It is recommended to run this before a scan to ensure the desired plugins are active and ready.
+      列出工具当前支持的所有搜索引擎插件。
+      此命令可让用户查看哪些平台（如 Google、Bing、LinkedIn 等）可用于收集，建议在扫描前运行以确保所需插件已激活并就绪。
     command: "emailharvester -p"
 
-  - title: emailharvester - search domain with specific engine
+  - title: emailharvester - 使用指定引擎搜索域名
     desc: |
-      Search for email addresses associated with a specific domain using a single targeted engine. This is ideal when you want to focus your reconnaissance on a specific source to avoid detection or rate limiting. It returns a list of discovered emails found by that specific plugin's logic.
+      使用单个定向引擎搜索与特定域名关联的电子邮件地址。
+      当你想将侦察集中在特定来源以避免检测或速率限制时非常理想，会返回该特定插件逻辑发现的电子邮件列表。
     command: "emailharvester -d {{domain}} -e {{engine|google}}"
 
-  - title: emailharvester - search domain using all engines
+  - title: emailharvester - 使用所有引擎搜索域名
     desc: |
-      Perform a comprehensive search across all available search engine plugins for the specified domain. This is the most common method for maximum data collection during the initial OSINT phase. Be aware that querying all engines simultaneously may increase the likelihood of your IP being temporarily flagged by some providers.
+      对指定域名在所有可用的搜索引擎插件中执行全面搜索。
+      这是初始 OSINT 阶段最大程度收集数据的最常见方法，注意同时查询所有引擎可能增加你的 IP 被某些提供商临时标记的可能性。
     command: "emailharvester -d {{domain}} -e all"
 
-  - title: emailharvester - search with result limit
+  - title: emailharvester - 带结果数量限制搜索
     desc: |
-      Search for emails while restricting the number of results returned by the engines. This is useful for quick sanity checks or when working under time constraints where a full scrape is not necessary. Limiting results can also help in staying under the radar of automated bot detection systems.
+      在搜索电子邮件的同时限制引擎返回的结果数量。
+      对快速抽查或在时间受限、无需完整抓取的情况下非常有用，限制结果也有助于保持在自动化机器人检测系统的监控范围之外。
     command: "emailharvester -d {{domain}} -e all -l {{limit|50}}"
 
   # === OUTPUT MANAGEMENT ===
-  - title: emailharvester - search and save output
+  - title: emailharvester - 搜索并保存输出
     desc: |
-      Execute a search and automatically save the findings into both TXT and XML file formats. This is essential for report generation and maintaining a record of findings during a professional engagement. The tool will create the files using the provided filename prefix in the current directory.
+      执行搜索并将发现自动保存为 TXT 和 XML 两种文件格式。
+      对报告生成以及在专业任务期间维护发现记录至关重要，工具会使用提供的文件名前缀在当前目录创建文件。
     command: "emailharvester -d {{domain}} -e all -s {{output_name|harvested_results}}"
 
-  - title: emailharvester - silent search
+  - title: emailharvester - 静默搜索
     desc: |
-      Run the harvesting process without printing the discovered emails to the terminal. This is particularly useful when the tool is part of an automated pipeline or script where you only care about the saved output files. It keeps the terminal clean while the tool works in the background.
+      运行收集过程而不将发现的电子邮件打印到终端。
+      当工具作为自动化管道或脚本的一部分、你只关心保存的输出文件时尤为有用，可在工具后台工作时保持终端干净。
     command: "emailharvester -d {{domain}} -e all --noprint -s {{output_name|silent_results}}"
 
   # === ADVANCED CONFIGURATION ===
-  - title: emailharvester - search using proxy
+  - title: emailharvester - 使用代理搜索
     desc: |
-      Route all search requests through a specified proxy server. This is a critical security measure to hide the researcher's origin IP and bypass IP-based blocks or regional restrictions. Ensure the proxy server is reachable and supports the protocol (e.g., HTTP/SOCKS) required for the connection.
+      将所有搜索请求经由指定的代理服务器转发。
+      这是隐藏研究人员来源 IP、绕过基于 IP 的封禁或区域限制的关键安全措施，确保代理服务器可达并支持连接所需协议（如 HTTP/SOCKS）。
     command: "emailharvester -d {{domain}} -e all -x {{proxy_url|http://127.0.0.1:8080}}"
 
-  - title: emailharvester - search with custom user-agent
+  - title: emailharvester - 使用自定义 User-Agent 搜索
     desc: |
-      Define a custom User-Agent string for the HTTP requests made during the harvesting process. Using a realistic browser User-Agent helps in blending in with legitimate traffic and bypassing basic anti-scraping filters. This is a common practice to increase the success rate of web-based OSINT tools.
+      为收集过程中发出的 HTTP 请求定义自定义 User-Agent 字符串。
+      使用真实的浏览器 User-Agent 有助于混入合法流量并绕过简单的反抓取过滤，这是提高基于 Web 的 OSINT 工具成功率的常见做法。
     command: "emailharvester -d {{domain}} -e all -u \"{{user_agent|Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36}}\""
 
-  - title: emailharvester - exclude specific plugins
+  - title: emailharvester - 排除特定插件
     desc: |
-      Perform a search using all engines except for a specified list of excluded plugins. This is useful when certain plugins are known to be broken, slow, or producing too many false positives for a particular target. Multiple engines should be separated by a comma without spaces.
+      使用除指定排除插件列表之外的所有引擎执行搜索。
+      当已知某些插件损坏、缓慢或对特定目标产生过多误报时非常有用，多个引擎应以逗号分隔且不含空格。
     command: "emailharvester -d {{domain}} -e all -r {{excluded_engines|google,twitter}}"

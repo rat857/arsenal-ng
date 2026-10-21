@@ -3,44 +3,39 @@ tags: [smb, pentest, exploitation, impacket, network, reconnaissance]
 
 actions:
   # === BASIC USAGE ===
-  - title: impacket-karmaSMB - basic file delivery
+  - title: impacket-karmaSMB - 基础文件投递
     desc: |
-      Starts an SMB server that delivers the contents of a specific local file regardless of what filename the client requests. 
-      This is primarily used in penetration testing to force clients into downloading a malicious payload or script when they attempt to access any file on a share. 
-      It effectively creates a "catch-all" file server where the requested path is ignored in favor of the specified payload. 
-      Note that binding to the default SMB port (445) usually requires root or administrative privileges on the host system.
+      启动一个 SMB 服务器，无论客户端请求什么文件名，都投递特定本地文件的内容。
+      主要用于渗透测试，在客户端尝试访问共享上任意文件时强制其下载恶意载荷或脚本。
+      实际上创建了一个“一网打尽”的文件服务器，忽略请求路径而优先提供指定载荷；绑定默认 SMB 端口（445）通常需要主机 root 或管理员权限。
     command: "impacket-karmaSMB {{payload_path}}"
 
-  - title: impacket-karmaSMB - enable SMB2 support
+  - title: impacket-karmaSMB - 启用 SMB2 支持
     desc: |
-      Enables the experimental SMB2 protocol support for the Karma SMB server. 
-      Modern Windows environments often have SMBv1 disabled by default for security reasons, making this flag necessary for compatibility with newer targets. 
-      Use this when the target machine fails to establish a connection or negotiate a protocol version during the initial handshake. 
-      As this feature is marked experimental in Impacket, it should be tested against the target environment if possible to ensure stable delivery.
+      为 Karma SMB 服务器启用实验性的 SMB2 协议支持。
+      出于安全考虑，现代 Windows 环境通常默认禁用 SMBv1，因此与较新目标兼容时需要此标志。
+      当目标机器在初始握手中无法建立连接或协商协议版本时使用；此功能在 Impacket 中标记为实验性，应尽可能在目标环境中测试以确保稳定投递。
     command: "impacket-karmaSMB -smb2support {{payload_path}}"
 
   # === ADVANCED CONFIGURATION ===
-  - title: impacket-karmaSMB - delivery via extension mapping
+  - title: impacket-karmaSMB - 通过扩展名映射投递
     desc: |
-      Utilizes a configuration file to map specific file extensions to different local files for delivery. 
-      This allows for more sophisticated attacks where requests for .exe, .ps1, or .txt files can each result in different tailored payloads being served. 
-      For any file extension requested by the client that is not explicitly defined in the configuration file, the server will default to delivering the file specified in the positional argument. 
-      This is highly effective for mimicking a real file share structure while maintaining control over the delivered content.
+      利用配置文件将特定文件扩展名映射到不同的本地文件进行投递。
+      可实现更复杂的攻击：对 .exe、.ps1 或 .txt 文件的请求可分别提供不同的定制载荷。
+      对于配置文件中未明确定义的扩展名，服务器默认投递位置参数指定的文件；这在模仿真实文件共享结构的同时保持对投递内容的控制非常有效。
     command: "impacket-karmaSMB -config {{config_file|mappings.conf}} {{default_payload}}"
 
   # === LOGGING AND TROUBLESHOOTING ===
-  - title: impacket-karmaSMB - delivery with timestamps
+  - title: impacket-karmaSMB - 带时间戳的投递
     desc: |
-      Prefixes every line of the server's output with a timestamp for better event tracking. 
-      This is particularly useful during long-running engagements or red team operations where you need to correlate client access with other system logs. 
-      It helps in identifying exactly when a target machine or user attempted to pull a file from your malicious share. 
-      Adding timestamps simplifies the process of creating a timeline of events for final reporting.
+      为服务器输出的每一行添加时间戳前缀，便于更好地跟踪事件。
+      在需要将客户端访问与其他系统日志关联的长期测试或红队行动中尤为有用。
+      有助于精确定位目标机器或用户尝试从恶意共享拉取文件的时间，也简化了为最终报告创建事件时间线的过程。
     command: "impacket-karmaSMB -ts {{payload_path}}"
 
-  - title: impacket-karmaSMB - debug mode
+  - title: impacket-karmaSMB - 调试模式
     desc: |
-      Runs the SMB server in debug mode to provide verbose output regarding the underlying protocol exchange. 
-      This is essential for troubleshooting why a specific client might be failing to connect or why the payload is not being transferred as expected. 
-      It reveals detailed information about the SMB negotiation, session setup, and tree connect phases. 
-      Use this if you suspect firewall interference or protocol incompatibility issues are preventing the attack from succeeding.
+      以调试模式运行 SMB 服务器，提供底层协议交互的详细输出。
+      对于排查特定客户端连接失败或载荷未按预期传输的原因至关重要。
+      它会显示 SMB 协商、会话建立和树连接阶段的详细信息，怀疑防火墙干扰或协议不兼容导致攻击失败时使用。
     command: "impacket-karmaSMB -debug {{payload_path}}"

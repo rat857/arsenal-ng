@@ -3,117 +3,101 @@ tags: [active-directory, ldap, enumeration, pentest, security, authentication]
 
 actions:
   # === AUTHENTICATION & IDENTITY ===
-  - title: ldeep - verify current identity
+  - title: ldeep - 验证当前身份
     desc: |
-      Verify the identity of the user currently authenticated against the LDAP server. 
-      This is useful to confirm that the provided credentials or Kerberos tickets are valid before running more intensive commands.
-      It returns the Distinguished Name (DN) and SID of the authenticated account.
+      验证当前对 LDAP 服务器认证的用户身份。用于在运行更密集的命令前确认提供的凭据或 Kerberos 票据有效。
+      它会返回认证账户的可分辨名称（DN）和 SID。
     command: "ldeep ldap -u {{username}} -p {{password}} -d {{domain}} -s {{ldap_server}} whoami"
 
-  - title: ldeep - authenticate with NTLM hash
+  - title: ldeep - 使用 NTLM 哈希认证
     desc: |
-      Perform LDAP enumeration by authenticating with an NTLM hash instead of a plaintext password.
-      This technique, known as Pass-the-Hash, is essential when a user's password is unknown but their hash has been recovered.
-      The hash must be provided in the LM:NT or just NT format.
+      使用 NTLM 哈希而非明文密码进行认证来执行 LDAP 枚举。这种称为 Pass-the-Hash 的技术在用户密码未知但已恢复其哈希时至关重要。
+      哈希必须以 LM:NT 或仅 NT 格式提供。
     command: "ldeep ldap -u {{username}} -H {{ntlm_hash}} -d {{domain}} -s {{ldap_server}} users"
 
-  - title: ldeep - authenticate with Kerberos
+  - title: ldeep - 使用 Kerberos 认证
     desc: |
-      Use Kerberos authentication to query the LDAP server.
-      This requires a valid Kerberos ticket (TGT) to be present in the environment, usually pointed to by the KRB5CCNAME variable.
-      This method is stealthier as it avoids sending passwords or hashes over the network.
+      使用 Kerberos 认证查询 LDAP 服务器。这要求环境中存在有效的 Kerberos 票据（TGT），通常由 KRB5CCNAME 变量指向。
+      此方法更隐蔽，因为它避免通过网络发送密码或哈希。
     command: "ldeep ldap -k -d {{domain}} -s {{ldap_server}} users"
 
   # === ENUMERATION ===
-  - title: ldeep - comprehensive domain dump
+  - title: ldeep - 全面域信息导出
     desc: |
-      Collect and store a wide variety of Active Directory information in a single run.
-      This command gathers users, groups, computers, GPOs, organizational units, and trust relationships.
-      The results are saved into the specified output directory for offline analysis using the cache mode.
+      单次运行即可收集并存储各种 Active Directory 信息。该命令收集用户、组、计算机、GPO、组织单位和信任关系。
+      结果会保存到指定输出目录，以便使用缓存模式进行离线分析。
     command: "ldeep ldap -u {{username}} -p {{password}} -d {{domain}} -s {{ldap_server}} all {{output_path|./backup}}"
 
-  - title: ldeep - list domain users
+  - title: ldeep - 列出域用户
     desc: |
-      Retrieve a list of all users within the Active Directory domain.
-      This is a fundamental step in reconnaissance to identify potential targets for password spraying or social engineering.
-      By default, it returns basic user attributes, but you can use verbose flags for more detail.
+      获取 Active Directory 域内所有用户的列表。这是侦察中识别密码喷洒或社会工程潜在目标的基本步骤。
+      默认返回基本用户属性，也可使用详细标志获取更多细节。
     command: "ldeep ldap -u {{username}} -p {{password}} -d {{domain}} -s {{ldap_server}} users"
 
-  - title: ldeep - enumerate group memberships
+  - title: ldeep - 枚举组成员关系
     desc: |
-      List all the groups that a specific account belongs to.
-      This helps in understanding the privileges and access levels assigned to a particular user or computer.
-      Use this when you have compromised an account and want to see what resources it can access.
+      列出特定账户所属的所有组。这有助于理解分配给特定用户或计算机的权限和访问级别。
+      当你已攻陷某账户并想查看它可访问哪些资源时使用。
     command: "ldeep ldap -u {{username}} -p {{password}} -d {{domain}} -s {{ldap_server}} memberships {{target_account}}"
 
-  - title: ldeep - list group members
+  - title: ldeep - 列出组成员
     desc: |
-      Retrieve a list of all members belonging to a specific Active Directory group.
-      This is particularly useful for identifying high-privileged users by auditing groups like 'Domain Admins' or 'Enterprise Admins'.
-      It provides a clear view of which accounts inherit the permissions of the target group.
+      获取属于特定 Active Directory 组的所有成员列表。通过审计 Domain Admins 或 Enterprise Admins 等组来识别高权限用户特别有用。
+      它清晰展示了哪些账户继承目标组的权限。
     command: "ldeep ldap -u {{username}} -p {{password}} -d {{domain}} -s {{ldap_server}} membersof {{group_name|Domain Admins}}"
 
-  - title: ldeep - discover constrained and unconstrained delegations
+  - title: ldeep - 发现约束与非约束委派
     desc: |
-      Search for accounts configured with any form of Kerberos delegation.
-      Delegation settings (Unconstrained, Constrained, or Resource-Based Constrained Delegation) are primary targets for privilege escalation.
-      This command identifies misconfigurations that could allow an attacker to impersonate other users.
+      搜索配置了任何形式 Kerberos 委派的账户。委派设置（非约束、约束或基于资源的约束委派）是权限提升的主要目标。
+      此命令识别可能允许攻击者冒充其他用户的错误配置。
     command: "ldeep ldap -u {{username}} -p {{password}} -d {{domain}} -s {{ldap_server}} delegations"
 
-  - title: ldeep - extract LAPS passwords
+  - title: ldeep - 提取 LAPS 密码
     desc: |
-      Retrieve Local Administrator Password Solution (LAPS) passwords for domain computers.
-      This command only works if the authenticated user has the necessary permissions to read the 'ms-MCS-AdmPwd' attribute.
-      It is a high-value action during internal pentests to gain local administrative access to workstations and servers.
+      获取域计算机的本地管理员密码解决方案（LAPS）密码。此命令仅在认证用户具有读取 ms-MCS-AdmPwd 属性所需权限时有效。
+      在内部渗透测试中，这是获取工作站和服务器本地管理访问权的高价值操作。
     command: "ldeep ldap -u {{username}} -p {{password}} -d {{domain}} -s {{ldap_server}} laps"
 
-  - title: ldeep - list domain trusts
+  - title: ldeep - 列出域信任
     desc: |
-      Enumerate the trust relationships between the current domain and other domains or forests.
-      Understanding trusts is crucial for cross-domain or cross-forest lateral movement.
-      The output details the trust direction and type, identifying potential paths to other environments.
+      枚举当前域与其他域或林之间的信任关系。理解信任关系对于跨域或跨林横向移动至关重要。
+      输出详细说明信任方向和类型，识别通往其他环境的潜在路径。
     command: "ldeep ldap -u {{username}} -p {{password}} -d {{domain}} -s {{ldap_server}} trusts"
 
-  - title: ldeep - extract BitLocker recovery keys
+  - title: ldeep - 提取 BitLocker 恢复密钥
     desc: |
-      Query Active Directory for BitLocker recovery passwords stored in computer objects.
-      Accessing these keys requires specific administrative permissions within the domain.
-      This is useful for forensic purposes or for gaining access to encrypted drives on domain-joined machines.
+      查询 Active Directory 中存储在计算机对象里的 BitLocker 恢复密码。访问这些密钥需要域内的特定管理权限。
+      这对取证或访问已加入域的机器上的加密驱动器很有用。
     command: "ldeep ldap -u {{username}} -p {{password}} -d {{domain}} -s {{ldap_server}} bitlockerkeys"
 
-  - title: ldeep - list FSMO roles
+  - title: ldeep - 列出 FSMO 角色
     desc: |
-      Identify the Flexible Single Master Operation (FSMO) role holders in the domain.
-      This tells you which Domain Controllers are responsible for specific critical tasks like schema updates or password changes.
-      Identifying the PDC Emulator, for example, is vital for certain types of advanced AD attacks.
+      识别域中灵活单主机操作（FSMO）角色持有者。这告诉你哪些域控负责模式更新或密码更改等特定关键任务。
+      例如识别 PDC Emulator 对某些高级 AD 攻击至关重要。
     command: "ldeep ldap -u {{username}} -p {{password}} -d {{domain}} -s {{ldap_server}} fsmo"
 
   # === MODIFICATION & EXPLOITATION ===
-  - title: ldeep - unlock a user account
+  - title: ldeep - 解锁用户账户
     desc: |
-      Attempt to unlock a user account that has been locked out due to too many failed login attempts.
-      This action requires administrative privileges or specific delegated rights over the target user object.
-      It is useful during operations to restore access to a compromised account that was accidentally locked.
+      尝试解锁因登录失败次数过多而被锁定的用户账户。此操作需要对目标用户对象具有管理权限或特定的委派权限。
+      在操作期间用于恢复对被意外锁定的已攻陷账户的访问。
     command: "ldeep ldap -u {{username}} -p {{password}} -d {{domain}} -s {{ldap_server}} unlock {{target_user}}"
 
-  - title: ldeep - add user to a group
+  - title: ldeep - 将用户添加到组
     desc: |
-      Add a specified user to a target Active Directory group.
-      This is a direct way to escalate privileges if you have administrative control over the LDAP directory.
-      Exercise caution as this leaves a significant trail in the Windows Security event logs.
+      将指定用户添加到目标 Active Directory 组。若你对 LDAP 目录有管理控制权，这是提升权限的直接方式。
+      请谨慎操作，因为这会在 Windows 安全事件日志中留下显著痕迹。
     command: "ldeep ldap -u {{username}} -p {{password}} -d {{domain}} -s {{ldap_server}} add_to_group {{target_user}} {{target_group}}"
 
-  - title: ldeep - modify user password
+  - title: ldeep - 修改用户密码
     desc: |
-      Change the password for a specific user account directly via LDAP.
-      This typically requires the 'Reset Password' permission or full administrative rights over the user object.
-      This is often used as a last resort for persistence or to regain control over an account.
+      直接通过 LDAP 更改特定用户账户的密码。这通常需要 Reset Password 权限或对用户对象的完整管理权限。
+      通常用作持久化的最后手段或重新获得账户控制权。
     command: "ldeep ldap -u {{username}} -p {{password}} -d {{domain}} -s {{ldap_server}} modify_password {{target_user}} {{new_password}}"
 
   # === CACHE MODE ===
-  - title: ldeep - query offline cache
+  - title: ldeep - 查询离线缓存
     desc: |
-      Query data previously saved using the 'all' command from the local filesystem.
-      This allows you to perform enumeration and analysis without generating further traffic to the target Domain Controller.
-      It is an excellent way to maintain a low profile and work in a disconnected environment.
+      从本地文件系统查询之前用 all 命令保存的数据。这让你无需再对目标域控产生流量即可执行枚举和分析。
+      这是保持低调并在断开连接的环境中工作的绝佳方式。
     command: "ldeep cache -d {{backup_directory}} -p {{project_name}} users"

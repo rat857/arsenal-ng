@@ -3,52 +3,52 @@ tags: [network, security, pentest, enumeration, authentication, rdp, impacket]
 
 actions:
   # === BASIC AUTHENTICATION ===
-  - title: impacket-rdp_check - basic local authentication
+  - title: impacket-rdp_check - 基本本地身份验证
     desc: |
-      This command checks if a specific local user account is valid on the target system using the RDP protocol. 
-      It is an essential tool for verifying credentials discovered during an engagement without the need for a full GUI session.
-      Using this method helps avoid the overhead of a desktop environment while testing for valid access. 
-      Be cautious as multiple failed attempts may trigger account lockout policies on the target.
+      此命令使用 RDP 协议检查目标系统上特定本地用户帐户是否有效。
+      它是验证评估期间发现的凭据的必要工具，无需完整的 GUI 会话。
+      使用此方法可避免桌面环境的开销，同时测试有效访问权限。
+      请注意，多次失败尝试可能触发目标上的帐户锁定策略。
     command: "impacket-rdp_check {{username}}:{{password}}@{{target_ip}}"
 
-  - title: impacket-rdp_check - domain authentication
+  - title: impacket-rdp_check - 域身份验证
     desc: |
-      Verifies domain account credentials against a target host over the RDP protocol.
-      This is frequently used in Active Directory environments to see if a specific domain user has rights to access a server or workstation.
-      The format requires the domain to be prepended to the username.
-      It is a quick way to map out lateral movement possibilities within a network.
+      通过 RDP 协议针对目标主机验证域帐户凭据。
+      这经常用于 Active Directory 环境，以查看特定域用户是否有权访问服务器或工作站。
+      格式要求将域加在用户名前面。
+      这是梳理网络内横向移动可能性的快捷方式。
     command: "impacket-rdp_check {{domain}}/{{username}}:{{password}}@{{target_ip}}"
 
   # === ADVANCED AUTHENTICATION ===
-  - title: impacket-rdp_check - pass-the-hash authentication
+  - title: impacket-rdp_check - 传递哈希身份验证
     desc: |
-      Performs authentication using NTLM hashes instead of a cleartext password.
-      This is a powerful post-exploitation technique used when you have extracted hashes from memory or the SAM database.
-      The hash must be provided in the LMHASH:NTHASH format; if the LM hash is unavailable, use 32 zeros.
-      This allows an attacker to verify access without needing to crack the password.
+      使用 NTLM 哈希而非明文密码执行身份验证。
+      当你从内存或 SAM 数据库提取到哈希时，这是一项强大的后利用技术。
+      哈希必须以 LMHASH:NTHASH 格式提供；如果 LM 哈希不可用，请使用 32 个零。
+      这允许攻击者在无需破解密码的情况下验证访问权限。
     command: "impacket-rdp_check {{domain|.}}/{{username}}@{{target_ip}} -hashes {{hash}}"
 
   # === NETWORK & TROUBLESHOOTING ===
-  - title: impacket-rdp_check - test over ipv6
+  - title: impacket-rdp_check - 通过 IPv6 测试
     desc: |
-      Enables the tool to communicate with the target using the IPv6 protocol.
-      This is useful in modern networks where IPv6 might be enabled and potentially less monitored than IPv4.
-      Ensure that the target address provided is a valid IPv6 representation.
-      It helps in identifying misconfigurations in dual-stack environments.
+      使该工具能够使用 IPv6 协议与目标通信。
+      在现代网络中，IPv6 可能已启用，且通常比 IPv4 受到的监控更少，因此此功能很有用。
+      确保提供的目标地址是有效的 IPv6 表示形式。
+      它有助于识别双栈环境中的错误配置。
     command: "impacket-rdp_check -6 {{username}}:{{password}}@{{target_ipv6}}"
 
-  - title: impacket-rdp_check - verbose debug mode with timestamps
+  - title: impacket-rdp_check - 带时间戳的详细调试模式
     desc: |
-      Runs the RDP check with full debug output and prepends timestamps to every log line.
-      Debug mode is crucial when the connection is failing for unknown reasons, such as network resets or protocol mismatches.
-      The timestamps help in correlating the tool's activity with other network logs or packet captures.
-      This is the recommended way to troubleshoot Impacket-specific library errors.
+      以完整调试输出运行 RDP 检查，并为每一行日志添加时间戳前缀。
+      当连接因网络重置或协议不匹配等未知原因失败时，调试模式至关重要。
+      时间戳有助于将工具的活动与其他网络日志或数据包捕获相关联。
+      这是排查 Impacket 特定库错误的推荐方式。
     command: "impacket-rdp_check -debug -ts {{username}}:{{password}}@{{target_ip}}"
 
-  - title: impacket-rdp_check - check without password (blank password)
+  - title: impacket-rdp_check - 无密码检查（空密码）
     desc: |
-      Attempts to verify if an account has a blank password or if the system allows passwordless RDP access.
-      While rare in modern hardened systems, it is a common misconfiguration in older or laboratory environments.
-      The trailing colon after the username indicates an empty password field.
-      Testing for blank passwords should be part of any comprehensive internal security assessment.
+      尝试验证某个帐户是否为空密码，或系统是否允许无密码 RDP 访问。
+      虽然这在现代加固系统中很少见，但在较旧或实验环境中是常见的错误配置。
+      用户名后的尾随冒号表示密码字段为空。
+      测试空密码应是任何全面内部安全评估的一部分。
     command: "impacket-rdp_check {{username}}:@{{target_ip}}"

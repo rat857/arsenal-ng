@@ -3,118 +3,102 @@ tags: [wordpress, cms, management, security, pentest, administration, automation
 
 actions:
 # === CORE & CONFIGURATION ===
- - title: wp - download wordpress core
+ - title: wp - 下载 WordPress 核心
    desc: |
-     Download the WordPress core files to the current directory or a specified path. 
-     This is the first step in setting up a new installation from the command line. 
-     You can specify a version number or use the latest stable release.
+     将 WordPress 核心文件下载到当前目录或指定路径。这是从命令行设置新安装的第一步。
+     你可以指定版本号或使用最新的稳定版本。
    command: "wp core download --version={{version|latest}} --path={{path|.}}"
 
- - title: wp - install wordpress
+ - title: wp - 安装 WordPress
    desc: |
-     Run the WordPress installation script to set up the database and initial admin user. 
-     This replaces the web-based installation process and requires an existing database configuration. 
-     Ensure you provide a strong admin password to prevent unauthorized access.
+     运行 WordPress 安装脚本，设置数据库和初始管理员用户。这取代了基于 Web 的安装过程，并需要现有的数据库配置。
+     确保提供强管理员密码以防止未授权访问。
    command: "wp core install --url={{url}} --title={{site_title|WordPress Site}} --admin_user={{admin_user|admin}} --admin_password={{admin_password}} --admin_email={{admin_email}}"
 
- - title: wp - generate config file
+ - title: wp - 生成配置文件
    desc: |
-     Generate a new wp-config.php file with database credentials. 
-     This command is used during setup to link the WordPress files to the SQL database. 
-     Make sure the database and user are already created in your SQL server before running this.
+     使用数据库凭据生成新的 wp-config.php 文件。此命令在设置期间用于将 WordPress 文件链接到 SQL 数据库。
+     运行前请确保数据库和用户已在 SQL 服务器中创建。
    command: "wp config create --dbname={{db_name}} --dbuser={{db_user}} --dbpass={{db_password}} --dbhost={{db_host|localhost}}"
 
 # === DATABASE OPERATIONS ===
- - title: wp - export database
+ - title: wp - 导出数据库
    desc: |
-     Export the WordPress database to a SQL file for backup or migration purposes. 
-     It uses the credentials stored in the wp-config.php file to connect to the database. 
-     This is a critical step before performing any major site updates or search-and-replace operations.
+     将 WordPress 数据库导出为 SQL 文件，用于备份或迁移。它使用 wp-config.php 文件中存储的凭据连接数据库。
+     这是执行任何重大站点更新或搜索替换操作前的关键步骤。
    command: "wp db export {{filename|backup.sql}}"
 
- - title: wp - search and replace strings
+ - title: wp - 搜索和替换字符串
    desc: |
-     Search for a string and replace it with another across the entire database. 
-     This is specifically designed to handle serialized PHP data correctly, which is vital for WordPress migrations. 
-     It is highly recommended to use the --dry-run flag first to verify changes before they are written.
+     在整个数据库中搜索字符串并替换为另一个字符串。它专门设计用于正确处理序列化的 PHP 数据，这对 WordPress 迁移至关重要。
+     强烈建议先使用 --dry-run 参数验证更改再写入。
    command: "wp search-replace {{old_string}} {{new_string}} --dry-run"
 
- - title: wp - execute sql query
+ - title: wp - 执行 SQL 查询
    desc: |
-     Run arbitrary SQL queries directly against the WordPress database. 
-     This provides a quick way to inspect tables or modify data without entering a MySQL shell. 
-     Use caution as direct database manipulation can bypass WordPress safety checks.
+     直接对 WordPress 数据库运行任意 SQL 查询。这提供了快速检查表或修改数据的方式，而无需进入 MySQL Shell。
+     请谨慎使用，因为直接操作数据库可能绕过 WordPress 安全检查。
    command: "wp db query '{{sql_query|SELECT * FROM wp_users LIMIT 5;}}'"
 
 # === USER MANAGEMENT ===
- - title: wp - create user
+ - title: wp - 创建用户
    desc: |
-     Create a new user account with a specified role and password. 
-     This is useful for adding team members or creating service accounts without dashboard access. 
-     Available roles typically include administrator, editor, author, contributor, and subscriber.
+     使用指定角色和密码创建新用户账户。这对于添加团队成员或创建无需仪表盘访问的服务账户很有用。
+     可用角色通常包括 administrator、editor、author、contributor 和 subscriber。
    command: "wp user create {{username}} {{email}} --role={{role|administrator}} --user_pass={{password}}"
 
- - title: wp - update user password
+ - title: wp - 更新用户密码
    desc: |
-     Reset the password for an existing WordPress user account. 
-     This is often used to regain access to a site when the administrator password is lost or compromised. 
-     The user can be identified by their ID, username, or email address.
+     重置现有 WordPress 用户账户的密码。当管理员密码丢失或泄露时，常用于重新获得站点访问权限。
+     用户可以通过 ID、用户名或电子邮件地址来标识。
    command: "wp user update {{user_identifier|1}} --user_pass={{new_password}}"
 
- - title: wp - list all users
+ - title: wp - 列出所有用户
    desc: |
-     Display a list of all users registered on the WordPress site. 
-     The output includes user IDs, login names, display names, emails, and roles. 
-     This is a standard enumeration step for security audits to identify accounts with high privileges.
+     显示 WordPress 站点上注册的所有用户列表。输出包括用户 ID、登录名、显示名、电子邮件和角色。
+     这是安全审计中识别高权限账户的标准枚举步骤。
    command: "wp user list --fields={{fields|ID,user_login,roles}}"
 
 # === PLUGIN & THEME MANAGEMENT ===
- - title: wp - list and filter plugins
+ - title: wp - 列出并过滤插件
    desc: |
-     List all installed plugins and show their status (active, inactive, update available). 
-     This helps administrators quickly audit what is running on the site. 
-     You can filter the list to show only active or inactive plugins to streamline management.
+     列出所有已安装插件并显示其状态（活跃、非活跃、有可用更新）。这帮助管理员快速审计站点上运行的内容。
+     你可以过滤列表，仅显示活跃或非活跃插件以简化管理。
    command: "wp plugin list --status={{status|active}}"
 
- - title: wp - install and activate plugin
+ - title: wp - 安装并激活插件
    desc: |
-     Download, install, and activate a plugin from the WordPress.org repository. 
-     You can specify a plugin slug, a URL to a ZIP file, or a local file path. 
-     This is an efficient way to set up standard security or performance tools across multiple sites.
+     从 WordPress.org 仓库下载、安装并激活插件。你可以指定插件 slug、ZIP 文件的 URL 或本地文件路径。
+     这是在多个站点设置标准安全或性能工具的高效方式。
    command: "wp plugin install {{plugin_slug}} --activate"
 
- - title: wp - update all plugins
+ - title: wp - 更新所有插件
    desc: |
-     Update all currently installed plugins to their latest versions. 
-     Keeping plugins updated is the most important step in maintaining WordPress security. 
-     Always ensure you have a fresh database backup before running bulk updates.
+     将所有当前安装的插件更新到最新版本。保持插件更新是维护 WordPress 安全最重要的一步。
+     运行批量更新前请确保你有新的数据库备份。
    command: "wp plugin update --all"
 
- - title: wp - activate a theme
+ - title: wp - 激活主题
    desc: |
-     Switch the site's active theme to a different installed theme. 
-     This is useful for troubleshooting site-wide display issues or performing design refreshes. 
-     The theme must already be installed on the server for this command to succeed.
+     将站点当前主题切换为已安装的其他主题。这对于排查站点范围显示问题或进行设计刷新很有用。
+     主题必须已安装在服务器上，此命令才能成功。
    command: "wp theme activate {{theme_name}}"
 
 # === MAINTENANCE & SHELL ===
- - title: wp - toggle maintenance mode
+ - title: wp - 切换维护模式
    desc: |
-     Activate or deactivate the built-in WordPress maintenance mode. 
-     When active, visitors will see a notification that the site is temporarily down for maintenance. 
-     This is useful during file migrations or when making significant structural changes to the site.
+     激活或停用 WordPress 内置维护模式。激活后访问者会看到站点暂时停机维护的通知。
+     在文件迁移或对站点进行重大结构更改时很有用。
    command: "wp maintenance-mode {{action|activate}}"
 
- - title: wp - interactive php shell
+ - title: wp - 交互式 PHP Shell
    desc: |
-     Open an interactive PHP shell (REPL) within the context of the WordPress environment. 
-     This allows you to run WordPress functions, test code snippets, or inspect variables in real-time. 
-     It is an invaluable tool for developers debugging plugin or theme logic.
+     在 WordPress 环境上下文中打开交互式 PHP Shell（REPL）。这允许你实时运行 WordPress 函数、测试代码片段或检查变量。
+     对于调试插件或主题逻辑的开发人员来说是不可或缺的工具。
    command: "wp shell"
 
- - title: wp - evaluate php code
+ - title: wp - 求值 PHP 代码
    desc: |
-     Execute a string of PHP code after loading the WordPress environment. 
-     This is useful for quick one-off tasks like checking a specific option or triggering a hook. 
-     Be careful with the code provided, as it has full execution privileges over the site.
+     加载 WordPress 环境后执行一段 PHP 代码字符串。这对于快速的一次性任务很有用，如检查特定选项或触发钩子。
+     请小心所提供的代码，因为它对站点拥有完全执行权限。
    command: "wp eval '{{php_code|var_dump(get_option(\"siteurl\"));}}'"

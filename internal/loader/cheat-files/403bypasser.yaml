@@ -3,60 +3,60 @@ tags: [web, security, pentest, bypass, reconnaissance, enumeration, bugbounty]
 
 actions:
   # === BASIC USAGE ===
-  - title: 403bypasser - basic scan
+  - title: 403bypasser - 基础扫描
     desc: |
-      Perform a standard scan against a target URL to identify potential 403 Forbidden bypasses. 
-      This command uses the internal default wordlist to test common endpoint patterns and techniques. 
-      It is the most common starting point for reconnaissance when encountering access-restricted directories.
+      对目标 URL 执行标准扫描，识别潜在的 403 Forbidden 绕过点。
+      该命令使用内置默认字典测试常见的端点模式与绕过技巧。
+      它是遇到受限目录时最常用的侦察起点。
     command: "403bypasser -u {{url}}"
 
-  - title: 403bypasser - custom wordlist scan
+  - title: 403bypasser - 自定义字典扫描
     desc: |
-      Execute the bypasser using a specific wordlist provided by the user instead of the default one. 
-      This is useful when you have a targeted list of potential endpoints or when the default list is insufficient for the target environment. 
-      Ensure the path to the wordlist is correct and the file is readable by the tool.
+      使用用户提供的指定字典而非默认字典执行绕过扫描。
+      当你拥有针对性的潜在端点列表或默认字典不适用于目标环境时很有用。
+      请确保字典路径正确且文件可被工具读取。
     command: "403bypasser -u {{url}} -w {{wordlist_path|wordlists/common.txt}}"
 
   # === ADVANCED TECHNIQUES ===
-  - title: 403bypasser - deep scan mode
+  - title: 403bypasser - 深度扫描模式
     desc: |
-      Enable comprehensive testing using the deep scan flag for exhaustive analysis. 
-      This mode performs nested header and path fuzzing, testing every possible combination of bypass techniques. 
-      While it is significantly slower than a standard scan, it offers a much higher success rate against hardened targets.
+      通过深度扫描标志启用全面测试，进行穷尽式分析。
+      该模式会执行嵌套的请求头与路径模糊测试，尝试所有可能的绕过技巧组合。
+      虽然比标准扫描慢得多，但对加固目标有着更高的成功率。
     command: "403bypasser -u {{url}} --deep"
 
-  - title: 403bypasser - authenticated scan with cookies
+  - title: 403bypasser - 带 Cookie 的认证扫描
     desc: |
-      Provide raw session cookies to the scanning engine to test for bypasses within an authenticated context. 
-      This is critical when the 403 error occurs for a specific user role or after a session has been established. 
-      Ensure the cookie string is properly formatted as it would appear in an HTTP request header.
+      向扫描引擎提供原始会话 Cookie，在已认证上下文中测试绕过。
+      当 403 错误仅针对特定用户角色或会话建立后出现时，这一点至关重要。
+      请确保 Cookie 字符串格式与其在 HTTP 请求头中的形式一致。
     command: "403bypasser -u {{url}} -c {{cookies|JSESSIONID=xyz}}"
 
-  - title: 403bypasser - custom header injection
+  - title: 403bypasser - 自定义请求头注入
     desc: |
-      Add custom HTTP headers such as Bearer tokens, API keys, or specific User-Agents to the scan requests. 
-      This feature is essential for bypassing WAFs or accessing APIs that require specific identification headers. 
-      You can append multiple headers by repeating the flag if the tool's implementation supports it for complex scenarios.
+      向扫描请求添加自定义 HTTP 头，例如 Bearer 令牌、API 密钥或特定的 User-Agent。
+      该功能对于绕过 WAF 或访问需要特定标识头的 API 至关重要。
+      如果工具支持，可通过重复该标志来附加多个请求头。
     command: "403bypasser -u {{url}} -H {{header|'Authorization: Bearer token'}}"
 
   # === PROXY AND EVASION ===
-  - title: 403bypasser - proxy integration
+  - title: 403bypasser - 代理集成
     desc: |
-      Route all tool traffic through an external proxy server like Burp Suite, Caido, or ZAP. 
-      This allows for manual inspection of the specific bypass payloads and headers being sent to the target. 
-      It is highly recommended for troubleshooting why a specific bypass might be failing or for documenting the proof of concept.
+      将工具的所有流量路由到 Burp Suite、Caido 或 ZAP 等外部代理。
+      便于人工检查发送给目标的具体绕过载荷与请求头。
+      强烈建议用于排查绕过失败的原因或记录概念验证。
     command: "403bypasser -u {{url}} --proxy {{proxy_url|http://127.0.0.1:8080}}"
 
-  - title: 403bypasser - rate limit evasion
+  - title: 403bypasser - 限速规避
     desc: |
-      Adjust the scanning speed and concurrency to avoid triggering Web Application Firewalls (WAF) or rate limits. 
-      Using a higher delay and fewer threads makes the scan stealthier and less likely to result in an IP ban. 
-      This is particularly important when testing production environments or targets with aggressive security monitoring.
+      调整扫描速度与并发度，避免触发 Web 应用防火墙（WAF）或限速。
+      使用更大的延迟与更少的线程可使扫描更隐蔽，降低 IP 被封锁的风险。
+      在测试生产环境或具有激进安全监控的目标时尤为重要。
     command: "403bypasser -u {{url}} -t {{threads|5}} --delay {{delay_ms|500}}"
 
-  - title: 403bypasser - full evasion suite
+  - title: 403bypasser - 完整规避套件
     desc: |
-      Combine deep scanning with proxying and rate limiting for a thorough and controlled bypass attempt. 
-      This command is the "gold standard" for a comprehensive assessment of a single restricted endpoint. 
-      It ensures every bypass method is tried while allowing you to monitor the traffic and stay under the radar of simple detection systems.
+      将深度扫描与代理、限速相结合，进行彻底且可控的绕过尝试。
+      该命令是对单个受限端点进行全面评估的“黄金标准”。
+      它确保尝试每一种绕过方法，同时让你监控流量并避开简单的检测系统。
     command: "403bypasser -u {{url}} --deep --proxy {{proxy_url|http://127.0.0.1:8080}} --delay {{delay_ms|1000}} -t {{threads|1}}"

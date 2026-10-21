@@ -3,112 +3,97 @@ tags: [network, security, vpn, wireguard, connectivity, pentest, mesh]
 
 actions:
   # === AUTHENTICATION AND CONNECTION ===
-  - title: tailscale - connect to tailnet
+  - title: tailscale - 连接到 tailnet
     desc: |
-      Connects the current machine to the Tailscale network and performs login if necessary. 
-      This is the primary command used to initialize the Tailscale daemon and join the private mesh. 
-      Users can provide an auth key to automate the login process on headless servers or CI/CD pipelines.
+      将当前机器连接到 Tailscale 网络，并在必要时执行登录。这是初始化 Tailscale 守护进程并加入私有网状网络的主要命令。
+      用户可以提供一个 auth key，以在无头服务器或 CI/CD 流水线上自动完成登录。
     command: "tailscale up --authkey {{auth_key}}"
 
-  - title: tailscale - disconnect from tailnet
+  - title: tailscale - 断开 tailnet
     desc: |
-      Disconnects the machine from the Tailscale network without logging out. 
-      This stops all Tailscale-managed traffic and removes the virtual network interface. 
-      It is useful for temporarily returning to a standard network state without losing the node's identity.
+      将机器从 Tailscale 网络断开，而不注销。这会停止所有由 Tailscale 管理的流量并移除虚拟网络接口。
+      适用于在不丢失节点身份的情况下临时恢复标准网络状态。
     command: "tailscale down"
 
-  - title: tailscale - logout and expire node
+  - title: tailscale - 注销并使节点失效
     desc: |
-      Disconnects from the tailnet and invalidates the current node's authentication key. 
-      This requires a full re-authentication (typically via browser) to reconnect the device later. 
-      Use this when decommissioning a machine or switching to a completely different Tailscale account.
+      断开 tailnet 并使当前节点的认证密钥失效。之后重新连接设备需要完整重新认证（通常通过浏览器）。
+      在停用机器或切换到完全不同的 Tailscale 账户时使用。
     command: "tailscale logout"
 
   # === INFORMATION AND ENUMERATION ===
-  - title: tailscale - check connection status
+  - title: tailscale - 查看连接状态
     desc: |
-      Displays a comprehensive list of all peers in the tailnet and their current connection status. 
-      It provides details such as the Tailscale IP addresses, the operating system of peers, and whether the connection is direct or relayed. 
-      This is the best way to verify if a specific remote machine is reachable.
+      显示 tailnet 中所有对等节点及其当前连接状态的完整列表。它提供详细信息，如 Tailscale IP 地址、对等节点的操作系统，以及连接是直连还是中继。
+      这是验证某台远程机器是否可达的最佳方式。
     command: "tailscale status"
 
-  - title: tailscale - show IP addresses
+  - title: tailscale - 显示 IP 地址
     desc: |
-      Retrieves the internal Tailscale IPv4 and IPv6 addresses assigned to the local machine. 
-      These addresses are static within your tailnet and can be used for internal service configuration. 
-      Specify the version flag to return only the specific protocol address needed for your scripts.
+      获取分配给本机的内部 Tailscale IPv4 和 IPv6 地址。这些地址在 tailnet 内是静态的，可用于内部服务配置。
+      指定 version 参数可仅返回脚本所需的特定协议地址。
     command: "tailscale ip -{{version|4}}"
 
-  - title: tailscale - identify peer information
+  - title: tailscale - 识别对等节点信息
     desc: |
-      Provides detailed information about the user and machine associated with a specific Tailscale IP. 
-      This command is useful for auditing traffic and identifying which person or service owns a specific node. 
-      It works for any IP address within the internal 100.x.y.z range or the Tailscale IPv6 range.
+      提供与特定 Tailscale IP 关联的用户和机器的详细信息。此命令对于审计流量以及识别某个节点属于哪个人员或服务很有用。
+      它适用于内部 100.x.y.z 范围或 Tailscale IPv6 范围中的任何 IP 地址。
     command: "tailscale whois {{peer_ip}}"
 
   # === NETWORK DIAGNOSTICS ===
-  - title: tailscale - layer 2 connectivity test
+  - title: tailscale - 二层连通性测试
     desc: |
-      Performs a connectivity test to a specific host at the Tailscale network layer. 
-      Unlike standard system ping, this reveals if the path is established via a direct WireGuard connection or a DERP relay. 
-      It is an essential tool for troubleshooting high latency or peer discovery issues.
+      在 Tailscale 网络层对特定主机执行连通性测试。与标准系统 ping 不同，它揭示了路径是通过直接 WireGuard 连接建立还是通过 DERP 中继建立。
+      它是排查高延迟或对等节点发现问题的必备工具。
     command: "tailscale ping {{target_host}}"
 
-  - title: tailscale - diagnose network conditions
+  - title: tailscale - 诊断网络状况
     desc: |
-      Analyzes the local network environment to detect NAT types and firewall restrictions. 
-      The output shows which Tailscale relay (DERP) servers are closest and whether the node can make direct UDP connections. 
-      Use this if you are experiencing slow speeds or "relayed" status in your connection.
+      分析本地网络环境，检测 NAT 类型和防火墙限制。输出显示最近的 Tailscale 中继（DERP）服务器，以及节点能否建立直接 UDP 连接。
+      当你遇到速度慢或连接状态为“中继”时使用。
     command: "tailscale netcheck"
 
   # === REMOTE ACCESS AND FILE OPERATIONS ===
-  - title: tailscale - secure remote shell
+  - title: tailscale - 安全远程 Shell
     desc: |
-      Initiates an SSH session to a remote node using Tailscale's built-in SSH feature. 
-      This leverages Tailscale's identity-based access control instead of traditional SSH keys for authentication. 
-      The destination machine must have Tailscale SSH enabled in its configuration for this to work.
+      使用 Tailscale 内置 SSH 功能向远程节点发起 SSH 会话。它利用 Tailscale 基于身份而非传统 SSH 密钥的访问控制进行认证。
+      目标机器必须在配置中启用 Tailscale SSH 才能使用此功能。
     command: "tailscale ssh {{user|root}}@{{host}}"
 
-  - title: tailscale - send files to peer
+  - title: tailscale - 向对等节点发送文件
     desc: |
-      Transfers a file to another machine on your tailnet using the Taildrop protocol. 
-      The file will be stored in the default Taildrop incoming folder on the receiving device. 
-      This provides a secure, encrypted way to move data between devices without using external cloud storage.
+      使用 Taildrop 协议将文件传输到 tailnet 上的另一台机器。文件将存储在接收设备默认的 Taildrop 接收文件夹中。
+      这提供了一种安全加密的方式在设备之间移动数据，而无需使用外部云存储。
     command: "tailscale file cp {{file_path}} {{target_node_name}}:"
 
-  - title: tailscale - receive pending files
+  - title: tailscale - 接收待接收文件
     desc: |
-      Checks for and downloads any files that have been sent to the current machine via Taildrop. 
-      By default, it will save the files to the current working directory unless a specific path is provided. 
-      This is the manual way to retrieve incoming transfers on Linux systems where a GUI is not available.
+      检查并下载通过 Taildrop 发送到当前机器的任何文件。默认情况下除非指定路径，否则文件将保存到当前工作目录。
+      这是在无法使用 GUI 的 Linux 系统上手动获取传入传输的方式。
     command: "tailscale file get {{destination_directory|.}}"
 
   # === SERVICE EXPOSURE ===
-  - title: tailscale - serve local web service
+  - title: tailscale - 托管本地 Web 服务
     desc: |
-      Exposes a local port to your private tailnet as a web service. 
-      This allows other machines in your tailnet to access your local development server via your Tailscale node name. 
-      It can also handle automatic HTTPS certificate generation and termination for the service.
+      将本地端口作为 Web 服务暴露给你的私有 tailnet。这使 tailnet 中的其他机器可以通过你的 Tailscale 节点名访问本地开发服务器。
+      它还可以为该服务自动生成和终止 HTTPS 证书。
     command: "tailscale serve --https {{port|443}} {{local_target|http://127.0.0.1:8080}}"
 
-  - title: tailscale - expose service to internet (Funnel)
+  - title: tailscale - 将服务暴露到互联网（Funnel）
     desc: |
-      Makes a local service accessible from the public internet via the Tailscale Funnel. 
-      This routes public traffic through Tailscale's edge nodes into your private machine. 
-      Use this with extreme caution, as it bypasses the private nature of the tailnet for the specified port.
+      通过 Tailscale Funnel 使本地服务可以从公共互联网访问。这会将公共流量经 Tailscale 边缘节点路由到你的私有机器。
+      使用时需格外谨慎，因为它会绕过指定端口的 tailnet 私有性。
     command: "tailscale funnel {{port|443}} on"
 
   # === ADVANCED ROUTING ===
-  - title: tailscale - enable exit node routing
+  - title: tailscale - 启用出口节点路由
     desc: |
-      Configures the local machine to route all its non-internal internet traffic through a specific exit node. 
-      This functions like a traditional VPN, masking your local public IP with the IP of the exit node. 
-      The target node must be configured and authorized to act as an exit node in the Tailscale admin console.
+      配置本机，使其所有非内部互联网流量都通过特定出口节点路由。其功能类似于传统 VPN，用出口节点的 IP 掩盖你的本地公网 IP。
+      目标节点必须在 Tailscale 管理控制台中配置并被授权作为出口节点。
     command: "tailscale up --exit-node={{exit_node_ip_or_name}}"
 
-  - title: tailscale - list available exit nodes
+  - title: tailscale - 列出可用出口节点
     desc: |
-      Displays all machines in the current tailnet that have been configured to act as exit nodes. 
-      This helps you identify which nodes are available for routing your internet traffic. 
-      The output includes the location and status of each potential exit node.
+      显示当前 tailnet 中所有已配置为出口节点的机器。这有助于识别哪些节点可用于路由你的互联网流量。
+      输出包含每个潜在出口节点的位置和状态。
     command: "tailscale exit-node list"

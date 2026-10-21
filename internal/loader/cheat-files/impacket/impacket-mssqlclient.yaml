@@ -3,85 +3,76 @@ tags: [database, mssql, pentest, exploitation, enumeration, authentication, impa
 
 actions:
   # === AUTHENTICATION METHODS ===
-  - title: impacket-mssqlclient - basic authentication with password
+  - title: impacket-mssqlclient - 使用密码的基础认证
     desc: |
-      Establishes a connection to the MSSQL server using standard username and password credentials.
-      This is the most common method for interacting with a database instance after discovering valid credentials.
-      Be cautious of account lockout policies when attempting multiple password variations, as MSSQL can be configured to lock domain accounts.
-      The target format follows the standard Impacket syntax: domain/username:password@address.
+      使用标准的用户名和密码凭据建立到 MSSQL 服务器的连接。
+      这是发现有效凭据后与数据库实例交互的最常见方式。
+      尝试多个密码变体时请注意账户锁定策略，因为 MSSQL 可配置为锁定域账户；目标格式遵循标准 Impacket 语法：domain/username:password@address。
     command: "impacket-mssqlclient {{domain|}}/{{username}}:{{password}}@{{target_ip}}"
 
-  - title: impacket-mssqlclient - authentication using NTLM hashes
+  - title: impacket-mssqlclient - 使用 NTLM 哈希认证
     desc: |
-      Performs authentication using the Pass-the-Hash technique by providing LM and NT hashes.
-      This is extremely useful during post-exploitation when cleartext passwords are unavailable but hashes have been dumped from SAM or LSASS.
-      The tool bypasses the need for the actual password to establish a valid TDS session.
-      Ensure the hash is provided in the format LMHASH:NTHASH (use 32 zeros for the LM portion if unknown).
+      通过提供 LM 和 NT 哈希，使用 Pass-the-Hash 技术进行认证。
+      在后渗透阶段明文密码不可用但已从 SAM 或 LSASS 转储哈希时非常有用。
+      工具无需实际密码即可建立有效的 TDS 会话。
+      请确保哈希为 LMHASH:NTHASH 格式（LM 部分未知时使用 32 个零）。
     command: "impacket-mssqlclient {{domain|}}/{{username}}@{{target_ip}} -hashes {{lmhash|00000000000000000000000000000000}}:{{nthash}}"
 
-  - title: impacket-mssqlclient - connect using windows authentication
+  - title: impacket-mssqlclient - 使用 Windows 认证连接
     desc: |
-      Forces the client to use Windows Authentication (NTLM/Kerberos integrated security) instead of SQL Server's internal authentication.
-      In many corporate environments, SQL servers are configured to only allow logins via Active Directory accounts.
-      This flag is necessary when the target user is a domain account that does not have a separate SQL-specific password.
-      It changes the underlying TDS login packet to request an integrated security handshake.
+      强制客户端使用 Windows 认证（NTLM/Kerberos 集成安全）而非 SQL Server 的内部认证。
+      在许多企业环境中，SQL 服务器被配置为仅允许通过 Active Directory 账户登录。
+      当目标用户是没有单独 SQL 密码的域账户时，此标志是必需的，它会更改底层 TDS 登录包以请求集成安全握手。
     command: "impacket-mssqlclient {{domain|}}/{{username}}:{{password}}@{{target_ip}} -windows-auth"
 
-  - title: impacket-mssqlclient - connect using kerberos authentication
+  - title: impacket-mssqlclient - 使用 Kerberos 认证连接
     desc: |
-      Utilizes Kerberos tickets for authentication, which is ideal for bypassing NTLM-restricted environments.
-      The command typically requires a valid TGT (Ticket Granting Ticket) to be present in the cache (KRB5CCNAME).
-      Using the -no-pass flag ensures the tool attempts to use the existing ticket rather than asking for a password.
-      Ensure that the target name provided matches the Service Principal Name (SPN) registered in Active Directory.
+      利用 Kerberos 票据进行认证，非常适合绕过 NTLM 受限的环境。
+      命令通常要求缓存（KRB5CCNAME）中存在有效的 TGT（票据授予票据）。
+      使用 -no-pass 标志可确保工具尝试使用现有票据而非询问密码，请确保提供的目标名称与 Active Directory 中注册的服务主体名称（SPN）匹配。
     command: "impacket-mssqlclient -k -no-pass {{target_name}}"
 
   # === COMMAND EXECUTION ===
-  - title: impacket-mssqlclient - execute single SQL command
+  - title: impacket-mssqlclient - 执行单条 SQL 命令
     desc: |
-      Executes a specific SQL query or statement directly from the command line without entering the interactive shell.
-      This is highly effective for automation, scripting, or quickly verifying permissions like 'sysadmin' status.
-      It returns the result of the query directly to the terminal and exits.
-      You can use this to execute common reconnaissance queries like 'SELECT @@version' or 'SELECT is_srvrolemember(\'sysadmin\')'.
+      直接从命令行执行特定 SQL 查询或语句，无需进入交互式 shell。
+      对于自动化、脚本编写或快速验证“sysadmin”状态等权限非常有效。
+      它会将查询结果直接返回到终端后退出，可用于执行“SELECT @@version”或“SELECT is_srvrolemember('sysadmin')”等常见侦察查询。
     command: "impacket-mssqlclient {{domain|}}/{{username}}:{{password}}@{{target_ip}} -command \"{{sql_query|SELECT @@version}}\""
 
-  - title: impacket-mssqlclient - execute SQL commands from a file
+  - title: impacket-mssqlclient - 从文件执行 SQL 命令
     desc: |
-      Reads and executes a sequence of SQL commands stored in a local text file.
-      This is the preferred method for complex operations, such as creating multiple procedures or running heavy data exfiltration scripts.
-      It prevents manual typing errors and allows for repeatable exploitation steps across different targets.
-      The tool will process each line in the file as a sequential command to the SQL server.
+      读取并执行本地文本文件中存储的一系列 SQL 命令。
+      这是复杂操作的首选方法，例如创建多个存储过程或运行繁重的数据外传脚本。
+      它可避免手动输入错误，并允许在不同目标上重复利用步骤，工具会将文件中每一行作为顺序命令发送到 SQL 服务器。
     command: "impacket-mssqlclient {{domain|}}/{{username}}:{{password}}@{{target_ip}} -file {{script_path}}"
 
   # === CONNECTION SETTINGS ===
-  - title: impacket-mssqlclient - connect to non-standard port and specific database
+  - title: impacket-mssqlclient - 连接非标准端口和指定数据库
     desc: |
-      Connects to an MSSQL instance listening on a custom port and immediately switches to a specific database context.
-      While 1433 is the default, administrators often change the port for security through obscurity or to host multiple instances.
-      Specifying the -db flag is useful if your user only has permissions on a specific database and not the master.
-      This saves time by avoiding manual 'USE database_name' commands inside the shell.
+      连接到监听自定义端口的 MSSQL 实例，并立即切换到特定的数据库上下文。
+      1433 是默认端口，但管理员常为隐蔽安全或托管多个实例而更改端口。
+      如果你的用户只对特定数据库有权限而没有 master 权限，指定 -db 标志很有用，可省去在 shell 中手动执行“USE database_name”命令。
     command: "impacket-mssqlclient {{domain|}}/{{username}}:{{password}}@{{target_ip}} -port {{port|1433}} -db {{database_name}}"
 
-  - title: impacket-mssqlclient - specify target IP with NetBIOS name
+  - title: impacket-mssqlclient - 使用 NetBIOS 名称指定目标 IP
     desc: |
-      Allows the user to provide a hostname for the target while explicitly defining the IP address to connect to.
-      This is particularly useful in environments where DNS is unreliable or when attacking a specific IP that hosts a named instance.
-      The target name is used for authentication headers (important for Kerberos), while the target-ip is used for the network connection.
-      It helps in scenarios where you need to bypass local host file requirements.
+      允许用户为目标提供主机名，同时显式指定要连接的 IP 地址。
+      在 DNS 不可靠的环境中，或攻击托管命名实例的特定 IP 时尤为有用。
+      目标名称用于认证头（对 Kerberos 很重要），而 target-ip 用于网络连接，有助于绕过本地 hosts 文件要求。
     command: "impacket-mssqlclient {{domain|}}/{{username}}:{{password}}@{{target_name}} -target-ip {{target_ip}}"
 
   # === ADVANCED / TROUBLESHOOTING ===
-  - title: impacket-mssqlclient - enable debug mode and timestamps
+  - title: impacket-mssqlclient - 启用调试模式和时间戳
     desc: |
-      Enables verbose debugging output and adds timestamps to every log entry.
-      This is essential for troubleshooting connection failures, authentication errors, or understanding the TDS protocol exchange.
-      If a connection is being dropped, the debug output might reveal if it's a firewall issue or a protocol mismatch.
-      Timestamps are helpful for correlate logs with network captures or server-side event logs.
+      启用详细的调试输出，并为每条日志记录添加时间戳。
+      对于排查连接失败、认证错误或理解 TDS 协议交互至关重要。
+      如果连接被断开，调试输出可能揭示是防火墙问题还是协议不匹配，时间戳有助于将日志与网络抓包或服务端事件日志关联。
     command: "impacket-mssqlclient {{domain|}}/{{username}}:{{password}}@{{target_ip}} -debug -ts"
 
-  - title: impacket-mssqlclient - show SQL queries being executed
+  - title: impacket-mssqlclient - 显示正在执行的 SQL 查询
     desc: |
-      Displays the exact SQL queries being sent over the wire during the session.
-      This is a great educational tool and a way to verify exactly what the Impacket library is doing in the background.
-      It is specifically helpful when running complex commands through the interactive shell.
-      Use this to ensure that sensitive queries are formatted correctly before they reach the server.
+      显示会话期间在线路上发送的确切 SQL 查询。
+      这是一个很好的学习工具，也是验证 Impacket 库在后台具体行为的方式。
+      在通过交互式 shell 运行复杂命令时尤其有用，可确保敏感查询在到达服务器前格式正确。
     command: "impacket-mssqlclient {{domain|}}/{{username}}:{{password}}@{{target_ip}} -show"

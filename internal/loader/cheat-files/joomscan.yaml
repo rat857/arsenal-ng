@@ -3,61 +3,53 @@ tags: [joomla, scanner, pentest, vulnerability, cms, enumeration, security, web]
 
 actions:
   # === RECONNAISSANCE & ENUMERATION ===
-  - title: joomscan - basic website scan
+  - title: joomscan - 基础网站扫描
     desc: |
-      Performs a basic scan of a target Joomla website to identify the version and common vulnerabilities. 
-      It checks for known misconfigurations, firewall presence, and exposed sensitive files like configuration.php. 
-      This should be the starting point for any Joomla-specific reconnaissance to map the basic attack surface.
+      对目标 Joomla 网站执行基础扫描，识别版本和常见漏洞。检查已知的错误配置、防火墙是否存在，以及 configuration.php 等暴露的敏感文件。
+      这应是任何 Joomla 侦察的起点，用于梳理基本攻击面。
     command: "joomscan --url {{url}}"
 
-  - title: joomscan - enumerate components
+  - title: joomscan - 枚举组件
     desc: |
-      Attempts to discover installed Joomla components and extensions by checking common paths. 
-      Since many Joomla vulnerabilities reside in third-party extensions rather than the core, this is a critical step. 
-      It helps identify outdated or vulnerable plugins that can be exploited for further access.
+      通过检查常见路径尝试发现已安装的 Joomla 组件和扩展。由于许多 Joomla 漏洞存在于第三方扩展而非核心中，这是关键一步。
+      有助于识别可被利用以进一步访问的过时或存在漏洞的插件。
     command: "joomscan --url {{url}} --enumerate-components"
 
   # === EVASION & STEALTH ===
-  - title: joomscan - scan with random user-agent
+  - title: joomscan - 使用随机 User-Agent 扫描
     desc: |
-      Executes the scan using a randomized User-Agent string for every request to bypass basic signature-based detection. 
-      Security systems like WAFs often block the default JoomScan identifier to prevent automated scanning. 
-      Using a random agent helps simulate traffic from various browsers, increasing the chances of staying undetected.
+      对每个请求使用随机 User-Agent 字符串执行扫描，以绕过基于签名的基本检测。WAF 等安全系统通常会阻止 JoomScan 的默认标识。
+      使用随机 UA 有助于模拟不同浏览器的流量，提高隐蔽性。
     command: "joomscan --url {{url}} --random-agent"
 
-  - title: joomscan - scan with custom user-agent
+  - title: joomscan - 使用自定义 User-Agent 扫描
     desc: |
-      Specifies a fixed custom User-Agent string for all requests sent to the target server. 
-      This is useful when the target environment only allows specific browsers or when you need to mimic a legitimate corporate crawler. 
-      Providing a custom string allows for better control over how the scan is perceived by server logs.
+      为发送到目标服务器的所有请求指定固定的自定义 User-Agent 字符串。当目标环境只允许特定浏览器或需要伪装成合法的企业爬虫时很有用。
+      提供自定义字符串可以更好地控制服务器日志对扫描的感知。
     command: "joomscan --url {{url}} --user-agent \"{{user_agent|Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36}}\""
 
   # === AUTHENTICATION & ADVANCED CONFIGURATION ===
-  - title: joomscan - scan with cookies
+  - title: joomscan - 使用 Cookie 扫描
     desc: |
-      Injects a session cookie into the scan requests to perform an authenticated vulnerability assessment. 
-      This allows JoomScan to reach pages and components that are restricted to logged-in users or administrators. 
-      Useful for deep-dive testing where you already have low-level credentials and want to escalate privileges.
+      在扫描请求中注入会话 Cookie，以执行经过身份验证的漏洞评估。这使 JoomScan 能够访问仅限登录用户或管理员访问的页面和组件。
+      当你已有低级凭据并想进行权限提升时，适合做深度测试。
     command: "joomscan --url {{url}} --cookie \"{{cookie_string}}\""
 
-  - title: joomscan - scan via proxy
+  - title: joomscan - 通过代理扫描
     desc: |
-      Routes all scanning traffic through a specified proxy server such as Burp Suite or a SOCKS proxy. 
-      This is essential for analyzing the tool's traffic, bypassing IP-based restrictions, or maintaining anonymity. 
-      Ensure the proxy URL includes the protocol, such as http, https, or socks.
+      将所有扫描流量经由指定的代理服务器（如 Burp Suite 或 SOCKS 代理）转发。这对于分析工具流量、绕过基于 IP 的限制或保持匿名至关重要。
+      确保代理 URL 包含协议，如 http、https 或 socks。
     command: "joomscan --url {{url}} --proxy {{proxy_url|http://127.0.0.1:8080}}"
 
-  - title: joomscan - set request timeout
+  - title: joomscan - 设置请求超时
     desc: |
-      Configures a specific timeout value in seconds for the network requests made during the scan. 
-      Increasing the timeout is beneficial when scanning slow-responding servers or targets behind high-latency connections. 
-      Proper timeout management prevents the scanner from dropping valid connections prematurely.
+      为扫描过程中的网络请求配置特定的超时时间（秒）。扫描响应缓慢的服务器或高延迟连接后的目标时，增加超时很有帮助。
+      合理的超时管理可防止扫描器过早丢弃有效连接。
     command: "joomscan --url {{url}} --timeout {{seconds|10}}"
 
   # === UTILITY ===
-  - title: joomscan - check version and help
+  - title: joomscan - 查看版本与帮助
     desc: |
-      Displays the current version of the JoomScan tool and the help menu listing all available flags. 
-      Use this to verify that the tool is correctly installed and to see if new features have been added. 
-      It is a good practice to check the version before starting an engagement to ensure database signatures are up to date.
+      显示 JoomScan 工具的当前版本和列出所有可用标志的帮助菜单。用它来验证工具是否正确安装，并查看是否新增了功能。
+      在开始测试前检查版本是一个好习惯，以确保数据库签名是最新的。
     command: "joomscan --help"

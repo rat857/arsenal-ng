@@ -4,57 +4,43 @@ tags: [kerberos, active-directory, security, pentest, impacket, enumeration]
 actions:
 # === BASIC PARSING ===
 
- - title: impacket-describeTicket - basic ticket parsing
+ - title: impacket-describeTicket - 基础票据解析
    desc: |
-     Parse a Kerberos ticket file in .ccache format without decryption. This command is the primary starting point to inspect a captured ticket's metadata.
-     It displays basic fields such as the Client Name, Server Name, Ticket Flags, and start/end times.
-     Note that without providing keys or passwords, the encrypted part of the ticket and the PAC (Privilege Attribute Certificate) will remain hidden.
+     解析 .ccache 格式的 Kerberos 票据文件，无需解密。此命令是检查捕获票据元数据的主要起点。它显示客户端名称、服务器名称、票据标志以及起止时间等基本字段。请注意，如果不提供密钥或密码，票据的加密部分和 PAC（特权属性证书）将保持隐藏。
    command: "impacket-describeTicket {{ticket_path}}"
 
 # === DECRYPTION & PAC ANALYSIS ===
 
- - title: impacket-describeTicket - decrypt ticket with cleartext password
+ - title: impacket-describeTicket - 使用明文密码解密票据
    desc: |
-     Decrypt the encrypted part of the ticket and parse the PAC using a cleartext password. This is used when you have the credentials of the service account for which the ticket was issued.
-     For example, if the ticket is for 'cifs/server.domain.com', you need the 'server$' machine account password or its equivalent.
-     Successfully decrypting the ticket reveals detailed group memberships, SIDs, and account information contained within the PAC.
+     使用明文密码解密票据的加密部分并解析 PAC。当你拥有票据所签发给的服务账户的凭据时使用。例如，如果票据是 cifs/server.domain.com 的，你需要 server$ 机器账户密码或其等价物。成功解密票据会揭示 PAC 中包含的详细组成员身份、SID 和账户信息。
    command: "impacket-describeTicket -u {{user}} -p {{password}} -d {{domain}} {{ticket_path}}"
 
- - title: impacket-describeTicket - decrypt ticket with RC4 key (NT Hash)
+ - title: impacket-describeTicket - 使用 RC4 密钥（NT 哈希）解密票据
    desc: |
-     Decrypt the ticket using the RC4 key (NT hash) of the target service account. This is a common technique in post-exploitation scenarios where hashes have been dumped via NTDS.dit or LSASS.
-     The tool will use the provided hash to derive the necessary session keys to read the encrypted ticket contents.
-     Be aware that RC4 might be disabled in strictly hardened modern Active Directory environments in favor of AES.
+     使用目标服务账户的 RC4 密钥（NT 哈希）解密票据。这是通过 NTDS.dit 或 LSASS 转储哈希的后渗透场景中的常见技术。工具会使用提供的哈希派生必要的会话密钥，以读取加密的票据内容。请注意，在严格加固的现代 Active Directory 环境中，RC4 可能被禁用而偏向 AES。
    command: "impacket-describeTicket -u {{user}} --rc4 {{nt_hash}} -d {{domain}} {{ticket_path}}"
 
- - title: impacket-describeTicket - decrypt ticket with AES key
+ - title: impacket-describeTicket - 使用 AES 密钥解密票据
    desc: |
-     Decrypt the ticket using a provided AES128 or AES256 key. Modern Windows environments (Server 2008 and later) prefer AES for Kerberos authentication.
-     This command is essential when RC4 is disabled or when you have specifically extracted AES keys from a domain controller.
-     The key should be provided as a hex string representing the Kerberos long-term key.
+     使用提供的 AES128 或 AES256 密钥解密票据。现代 Windows 环境（Server 2008 及更高版本）偏好使用 AES 进行 Kerberos 认证。当 RC4 被禁用或你已专门从域控制器提取 AES 密钥时，此命令必不可少。密钥应以十六进制字符串形式提供，表示 Kerberos 长期密钥。
    command: "impacket-describeTicket -u {{user}} --aes {{aes_key}} -d {{domain}} {{ticket_path}}"
 
 # === ADVANCED TECHNIQUES ===
 
  - title: impacket-describeTicket - UnPAC-the-Hash
    desc: |
-     Extract NT and LM hashes from the PAC Credentials structure using the AS-REP key. This implements the 'UnPAC-the-hash' primitive, which is highly effective when users authenticate via PKINIT (Smart Cards).
-     The PAC Credentials section often contains the user's secret material encrypted with the AS reply key.
-     This technique allows an attacker to recover the original NT hash of a user who has logged in via certificate-based authentication.
+     使用 AS-REP 密钥从 PAC 凭据结构中提取 NT 和 LM 哈希。这实现了 UnPAC-the-hash 原语，当用户通过 PKINIT（智能卡）认证时非常有效。PAC 凭据部分通常包含用 AS 回复密钥加密的用户机密材料。此技术允许攻击者恢复通过基于证书的认证登录的用户的原始 NT 哈希。
    command: "impacket-describeTicket -u {{user}} --asrep-key {{as_reply_key}} {{ticket_path}}"
 
- - title: impacket-describeTicket - decrypt with custom salt
+ - title: impacket-describeTicket - 使用自定义盐值解密
    desc: |
-     Specify a custom salt for key calculation during the decryption process. This is often necessary for computer accounts or users with non-standard naming conventions where the default salt derivation might fail.
-     The salt for a user is typically 'DOMAIN.LOCALUsername', while for computer accounts it is 'DOMAIN.LOCALhostMachineName.domain.local'.
-     Providing the correct salt ensures that the tool generates the correct encryption keys from the provided password.
+     在解密过程中为密钥计算指定自定义盐值。对于计算机账户或命名约定非标准的用户，默认盐值派生可能失败，这时通常需要此参数。用户的盐值通常是 DOMAIN.LOCALUsername，而计算机账户的盐值是 DOMAIN.LOCALhostMachineName.domain.local。提供正确的盐值可确保工具从提供的密码生成正确的加密密钥。
    command: "impacket-describeTicket -u {{user}} -p {{password}} -s {{salt}} {{ticket_path}}"
 
 # === TROUBLESHOOTING ===
 
- - title: impacket-describeTicket - verbose debug output
+ - title: impacket-describeTicket - 详细调试输出
    desc: |
-     Enable debug logging and timestamps for the ticket parsing process. This is extremely useful for troubleshooting failed decryption attempts or identifying malformed ticket structures.
-     The debug output shows internal Impacket library logs, which can reveal exactly where the decryption or parsing logic encountered an error.
-     Use this when the tool fails to parse a ticket that you believe should be valid.
+     为票据解析过程启用调试日志和时间戳。这对于排查解密失败或识别格式错误的票据结构非常有用。调试输出显示内部 Impacket 库日志，可以揭示解密或解析逻辑在哪里遇到错误。当工具无法解析你认为应该有效的票据时使用。
    command: "impacket-describeTicket -debug -ts {{ticket_path}}"

@@ -3,69 +3,53 @@ tags: [web, security, pentest, reconnaissance, vulnerability-scanner, cors]
 
 actions:
 # === BASIC SCANNING ===
- - title: corsy - basic url scan
+ - title: corsy - 基本 URL 扫描
    desc: |
-     Performs a standard CORS misconfiguration scan on a single target URL. 
-     This command initiates various bypass tests such as Null origin, backtick, and unescaped dot bypasses. 
-     It is the most efficient way to quickly check a specific endpoint for common vulnerabilities. 
-     Ensure the URL includes the protocol (http/https) for accurate results.
+     对单个目标 URL 执行标准的 CORS 错误配置扫描。
+     该命令会启动多种绕过测试，如 Null 源、反引号及未转义点号绕过，URL 需包含协议（http/https）以保证结果准确。
    command: "corsy -u {{url}}"
 
- - title: corsy - scan urls from file
+ - title: corsy - 从文件扫描 URL
    desc: |
-     Scans multiple targets by reading a list of URLs from a specified text file. 
-     This is useful for bulk scanning subdomains or endpoints discovered during the reconnaissance phase. 
-     The input file should contain one URL per line including the protocol. 
-     Using this feature saves time compared to manual individual testing.
+     从指定文本文件读取 URL 列表，批量扫描多个目标。
+     适用于批量扫描侦察阶段发现的子域名或端点，输入文件每行一个 URL 且需包含协议。
    command: "corsy -i {{input_file}}"
 
- - title: corsy - scan from stdin
+ - title: corsy - 从标准输入扫描
    desc: |
-     Allows for scanning URLs passed through the standard input (stdin). 
-     This is highly effective when piping output from other discovery tools like subfinder or waybackurls. 
-     It enables seamless integration into automated bug bounty or penetration testing pipelines. 
-     Make sure the incoming data is formatted as a clean list of URLs.
+     支持通过标准输入（stdin）传入 URL 进行扫描。
+     在与 subfinder 或 waybackurls 等发现工具的管道输出配合时非常高效，可无缝集成到自动化漏洞赏金或渗透测试流程中。
    command: "cat {{url_list}} | corsy"
 
 # === OUTPUT AND REPORTING ===
- - title: corsy - export results to json
+ - title: corsy - 导出结果为 JSON
    desc: |
-     Saves the results of the CORS scan into a JSON formatted file for later analysis. 
-     JSON output is ideal for documentation or for feeding the data into other custom scripts and databases. 
-     This command is typically used in conjunction with a file input for large-scale assessments. 
-     If the output file already exists, verify if the tool overwrites or appends to it.
+     将 CORS 扫描结果保存为 JSON 格式文件，便于后续分析。
+     JSON 输出适合用于文档记录，或将数据接入其他自定义脚本和数据库。
    command: "corsy -i {{input_file}} -o {{output_file|results.json}}"
 
- - title: corsy - quiet mode scan
+ - title: corsy - 静默模式扫描
    desc: |
-     Runs the scan while suppressing non-essential output like descriptions, severity levels, and exploitation tips. 
-     This provides a cleaner output that focuses strictly on the vulnerable findings. 
-     Use this when you are already familiar with the vulnerabilities and want to reduce terminal noise. 
-     It is particularly helpful for automated logging or when the user requires minimal distraction.
+     运行时抑制描述、严重级别和利用提示等非必要输出。
+     输出更干净，仅聚焦于存在漏洞的发现，适合自动化日志记录。
    command: "corsy -u {{url}} -q"
 
 # === PERFORMANCE AND EVASION ===
- - title: corsy - multi-threaded scan
+ - title: corsy - 多线程扫描
    desc: |
-     Increases the scanning speed by specifying the number of concurrent threads to use. 
-     The default thread count is usually sufficient, but increasing it can drastically reduce scan time for large files. 
-     Be cautious as high thread counts might cause the target server to block your IP or trigger rate limits. 
-     Adjust the value based on the stability and capacity of the target environment.
+     通过指定并发线程数来提高扫描速度。
+     增加线程数可大幅缩短大文件的扫描时间，但过高可能导致目标服务器封禁你的 IP 或触发速率限制。
    command: "corsy -u {{url}} -t {{thread_count|20}}"
 
- - title: corsy - request delay
+ - title: corsy - 请求延迟
    desc: |
-     Introduces a specific delay in seconds between each HTTP request sent by the tool. 
-     This is a critical setting for bypassing rate-limiting mechanisms or Web Application Firewalls (WAFs). 
-     Using a delay makes the scanning behavior appear less aggressive and more like human interaction. 
-     It is recommended for targets that are known to be sensitive or have strict anti-automation policies.
+     在工具发送的每个 HTTP 请求之间引入指定秒数的延迟。
+     这是绕过速率限制机制或 Web 应用防火墙（WAF）的关键设置，使扫描行为更接近人工交互。
    command: "corsy -u {{url}} -d {{delay_seconds|2}}"
 
 # === ADVANCED CONFIGURATION ===
- - title: corsy - scan with custom headers
+ - title: corsy - 携带自定义请求头扫描
    desc: |
-     Sends custom HTTP headers such as User-Agents or Session Cookies with every request. 
-     This is necessary for testing authenticated endpoints or mimicking specific browser behaviors. 
-     Multiple headers can be provided by using newline characters within the header string. 
-     Properly authenticated scans often reveal CORS issues that are hidden behind login portals.
+     为每个请求发送自定义 HTTP 请求头，如 User-Agent 或会话 Cookie。
+     对测试需认证的端点或模拟特定浏览器行为必不可少，可在请求头字符串中用换行符提供多个请求头。
    command: "corsy -u {{url}} --headers \"{{headers|Cookie: session=123}}\""

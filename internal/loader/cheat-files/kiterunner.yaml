@@ -3,84 +3,60 @@ tags: [network, web, security, pentest, enumeration, api, reconnaissance, scanne
 
 actions:
   # === API SCANNING ===
-  - title: kr - basic api scan
+  - title: kr - 基础 API 扫描
     desc: |
-      Execute a targeted API scan against a specific host using Assetnote wordlists. This command is specifically 
-      designed to discover API endpoints by leveraging structured data from the .kite format. It helps identify 
-      hidden routes that standard directory busters might miss by testing various HTTP methods and parameters. 
-      Ensure you have network connectivity to the target before starting the reconnaissance process.
+      使用 Assetnote 字典对特定主机执行定向 API 扫描。该命令专门利用 .kite 格式的结构化数据来发现 API 端点。
+      通过测试各种 HTTP 方法和参数，帮助识别标准目录爆破可能遗漏的隐藏路由。开始侦察前确保你与目标有网络连通性。
     command: "kr scan {{target}} -A={{wordlist_alias|apiroutes-210328}}"
 
-  - title: kr - high performance multi-host scan
+  - title: kr - 高性能多主机扫描
     desc: |
-      Scan a list of targets from a file while controlling the concurrency settings to maximize throughput. You 
-      can adjust the maximum parallel hosts and connections per host to optimize speed without overwhelming 
-      the targets or your own network stack. This is particularly useful for bug bounty hunting or large-scale 
-      internal audits where thousands of hosts need to be checked. Note that high concurrency may lead to 
-      aggressive rate limiting or account lockouts on some environments.
+      从文件扫描目标列表，同时控制并发设置以最大化吞吐量。你可以调整最大并行主机数和每主机连接数来优化速度，而不会压垮目标或自己的网络栈。
+      对漏洞赏金或大规模内部审计特别有用。注意高并发可能在部分环境导致激进的速率限制或账户锁定。
     command: "kr scan {{targets_file}} -A={{wordlist_alias|apiroutes-210328}} -j {{max_parallel_hosts|50}} -x {{max_connections_per_host|5}}"
 
-  - title: kr - scan with depth-based baseline checks
+  - title: kr - 带深度基线检查的扫描
     desc: |
-      Perform a scan with an increased directory depth for wildcard detection and baseline checks. Increasing 
-      the depth allows the tool to perform separate baseline checks for sub-directories, which is critical 
-      for applications using virtual path-based routing. This improves the accuracy of the results and reduces 
-      false positives in complex environments. However, increasing depth will significantly increase the 
-      total number of requests sent to the target.
+      以更大的目录深度执行扫描，用于通配符检测和基线检查。增加深度使工具能对子目录执行独立的基线检查，这对使用虚拟路径路由的应用至关重要。
+      这提高了结果的准确性，减少复杂环境中的误报。但增加深度会显著增加发送到目标的请求总数。
     command: "kr scan {{target}} -A={{wordlist_alias|apiroutes-210328}} --preflight-depth {{depth|2}}"
 
   # === BRUTE FORCING ===
-  - title: kr - directory brute force with extensions
+  - title: kr - 带扩展名的目录爆破
     desc: |
-      Perform a standard path brute force using a text-based wordlist and specific file extensions. This mode 
-      is suitable for discovering common files like configuration backups, scripts, or administrative panels. 
-      You can provide multiple extensions separated by commas to increase the coverage of the scan. Use 
-      a low connection count if the target is protected by a Web Application Firewall (WAF) or rate limiter.
+      使用基于文本的字典和特定文件扩展名执行标准路径爆破。该模式适合发现配置文件备份、脚本或管理面板等常见文件。
+      你可以提供多个以逗号分隔的扩展名来扩大扫描覆盖范围。若目标受 WAF 或速率限制器保护，请使用较低的连接数。
     command: "kr brute {{target}} -w {{wordlist_path}} -e {{extensions|php,aspx,json,txt}}"
 
-  - title: kr - dirsearch compatibility mode
+  - title: kr - dirsearch 兼容模式
     desc: |
-      Run a brute force scan using wordlists that contain the %EXT% placeholder, mimicking dirsearch behavior. 
-      The tool will automatically replace the placeholder with the extensions provided in the command line 
-      arguments. This is perfect for users who want to use their existing legacy wordlists with Kiterunner's 
-      high-performance engine. It ensures that specialized wordlists for specific tech stacks remain effective.
+      使用包含 %EXT% 占位符的字典运行爆破扫描，模仿 dirsearch 的行为。工具会自动用命令行参数中提供的扩展名替换占位符。
+      适合想用 Kiterunner 高性能引擎继续使用现有旧字典的用户，确保针对特定技术栈的专业字典仍然有效。
     command: "kr brute {{target}} -w {{wordlist_path}} -D -e {{extensions|php,html,js}}"
 
   # === FILTERS AND HEADERS ===
-  - title: kr - scan with custom headers and filters
+  - title: kr - 带自定义 Header 和过滤器的扫描
     desc: |
-      Execute a scan while injecting custom HTTP headers and filtering out responses by content length. This 
-      is useful for bypassing simple IP-based filters using headers like X-Forwarded-For or providing 
-      authentication tokens. Filtering by length helps clean up the output by hiding known "Not Found" 
-      pages that return a 200 OK status. Be careful not to ignore lengths that might contain valid but 
-      small JSON responses.
+      执行扫描时注入自定义 HTTP header，并按内容长度过滤响应。这对使用 X-Forwarded-For 等 header 绕过简单的基于 IP 的过滤，或提供认证 Token 很有用。
+      按长度过滤可隐藏返回 200 OK 状态的已知 Not Found 页面，从而清理输出。注意不要忽略可能包含有效但较小的 JSON 响应的长度。
     command: "kr scan {{target}} -H \"{{header_name|Authorization}}: {{header_value}}\" --ignore-length {{length_to_ignore|0-100}}"
 
   # === WORDLIST MANAGEMENT ===
-  - title: kr - list available assetnote wordlists
+  - title: kr - 列出可用的 Assetnote 字典
     desc: |
-      Display all available wordlists provided by Assetnote that can be used with the integrated download 
-      feature. The output includes information about the wordlist alias, filename, source, and whether 
-      it is currently cached locally on your machine. This helps in selecting the most relevant dataset 
-      for a specific technology stack or target profile. It is the best way to keep track of the 
-      pre-packaged datasets available for quick use.
+      显示 Assetnote 提供的所有可用字典，可配合内置下载功能使用。输出包含字典别名、文件名、来源以及是否已缓存在本机等信息。
+      这有助于为特定技术栈或目标画像选择最相关的数据集，也是跟踪预打包数据集以便快速使用的最佳方式。
     command: "kr wordlist list"
 
-  - title: kr - convert wordlist format
+  - title: kr - 转换字典格式
     desc: |
-      Convert wordlists between .txt, .json, and .kite formats for better compatibility and performance. The 
-      .kite format is a binary representation used by Kiterunner to speed up scanning and drastically 
-      reduce memory overhead during execution. Converting large text wordlists to .kite is highly 
-      recommended before performing large-scale scans. Use the debug flag if you encounter errors 
-      during the conversion of complex JSON schemas.
+      在 .txt、.json 和 .kite 格式之间转换字典，以获得更好的兼容性和性能。.kite 格式是 Kiterunner 用于加速扫描并大幅减少执行时内存开销的二进制表示。
+      在进行大规模扫描前，强烈建议将大型文本字典转换为 .kite。转换复杂 JSON schema 时若遇到错误，请使用 debug 标志。
     command: "kr kb convert {{input_file}} {{output_file}}"
 
   # === UTILITIES ===
-  - title: kr - replay specific request
+  - title: kr - 重放特定请求
     desc: |
-      Reconstruct and resend a specific request based on the output line from a previous Kiterunner scan. 
-      This is an essential feature for manual verification of findings or for troubleshooting unexpected 
-      response codes in a controlled manner. You can also specify a proxy to capture the replayed request 
-      in tools like Burp Suite or OWASP ZAP. Ensure the .kite wordlist used in the original scan is 
-      available for accurate reconstruction.
+      根据之前 Kiterunner 扫描的输出行重建并重新发送特定请求。这是手动验证发现或以受控方式排查意外响应码的重要功能。
+      你还可以指定代理，在 Burp Suite 或 OWASP ZAP 等工具中捕获重放的请求。确保原始扫描所用的 .kite 字典可用，以便准确重建。
     command: "kr kb replay -w {{kite_file}} \"{{response_line}}\" --proxy={{proxy_url|http://localhost:8080}}"

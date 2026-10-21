@@ -3,83 +3,65 @@ tags: [information-gathering, reconnaissance, pentest, network, whois, enumerati
 
 actions:
   # === RECONNAISSANCE & DOMAIN ENUMERATION ===
-  - title: dmitry - Whois lookup on IP address
+  - title: dmitry - IP 地址 Whois 查询
     desc: |
-      Perform a Whois lookup on the specific IP address of a target host. This helps identify the 
-      owner of the network block and related contact information. It is useful during the early 
-      stages of reconnaissance to determine the scope of the target's infrastructure.
+      对目标主机的特定 IP 地址执行 Whois 查询。
+      有助于识别网络块的拥有者及相关联系信息，在侦察早期确定目标基础设施范围时很有用。
     command: "dmitry -i {{target_host}}"
 
-  - title: dmitry - Whois lookup on domain name
+  - title: dmitry - 域名 Whois 查询
     desc: |
-      Perform a Whois lookup on the domain name of the target. This provides information regarding 
-      registration dates, name servers, and registrar details. It is a standard procedure for 
-      identifying domain ownership and potential administrative contacts for the organization.
+      对目标的域名执行 Whois 查询。
+      可提供注册日期、域名服务器和注册商详细信息等信息，是识别域名所有权和组织潜在管理联系人的标准流程。
     command: "dmitry -w {{target_domain}}"
 
-  - title: dmitry - Retrieve Netcraft information
+  - title: dmitry - 获取 Netcraft 信息
     desc: |
-      Retrieve information about a host from Netcraft.com to identify server details. This can 
-      reveal details about the operating system, web server software, and the hosting history 
-      of the domain. It is particularly useful for identifying the underlying technology stack 
-      of a web-based target without active scanning.
+      从 Netcraft.com 检索主机信息以识别服务器详细信息。
+      可揭示操作系统、Web 服务器软件以及域名的托管历史，无需主动扫描即可识别 Web 目标的底层技术栈。
     command: "dmitry -n {{target_host}}"
 
-  - title: dmitry - Search for subdomains
+  - title: dmitry - 搜索子域名
     desc: |
-      Search for possible subdomains associated with the target domain. Identifying subdomains 
-      is crucial for expanding the attack surface and finding less secure staging or internal 
-      environments. This module queries public records and search engines to find valid hostnames 
-      belonging to the target.
+      搜索与目标域名关联的可能子域名。
+      识别子域名对于扩大攻击面、找到安全性较弱的测试或内部环境至关重要，此模块会查询公共记录和搜索引擎来查找属于目标的有效主机名。
     command: "dmitry -s {{target_domain}}"
 
-  - title: dmitry - Search for email addresses
+  - title: dmitry - 搜索电子邮件地址
     desc: |
-      Search for possible email addresses related to the target domain through public sources. 
-      This can be used for social engineering assessments or identifying key personnel within 
-      an organization. It aggregates results found through various search methods and displays 
-      them in a simple list.
+      通过公开来源搜索与目标域名相关的可能电子邮件地址。
+      可用于社会工程评估或识别组织内的关键人员，它聚合各种搜索方法找到的结果并以简单列表显示。
     command: "dmitry -e {{target_domain}}"
 
   # === PORT SCANNING ===
-  - title: dmitry - Standard TCP port scan
+  - title: dmitry - 标准 TCP 端口扫描
     desc: |
-      Perform a basic TCP port scan on the target host to identify open services. This is a 
-      lightweight scanning method used to quickly find active services on a remote machine. 
-      Note that this is not as stealthy or comprehensive as Nmap but serves well for a 
-      fast, integrated discovery phase.
+      对目标主机执行基本的 TCP 端口扫描以识别开放服务。
+      这是一种轻量级扫描方法，用于快速发现远程机器上的活动服务，虽然不如 Nmap 隐蔽或全面，但适合快速集成的发现阶段。
     command: "dmitry -p {{target_host}}"
 
-  - title: dmitry - Port scan with banner grabbing
+  - title: dmitry - 带横幅抓取的端口扫描
     desc: |
-      Execute a TCP port scan while also retrieving service banners and reporting filtered ports. 
-      Banner grabbing helps identify specific software versions running on open ports, which is 
-      essential for vulnerability research. Including the filtered flag (-f) provides a more 
-      complete view of the target's firewall configuration.
+      执行 TCP 端口扫描，同时检索服务横幅并报告被过滤的端口。
+      横幅抓取有助于识别开放端口上运行的具体软件版本，这对漏洞研究至关重要，加入过滤标志（-f）可更完整地了解目标防火墙配置。
     command: "dmitry -p -b -f {{target_host}}"
 
-  - title: dmitry - Port scan with custom TTL
+  - title: dmitry - 自定义 TTL 的端口扫描
     desc: |
-      Perform a TCP port scan while specifying a custom Time-To-Live (TTL) value for the scan packets. 
-      The default TTL is 2 seconds, but increasing it can help maintain accuracy in high-latency 
-      environments. Adjusting this value can prevent scan timeouts when the network connection 
-      to the target is slow or unstable.
+      执行 TCP 端口扫描，同时为扫描数据包指定自定义的生存时间（TTL）值。
+      默认 TTL 为 2 秒，在高延迟环境中增大该值有助于保持准确性，可防止网络连接缓慢或不稳定时扫描超时。
     command: "dmitry -p -t {{ttl_seconds|5}} {{target_host}}"
 
   # === COMPREHENSIVE SCANNING ===
-  - title: dmitry - Full information gathering scan
+  - title: dmitry - 完整信息收集扫描
     desc: |
-      Combine multiple modules to perform a comprehensive information gathering scan on a target host. 
-      This single command includes Whois lookups, Netcraft data, subdomain discovery, and email 
-      searches. It provides a broad overview of the target's digital footprint in a single execution 
-      to save time during the reconnaissance phase.
+      组合多个模块对目标主机执行全面的信息收集扫描。
+      这条命令包含 Whois 查询、Netcraft 数据、子域名发现和电子邮件搜索，可在侦察阶段一次性提供目标数字足迹的广泛概览。
     command: "dmitry -winse {{target_host}}"
 
   # === OUTPUT MANAGEMENT ===
-  - title: dmitry - Save scan results to file
+  - title: dmitry - 保存扫描结果到文件
     desc: |
-      Save the output of the information gathering scan to a text file for later analysis. 
-      If a filename is not explicitly specified, the tool defaults to a naming convention 
-      based on the host name. This is an essential step for documentation and reporting 
-      during a professional penetration testing engagement.
+      将信息收集扫描的输出保存到文本文件以供后续分析。
+      如果未显式指定文件名，工具默认使用基于主机名的命名约定，这是专业渗透测试中记录和报告的关键步骤。
     command: "dmitry -o {{output_file|results.txt}} {{target_host}}"

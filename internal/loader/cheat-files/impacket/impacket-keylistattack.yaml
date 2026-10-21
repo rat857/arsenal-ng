@@ -3,76 +3,68 @@ tags: [pentest, security, active-directory, kerberos, impacket, exploitation, en
 
 actions:
   # === BASIC AUTHENTICATION SCENARIOS ===
-  - title: impacket-keylistattack - basic attack with password
+  - title: impacket-keylistattack - 使用密码的基础攻击
     desc: |
-      Performs the KERB-KEY-LIST-REQ attack using cleartext credentials against a specific KDC.
-      This command is the most direct way to attempt secret dumping when you have a valid set of user credentials.
-      It communicates with the Key Distribution Center to request key lists without needing to execute code on the target machine.
-      Ensure the target user has sufficient privileges to perform the requested actions or list domain objects.
+      使用明文凭据对特定 KDC 执行 KERB-KEY-LIST-REQ 攻击。
+      当你拥有一组有效的用户凭据时，这是尝试导出密钥最直接的方式。
+      它与密钥分发中心通信以请求密钥列表，无需在目标机器上执行代码，请确保目标用户有足够权限执行请求的操作或列出域对象。
     command: "impacket-keylistattack {{domain}}/{{username}}:{{password}}@{{kdc_host}}"
 
-  - title: impacket-keylistattack - authentication using NTLM hashes
+  - title: impacket-keylistattack - 使用 NTLM 哈希认证
     desc: |
-      Executes the attack by authenticating with NTLM hashes instead of a plain password.
-      This is particularly useful in Pass-the-Hash scenarios where cleartext passwords are not available.
-      The tool will use the provided hashes to authenticate to SMB and proceed with the Kerberos key list request.
-      Format the hashes as LMHASH:NTHASH, typically leaving the LM part empty if unknown.
+      使用 NTLM 哈希而非明文密码认证来执行攻击。
+      在明文密码不可用的 Pass-the-Hash 场景中尤为有用。
+      工具会使用提供的哈希向 SMB 认证，然后继续 Kerberos 密钥列表请求。
+      哈希格式为 LMHASH:NTHASH，LM 部分未知时通常留空。
     command: "impacket-keylistattack -hashes {{hash}} {{domain}}/{{username}}@{{kdc_host}}"
 
-  - title: impacket-keylistattack - authentication using Kerberos ticket
+  - title: impacket-keylistattack - 使用 Kerberos 票据认证
     desc: |
-      Uses an existing Kerberos ticket (ccache file) for authentication to perform the attack.
-      This method is more stealthy as it avoids sending NTLM authentication over the network.
-      You must have a valid KRB5CCNAME environment variable pointing to your ticket file before running this.
-      The -no-pass flag ensures the tool does not prompt for a password during the execution.
+      使用现有的 Kerberos 票据（ccache 文件）进行认证以执行攻击。
+      此方法更隐蔽，可避免在网络上发送 NTLM 认证。
+      运行前必须将 KRB5CCNAME 环境变量指向有效的票据文件，-no-pass 标志确保执行期间工具不提示密码。
     command: "impacket-keylistattack -k -no-pass {{domain}}/{{username}}@{{kdc_host}}"
 
   # === ENUMERATION & TARGETING ===
-  - title: impacket-keylistattack - attack all domain users
+  - title: impacket-keylistattack - 攻击所有域用户
     desc: |
-      Attempts to run the KERB-KEY-LIST-REQ attack against every user found in the domain.
-      This is a highly aggressive and noisy operation that is likely to be flagged by EDR or SIEM solutions.
-      It may also lead to a high volume of TGS requests, which could cause the KDC to reject subsequent requests.
-      Use this only when a full dump is required and noise is not a primary concern.
+      尝试对域中发现的每个用户运行 KERB-KEY-LIST-REQ 攻击。
+      这是极具侵略性且噪声很大的操作，很可能被 EDR 或 SIEM 解决方案标记。
+      还可能产生大量 TGS 请求，导致 KDC 拒绝后续请求；仅在需要完整导出且不担心噪声时使用。
     command: "impacket-keylistattack -full {{domain}}/{{username}}:{{password}}@{{kdc_host}}"
 
-  - title: impacket-keylistattack - target specific users from a file
+  - title: impacket-keylistattack - 从文件定位特定用户
     desc: |
-      Reads a list of target usernames from a text file and performs the attack only on those accounts.
-      This approach is much more surgical than a full scan and helps stay under the radar of security monitoring.
-      When using the LIST option, you must explicitly provide the domain and KDC parameters.
-      The input file should contain one username per line.
+      从文本文件读取目标用户名列表，仅对这些账户执行攻击。
+      这种方法比全量扫描更具针对性，有助于避开安全监控的视线。
+      使用 LIST 选项时必须显式提供 domain 和 KDC 参数，输入文件每行应包含一个用户名。
     command: "impacket-keylistattack -tf {{user_list_file}} -domain {{domain}} -kdc {{kdc_host}} {{domain}}/{{username}}:{{password}}@{{kdc_host}}"
 
-  - title: impacket-keylistattack - target a single specific user
+  - title: impacket-keylistattack - 定位单个特定用户
     desc: |
-      Focuses the attack on one specific username provided via the -t parameter.
-      This is useful when you have identified a high-value target and want to retrieve their secrets specifically.
-      Like other LIST options, this requires the domain and KDC hostname to be specified separately.
-      It minimizes network traffic and reduces the risk of account lockouts or detection.
+      通过 -t 参数将攻击聚焦于一个特定用户名。
+      当你已识别出高价值目标并想专门获取其密钥时很有用。
+      与其他 LIST 选项一样，需要单独指定 domain 和 KDC 主机名，可最大限度减少网络流量并降低账户锁定或被检测的风险。
     command: "impacket-keylistattack -t {{target_username}} -domain {{domain}} -kdc {{kdc_host}} {{domain}}/{{username}}:{{password}}@{{kdc_host}}"
 
   # === SPECIALIZED CONFIGURATIONS ===
-  - title: impacket-keylistattack - RODC specific attack
+  - title: impacket-keylistattack - RODC 专用攻击
     desc: |
-      Performs the attack by leveraging Read-Only Domain Controller (RODC) credentials.
-      You must provide the RODC account number and the corresponding AES key for the krbtgt account.
-      This is specifically designed for environments where RODCs are deployed and you have compromised the RODC keys.
-      The RODC key is essential for decrypting the key list responses provided by the KDC.
+      利用只读域控制器（RODC）凭据执行攻击。
+      必须提供 RODC 账户编号以及 krbtgt 账户对应的 AES 密钥。
+      专为已部署 RODC 且你已攻陷 RODC 密钥的环境设计，RODC 密钥对于解密 KDC 提供的密钥列表响应至关重要。
     command: "impacket-keylistattack -rodcNo {{rodc_number}} -rodcKey {{rodc_aes_key}} {{domain}}/{{username}}:{{password}}@{{kdc_host}}"
 
-  - title: impacket-keylistattack - specify target IP address
+  - title: impacket-keylistattack - 指定目标 IP 地址
     desc: |
-      Forces the connection to a specific target IP address, bypassing DNS resolution for the NetBIOS name.
-      This is helpful when the target KDC hostname cannot be resolved through standard means or in complex network segments.
-      It ensures the packets are routed to the correct host while still using the appropriate domain context.
-      Use this when you encounter 'Host not found' errors despite the target being reachable via IP.
+      强制连接到特定的目标 IP 地址，绕过 NetBIOS 名称的 DNS 解析。
+      当目标 KDC 主机名无法通过标准方式解析或处于复杂网段时很有帮助。
+      它确保数据包路由到正确的主机，同时仍使用适当的域上下文，当目标 IP 可达却报“Host not found”时使用。
     command: "impacket-keylistattack -target-ip {{target_ip}} {{domain}}/{{username}}:{{password}}@{{kdc_host}}"
 
-  - title: impacket-keylistattack - debug and timestamped output
+  - title: impacket-keylistattack - 调试与带时间戳的输出
     desc: |
-      Runs the attack with full debug output and adds timestamps to every log entry.
-      This is crucial for troubleshooting connection issues or understanding why an attack failed (e.g., KDC errors).
-      The timestamps help correlate the tool's actions with logs on the domain controller or other monitoring tools.
-      Debug mode reveals the underlying Kerberos structures and responses being processed.
+      以完整调试输出运行攻击，并为每条日志添加时间戳。
+      对于排查连接问题或理解攻击失败原因（如 KDC 错误）至关重要。
+      时间戳有助于将工具行为与域控制器或其他监控工具上的日志关联，调试模式会显示所处理的底层 Kerberos 结构和响应。
     command: "impacket-keylistattack -debug -ts {{domain}}/{{username}}:{{password}}@{{kdc_host}}"

@@ -4,87 +4,76 @@ tags: [recon, scanner, security, pentest, osint, enumeration, shodan, censys]
 actions:
 # === BASIC SEARCH OPERATIONS ===
 
- - title: uncover - basic query search
+ - title: uncover - 基础查询搜索
    desc: |
-     Performs a basic search using the default engine (Shodan). This is the primary method for finding assets matching a specific dork or keyword across the internet. 
-     The tool requires valid API keys for the engines configured in its provider configuration file. 
-     By default, it returns results in 'ip:port' format.
+     使用默认引擎（Shodan）执行基础搜索。这是查找互联网上与特定 dork 或关键字匹配的资产的主要方法。
+     该工具需要在其提供方配置文件中配置的引擎的有效 API key。默认情况下，它以 ip:port 格式返回结果。
    command: "uncover -q {{query}}"
 
- - title: uncover - search with specific engines
+ - title: uncover - 使用特定引擎搜索
    desc: |
-     Queries specific search engines or a comma-separated list of engines using the engine flag. This allows you to aggregate data from multiple sources like Censys, FOFA, and Quake simultaneously. 
-     Useful when one engine might have indexed a target that others missed.
-     Common engine values include shodan, censys, fofa, zoomeye, and quake.
+     使用 engine 参数查询特定搜索引擎或逗号分隔的引擎列表。这使你能够同时聚合来自 Censys、FOFA 和 Quake 等多个来源的数据。
+     当某个引擎可能收录了其他引擎遗漏的目标时很有用。常见引擎值包括 shodan、censys、fofa、zoomeye 和 quake。
    command: "uncover -q {{query}} -e {{engine|shodan,censys,fofa}}"
 
- - title: uncover - limit result count
+ - title: uncover - 限制结果数量
    desc: |
-     Restricts the number of results returned from the search engine APIs. This is crucial for managing API credit usage and focusing on the most relevant targets. 
-     The default limit is 100, but it can be increased for broad reconnaissance or decreased for quick checks. 
-     Be mindful that high limits may consume significant API credits depending on the provider.
+     限制搜索引擎 API 返回的结果数量。这对于管理 API 额度使用并专注于最相关的目标至关重要。默认限制为 100，但可以增加以进行广泛侦察，或减少以进行快速检查。
+     注意高限制可能消耗大量 API 额度，具体取决于提供方。
    command: "uncover -q {{query}} -l {{limit|200}}"
 
 # === ADVANCED DISCOVERY ===
 
- - title: uncover - use awesome search queries
+ - title: uncover - 使用精选搜索查询
    desc: |
-     Utilizes the "Awesome Search Queries" feature to discover exposed assets based on technology names. This abstraction layer allows you to search for 'jira' or 'grafana' without knowing the specific dorks for each engine. 
-     It automatically translates the keyword into the most effective query for the selected engines. 
-     This is highly effective for rapid technology fingerprinting during initial reconnaissance.
+     利用“Awesome Search Queries”功能，基于技术名称发现暴露的资产。此抽象层使你可以搜索 jira 或 grafana，而无需了解每个引擎的具体 dork。
+     它会自动将关键字转换为所选引擎最有效的查询。这对于初始侦察期间的快速技术指纹识别非常有效。
    command: "uncover -asq {{technology_name|jenkins}}"
 
- - title: uncover - engine specific query flags
+ - title: uncover - 引擎特定查询参数
    desc: |
-     Provides a way to pass engine-specific query strings directly using dedicated flags. This is useful when you want to utilize the native syntax of a specific engine like Shodan or ZoomEye directly. 
-     Each engine has its own flag (e.g., -s for Shodan, -ff for FOFA, -cs for Censys). 
-     This bypasses the general query flag for more granular control over engine-specific features.
+     提供一种使用专用参数直接传递引擎特定查询字符串的方式。当你想直接使用 Shodan 或 ZoomEye 等特定引擎的原生语法时很有用。
+     每个引擎都有自己的参数（如 Shodan 用 -s、FOFA 用 -ff、Censys 用 -cs）。这绕过通用查询参数，可对引擎特定功能进行更细粒度控制。
    command: "uncover -s {{shodan_query|product:Apache}}"
 
 # === OUTPUT AND FORMATTING ===
 
- - title: uncover - filter output fields
+ - title: uncover - 过滤输出字段
    desc: |
-     Customizes the output to display only specific pieces of information for each result. Supported fields include 'ip', 'port', and 'host'. 
-     Filtering for just 'ip' or 'host' is extremely useful when piping the output into other automation tools like httpx or nuclei. 
-     Multiple fields can be combined using commas if needed.
+     自定义输出，仅显示每个结果的特定信息。支持的字段包括 ip、port 和 host。
+     当将输出管道传递给 httpx 或 nuclei 等其他自动化工具时，仅过滤 ip 或 host 极为有用。如有需要可以使用逗号组合多个字段。
    command: "uncover -q {{query}} -f {{field|ip}}"
 
- - title: uncover - save results to file
+ - title: uncover - 将结果保存到文件
    desc: |
-     Writes the findings to a specified output file for later analysis. This prevents losing results in the terminal buffer and facilitates documentation. 
-     It can be combined with other flags to save either the default text output or structured JSON data. 
-     Standard practice is to save results to a text file before starting vulnerability scanning.
+     将发现写入指定输出文件，供后续分析。这可以防止结果在终端缓冲区中丢失，并便于记录。
+     它可以与其他参数组合，保存默认文本输出或结构化 JSON 数据。标准做法是在开始漏洞扫描前将结果保存到文本文件。
    command: "uncover -q {{query}} -o {{output_file|results.txt}}"
 
- - title: uncover - export as JSON
+ - title: uncover - 导出为 JSON
    desc: |
-     Outputs results in JSONL (JSON Lines) format, which provides more metadata than the standard text output. This format includes additional details provided by the API, such as organization, ISP, and full banner information. 
-     JSON output is ideal for programmatic processing, custom scripts, or importing into databases. 
-     Use this when you need the most comprehensive data possible for each asset.
+     以 JSONL（JSON Lines）格式输出结果，该格式提供比标准文本输出更多的元数据。此格式包含 API 提供的额外详情，如组织、ISP 和完整横幅信息。
+     JSON 输出非常适合程序化处理、自定义脚本或导入数据库。当你需要每个资产最全面的数据时使用。
    command: "uncover -q {{query}} -j -o {{output_file|results.json}}"
 
 # === NETWORK AND PERFORMANCE ===
 
- - title: uncover - rate limit and timeout
+ - title: uncover - 限速和超时
    desc: |
-     Configures the request rate and timeout settings to prevent being blocked or timing out on slow connections. Setting a rate limit per second or minute helps in respecting API provider limitations and avoiding account suspension. 
-     The timeout flag ensures the tool doesn't hang indefinitely on unresponsive APIs. 
-     Adjust these settings based on your network conditions and the stability of the API provider.
+     配置请求速率和超时设置，以防止在慢速连接上被拦截或超时。设置每秒或每分钟的速率限制有助于遵守 API 提供方限制并避免账户被暂停。
+     timeout 参数确保工具不会在无响应的 API 上无限挂起。根据你的网络状况和 API 提供方的稳定性调整这些设置。
    command: "uncover -q {{query}} -rl {{rate_limit|10}} -timeout {{timeout|60}}"
 
- - title: uncover - proxy configuration
+ - title: uncover - 代理配置
    desc: |
-     Routes all outgoing API requests through a specified HTTP proxy. This is useful for bypassing regional restrictions, masking your source IP, or auditing traffic through tools like Burp Suite. 
-     Ensure the proxy URL is correctly formatted (e.g., http://127.0.0.1:8080). 
-     This is a vital feature for maintaining operational security during sensitive engagements.
+     将所有出站 API 请求路由到指定的 HTTP 代理。这对于绕过区域限制、掩盖源 IP 或通过 Burp Suite 等工具审计流量很有用。
+     确保代理 URL 格式正确（如 http://127.0.0.1:8080）。这是敏感任务期间维持操作安全的重要功能。
    command: "uncover -q {{query}} -proxy {{proxy_url}}"
 
 # === PIPING AND INPUT ===
 
- - title: uncover - process queries from stdin
+ - title: uncover - 从 stdin 处理查询
    desc: |
-     Reads queries from standard input (stdin), allowing for seamless integration with other command-line tools. You can pipe a list of dorks from a file or another command directly into uncover for batch processing. 
-     This enables powerful workflows, such as generating dorks dynamically and feeding them into the discovery engine. 
-     It is the most efficient way to handle large-scale reconnaissance tasks.
+     从标准输入（stdin）读取查询，实现与其他命令行工具的无缝集成。你可以将文件或另一命令中的 dork 列表直接管道传入 uncover 进行批量处理。
+     这实现了强大的工作流，例如动态生成 dork 并送入发现引擎。这是处理大规模侦察任务最高效的方式。
    command: "cat {{query_list_file}} | uncover"

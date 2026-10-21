@@ -3,76 +3,76 @@ tags: [network, security, forensics, pentest, sniffer, analysis, credentials, pa
 
 actions:
   # === FILE ANALYSIS ===
-  - title: brutesharkcli - analyze specific pcap file
+  - title: brutesharkcli - 分析特定 pcap 文件
     desc: |
-      Analyzes a single or multiple specific PCAP files to extract metadata and network information. 
-      This is the standard approach for offline forensic analysis of previously captured network traffic. 
-      Multiple files can be provided by separating them with a comma. 
-      The results will be saved to the specified output directory for further review.
+      分析一个或多个特定的 PCAP 文件以提取元数据与网络信息。
+      这是对先前捕获的网络流量进行离线取证分析的标准方法。
+      可用逗号分隔来提供多个文件。
+      结果将保存到指定的输出目录以供进一步审查。
     command: "brutesharkcli -i {{input_file}} -o {{output_dir|./results}}"
 
-  - title: brutesharkcli - analyze directory of pcap files
+  - title: brutesharkcli - 分析 pcap 文件目录
     desc: |
-      Processes all network capture files found within a specified directory recursively. 
-      This is highly efficient when dealing with large datasets or multiple capture segments from long-duration monitoring. 
-      It automates the ingestion process instead of requiring individual file paths. 
-      Ensure the directory contains valid capture formats like .pcap or .pcapng.
+      递归处理指定目录中找到的所有网络捕获文件。
+      在处理大型数据集或长时间监控产生的多个捕获分段时非常高效。
+      它自动完成导入过程，而无需逐个提供文件路径。
+      请确保目录中包含 .pcap 或 .pcapng 等有效捕获格式。
     command: "brutesharkcli -d {{input_dir}} -o {{output_dir|./results}}"
 
   # === MODULE SPECIFIC ANALYSIS ===
-  - title: brutesharkcli - extract credentials from traffic
+  - title: brutesharkcli - 从流量中提取凭据
     desc: |
-      Uses the Credentials module to specifically target and extract usernames and passwords from the traffic. 
-      This module analyzes protocols such as HTTP, FTP, Telnet, and SMTP that may transmit sensitive data in plain text or weak encryption. 
-      It is an essential tool for post-exploitation or credential harvesting during a penetration test. 
-      The extracted data is organized by protocol and source/destination in the output folder.
+      使用 Credentials 模块专门针对并提取流量中的用户名与密码。
+      该模块分析 HTTP、FTP、Telnet 与 SMTP 等可能以明文或弱加密传输敏感数据的协议。
+      它是渗透测试期间后渗透或凭据收集的重要工具。
+      提取的数据在输出文件夹中按协议与源/目的地址组织。
     command: "brutesharkcli -i {{input_file}} -m Credentials -o {{output_dir|./credentials_output}}"
 
-  - title: brutesharkcli - build network map
+  - title: brutesharkcli - 构建网络地图
     desc: |
-      Analyzes traffic to identify all communicating hosts and their relationships to generate a network map. 
-      This helps the user understand the network topology, discover hidden segments, and identify unauthorized devices. 
-      It visualizes the flow of data between different IP addresses and MAC addresses found in the capture. 
-      This is particularly useful for initial reconnaissance of an unfamiliar network environment.
+      分析流量以识别所有通信主机及其关系，从而生成网络地图。
+      这帮助用户理解网络拓扑、发现隐藏网段并识别未授权设备。
+      它可视化捕获中发现的不同 IP 地址与 MAC 地址之间的数据流。
+      这对于陌生网络环境的初始侦察特别有用。
     command: "brutesharkcli -i {{input_file}} -m NetworkMap -o {{output_dir|./map_output}}"
 
-  - title: brutesharkcli - extract files from traffic
+  - title: brutesharkcli - 从流量中提取文件
     desc: |
-      Utilizes the FileExtracting module to reconstruct and save files transferred over the network protocols. 
-      It can carve files out of protocols like HTTP or SMB, allowing investigators to see exactly what data was moved. 
-      This is critical for malware analysis to see what payloads were downloaded or for investigating data exfiltration. 
-      Extracted files are saved into a specific subfolder within the output directory.
+      利用 FileExtracting 模块重建并保存通过网络协议传输的文件。
+      它可以从 HTTP 或 SMB 等协议中切分文件，使调查人员看到究竟有哪些数据被传输。
+      这对于恶意软件分析（查看下载的载荷）或调查数据外泄至关重要。
+      提取的文件保存到输出目录内的特定子文件夹中。
     command: "brutesharkcli -i {{input_file}} -m FileExtracting -o {{output_dir|./extracted_files}}"
 
-  - title: brutesharkcli - dns and voip analysis
+  - title: brutesharkcli - DNS 与 VoIP 分析
     desc: |
-      Focuses the analysis on DNS queries and VoIP (Voice over IP) traffic patterns. 
-      The DNS module helps identify suspicious domain lookups or Command and Control (C2) communication patterns. 
-      The VoIP module can extract call metadata and signaling information, which is useful for auditing telecommunication security. 
-      Both modules can be run simultaneously by separating them with a comma in the command line.
+      将分析聚焦于 DNS 查询与 VoIP（IP 语音）流量模式。
+      DNS 模块帮助识别可疑域名查询或命令与控制（C2）通信模式。
+      VoIP 模块可提取呼叫元数据与信令信息，对审计电信安全很有用。
+      两个模块可通过在命令行中用逗号分隔来同时运行。
     command: "brutesharkcli -i {{input_file}} -m DNS,Voip -o {{output_dir|./dns_voip_output}}"
 
   # === LIVE CAPTURE ===
-  - title: brutesharkcli - live network capture and analysis
+  - title: brutesharkcli - 实时网络捕获与分析
     desc: |
-      Starts a live capture session on the default network interface and processes packets in real-time. 
-      This mode is ideal for active monitoring of network threats or live troubleshooting of connectivity issues. 
-      Note that running live captures typically requires superuser (root) or administrator privileges to access the network stack. 
-      The tool will continuously update the output directory as new data is analyzed.
+      在默认网络接口上启动实时捕获会话，并实时处理数据包。
+      该模式非常适合主动监控网络威胁或实时排查连通性问题。
+      注意运行实时捕获通常需要超级用户（root）或管理员权限才能访问网络栈。
+      随着新数据被分析，工具会持续更新输出目录。
     command: "brutesharkcli -l -o {{output_dir|./live_results}}"
 
-  - title: brutesharkcli - live capture in promiscuous mode
+  - title: brutesharkcli - 混杂模式实时捕获
     desc: |
-      Enables promiscuous mode during a live capture session to intercept all traffic on the network segment. 
-      Normally, an interface only processes packets directed to its own MAC address; this mode bypasses that restriction. 
-      This is necessary for comprehensive sniffing in environments where a network tap or port mirroring is used. 
-      Elevated privileges are mandatory for this operation on most operating systems.
+      在实时捕获会话期间启用混杂模式，以拦截网段上的所有流量。
+      通常接口只处理发往自身 MAC 地址的数据包；此模式绕过该限制。
+      在使用网络 TAP 或端口镜像的环境中，这是全面嗅探所必需的。
+      在大多数操作系统上，此操作必须具有提升权限。
     command: "brutesharkcli -l -p -o {{output_dir|./live_promisc_results}}"
 
-  - title: brutesharkcli - filtered live capture (BPF)
+  - title: brutesharkcli - 过滤实时捕获（BPF）
     desc: |
-      Applies a Berkeley Packet Filter (BPF) to a live capture session to focus only on specific traffic. 
-      Using filters like 'tcp port 80' or 'host 192.168.1.1' significantly reduces the processing overhead and noise. 
-      This allows the analyst to target specific protocols or suspicious hosts without capturing irrelevant background traffic. 
-      The filter string must follow standard BPF syntax used by tools like Tcpdump or Wireshark.
+      将 Berkeley Packet Filter（BPF）应用到实时捕获会话，仅聚焦特定流量。
+      使用 'tcp port 80' 或 'host 192.168.1.1' 等过滤器可显著降低处理开销与噪音。
+      这使分析人员能针对特定协议或可疑主机，而无需捕获无关的背景流量。
+      过滤器字符串必须遵循 Tcpdump 或 Wireshark 等工具使用的标准 BPF 语法。
     command: "brutesharkcli -l -f \"{{bpf_filter|tcp port 80}}\" -o {{output_dir|./filtered_results}}"

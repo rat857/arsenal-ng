@@ -4,85 +4,85 @@ tags: [pentest, security, impacket, terminal-services, rdp, enumeration, exploit
 actions:
   # === ENUMERATION ACTIONS ===
 
-  - title: impacket-tstool - query session information
+  - title: impacket-tstool - 查询会话信息
     desc: |
-      Displays detailed information about Remote Desktop Services sessions on the target host.
-      This command is essential for identifying active, disconnected, or idle users and their associated session IDs.
-      It helps a pentester determine which sessions are vulnerable to hijacking or which users are currently active on the system.
+      显示目标主机上远程桌面服务会话的详细信息。
+      此命令对于识别活动、已断开或空闲的用户及其关联会话 ID 至关重要。
+      它帮助渗透测试人员确定哪些会话容易受到劫持，或哪些用户当前在系统上处于活动状态。
     command: "impacket-tstool {{domain/username:password|administrator}}@{{target}} qwinsta"
 
-  - title: impacket-tstool - list remote processes
+  - title: impacket-tstool - 列出远程进程
     desc: |
-      Retrieves a comprehensive list of all processes currently running on the remote Windows system.
-      The output includes the process name and the Process ID (PID), which is required for further actions like killing a process.
-      This is useful for identifying security agents, monitoring software, or specific applications running under different user contexts.
+      检索远程 Windows 系统上当前运行的所有进程的完整列表。
+      输出包括进程名称和进程 ID（PID），这是终止进程等后续操作所必需的。
+      它有助于识别安全代理、监控软件或在不同用户上下文中运行的特定应用程序。
     command: "impacket-tstool {{domain/username:password|administrator}}@{{target}} tasklist"
 
   # === SESSION MANAGEMENT ===
 
-  - title: impacket-tstool - attach to user session (Hijack)
+  - title: impacket-tstool - 附加到用户会话（劫持）
     desc: |
-      Attaches a user session to another remote desktop session on the target server.
-      This is often used in RDP hijacking scenarios to take over an existing session without knowing the user's password.
-      Note that this action typically requires high privileges (System or Admin) and can be used to pivot through different user desktops.
+      将用户会话附加到目标服务器上的另一个远程桌面会话。
+      这常用于 RDP 劫持场景，在不知道用户密码的情况下接管现有会话。
+      请注意，此操作通常需要高权限（System 或 Admin），并可用于在不同用户桌面之间进行跳转。
     command: "impacket-tstool {{domain/username:password|administrator}}@{{target}} tscon {{session_id}} --dest {{dest_session_name}}"
 
-  - title: impacket-tstool - disconnect a session
+  - title: impacket-tstool - 断开会话
     desc: |
-      Disconnects a specific Remote Desktop Services session without logging the user off.
-      The user's applications remain running, but their network connection to the desktop is severed.
-      This can be used to force a user to re-authenticate or to clear up session slots on a busy server.
+      断开特定远程桌面服务会话，但不注销用户。
+      用户的应用程序继续运行，但其与桌面的网络连接被切断。
+      这可用于强制用户重新身份验证，或清理繁忙服务器上的会话槽。
     command: "impacket-tstool {{domain/username:password|administrator}}@{{target}} tsdiscon {{session_id}}"
 
-  - title: impacket-tstool - force logoff session
+  - title: impacket-tstool - 强制注销会话
     desc: |
-      Forces a specific session to sign out of the Remote Desktop Services environment.
-      Unlike disconnection, this action terminates all running processes within that specific user session.
-      It is a destructive action that may result in data loss for the target user if they have unsaved work.
+      强制特定会话退出远程桌面服务环境。
+      与断开连接不同，此操作会终止该特定用户会话内所有正在运行的进程。
+      这是一个破坏性操作，如果目标用户有未保存的工作，可能会导致数据丢失。
     command: "impacket-tstool {{domain/username:password|administrator}}@{{target}} logoff {{session_id}}"
 
-  - title: impacket-tstool - send pop-up message
+  - title: impacket-tstool - 发送弹出消息
     desc: |
-      Sends a graphical message box to a specific user session or all sessions on the target.
-      This is often used for social engineering or to provide official-looking warnings to logged-in users.
-      The message appears as a standard Windows dialog box that the user must acknowledge.
+      向目标上的特定用户会话或所有会话发送图形消息框。
+      这常用于社会工程，或向已登录用户提供看似官方的警告。
+      消息以标准 Windows 对话框形式出现，用户必须确认。
     command: "impacket-tstool {{domain/username:password|administrator}}@{{target}} msg \"{{message|System maintenance starting soon.}}\""
 
   # === SYSTEM CONTROL ===
 
-  - title: impacket-tstool - terminate remote process
+  - title: impacket-tstool - 终止远程进程
     desc: |
-      Terminates a running task on the remote system using its Process ID (PID) or image name.
-      This can be used to disable security software, stop stuck services, or disrupt specific user activities.
-      Be cautious as killing system-critical processes can lead to OS instability or immediate reboots.
+      使用其进程 ID（PID）或映像名称终止远程系统上正在运行的任务。
+      这可用于禁用安全软件、停止卡住的服务或中断特定用户活动。
+      请谨慎，因为终止系统关键进程可能导致操作系统不稳定或立即重启。
     command: "impacket-tstool {{domain/username:password|administrator}}@{{target}} taskkill /PID {{pid}}"
 
-  - title: impacket-tstool - remote system shutdown
+  - title: impacket-tstool - 远程系统关机
     desc: |
-      Initiates a remote shutdown of the target machine, affecting all logged-in users and sessions.
-      This is a high-impact command that completely powers down the remote host.
-      Use this only when necessary for post-exploitation or as part of a controlled environment teardown.
+      发起目标机器的远程关机，影响所有已登录用户和会话。
+      这是一个高影响命令，会完全关闭远程主机的电源。
+      仅在必要时用于后利用或作为受控环境拆除的一部分时使用。
     command: "impacket-tstool {{domain/username:password|administrator}}@{{target}} shutdown"
 
   # === AUTHENTICATION & CONNECTION OPTIONS ===
 
-  - title: impacket-tstool - authenticate with NTLM hashes
+  - title: impacket-tstool - 使用 NTLM 哈希进行身份验证
     desc: |
-      Performs Terminal Service actions using NTLM hashes instead of a plaintext password.
-      This enables Pass-the-Hash (PtH) attacks, which are crucial when only the NTLM hash has been recovered from memory.
-      The hash format should be LMHASH:NTHASH; if the LM hash is unknown, use the standard empty LM value.
+      使用 NTLM 哈希而非明文密码执行终端服务操作。
+      这实现了传递哈希（PtH）攻击，当只从内存中恢复出 NTLM 哈希时至关重要。
+      哈希格式应为 LMHASH:NTHASH；如果 LM 哈希未知，请使用标准的空 LM 值。
     command: "impacket-tstool -hashes {{hash}} {{domain/username|administrator}}@{{target}} {{action|qwinsta}}"
 
-  - title: impacket-tstool - authenticate with Kerberos
+  - title: impacket-tstool - 使用 Kerberos 进行身份验证
     desc: |
-      Uses Kerberos authentication instead of NTLM to perform tasks on the remote host.
-      This requires a valid Kerberos ticket (TGT/TGS) available in the environment (KRB5CCNAME).
-      Using the -k flag is beneficial in environments where NTLM is disabled or to evade NTLM-specific detection mechanisms.
+      使用 Kerberos 身份验证而非 NTLM 在远程主机上执行任务。
+      这要求环境中存在有效的 Kerberos 票据（TGT/TGS，即 KRB5CCNAME）。
+      在禁用 NTLM 的环境中使用 -k 标志很有益，或用于规避针对 NTLM 的检测机制。
     command: "impacket-tstool -k -no-pass {{domain/username|administrator}}@{{target}} -dc-ip {{dc_ip}} {{action|qwinsta}}"
 
-  - title: impacket-tstool - specify custom target IP and port
+  - title: impacket-tstool - 指定自定义目标 IP 和端口
     desc: |
-      Connects to the Terminal Services management interface using a specific IP address and SMB port.
-      This is useful when the target's NetBIOS name does not resolve or when the SMB service is running on a non-standard port.
-      Providing the -target-ip ensures that the tool connects to the correct physical machine regardless of DNS settings.
+      使用特定 IP 地址和 SMB 端口连接终端服务管理接口。
+      当目标的 NetBIOS 名称无法解析，或 SMB 服务运行在非标准端口时很有用。
+      提供 -target-ip 可确保无论 DNS 设置如何，工具都连接到正确的物理机器。
     command: "impacket-tstool -target-ip {{target_ip}} -port {{port|445}} {{domain/username:password|administrator}}@{{target_name}} {{action|qwinsta}}"

@@ -4,72 +4,48 @@ tags: [windows, security, pentest, decryption, dpapi, impacket, credential-harve
 actions:
 # === DOMAIN BACKUP KEYS ===
 
- - title: impacket-dpapi - export domain backup keys
+ - title: impacket-dpapi - 导出域备份密钥
    desc: |
-     Retrieves the Domain Backup Key from a Domain Controller via the LSA (Local Security Authority) RPC interface.
-     This key is the "holy grail" for DPAPI decryption within an AD environment as it can decrypt any user's MasterKey.
-     The output is typically saved as a .pvk file which can then be used to decrypt MasterKeys offline without knowing user passwords.
-     This action requires Domain Admin privileges or similar rights to communicate with the Domain Controller's LSA.
+     通过 LSA（本地安全机构）RPC 接口从域控制器检索域备份密钥。该密钥是 AD 环境中 DPAPI 解密的“圣杯”，因为它可以解密任何用户的 MasterKey。输出通常保存为 .pvk 文件，之后可用于在不知道用户密码的情况下离线解密 MasterKey。此操作需要域管理员权限或类似权限才能与域控制器的 LSA 通信。
    command: "impacket-dpapi backupkeys --action export --user {{domain_admin}} --password {{password}} --domain {{domain}} --dc-ip {{dc_ip}}"
 
 # === MASTERKEY DECRYPTION ===
 
- - title: impacket-dpapi - decrypt masterkey with user password
+ - title: impacket-dpapi - 使用用户密码解密 MasterKey
    desc: |
-     Decrypts a DPAPI MasterKey file using the user's cleartext password and their Security Identifier (SID).
-     MasterKey files are typically located in the user's profile directory under AppData\Roaming\Microsoft\Protect\(SID).
-     Successful decryption yields the 'key' needed to unlock specific credentials, browser data, or WiFi passwords.
-     This is the most common method used when you have successfully phished or recovered a user's password.
+     使用用户的明文密码及其安全标识符（SID）解密 DPAPI MasterKey 文件。MasterKey 文件通常位于用户配置文件目录下的 AppData\Roaming\Microsoft\Protect\(SID)。成功解密会得到解锁特定凭据、浏览器数据或 WiFi 密码所需的 key。当你成功钓鱼或恢复了用户密码时，这是最常用的方法。
    command: "impacket-dpapi masterkey -file {{masterkey_path}} -sid {{user_sid}} -password {{password}}"
 
- - title: impacket-dpapi - decrypt masterkey with NT hash
+ - title: impacket-dpapi - 使用 NT 哈希解密 MasterKey
    desc: |
-     Decrypts a DPAPI MasterKey file using the user's NT hash instead of a cleartext password.
-     This is extremely useful in Pass-the-Hash scenarios or when you have extracted hashes from a SAM or NTDS.dit file.
-     You must still provide the user's SID to correctly derive the decryption key for the MasterKey file.
-     Once decrypted, the tool will display the GUID and the decrypted key for subsequent use.
+     使用用户的 NT 哈希而非明文密码解密 DPAPI MasterKey 文件。在 Pass-the-Hash 场景中，或当你从 SAM 或 NTDS.dit 文件提取了哈希时，这非常有用。你仍必须提供用户的 SID 以正确派生 MasterKey 文件的解密密钥。解密后，工具会显示 GUID 和解密后的密钥以供后续使用。
    command: "impacket-dpapi masterkey -file {{masterkey_path}} -sid {{user_sid}} -hashes :{{nt_hash}}"
 
- - title: impacket-dpapi - decrypt masterkey with domain backup key (PVK)
+ - title: impacket-dpapi - 使用域备份密钥（PVK）解密 MasterKey
    desc: |
-     Uses a previously exported Domain Backup Key (.pvk file) to decrypt a user's MasterKey.
-     This method is powerful because it does not require the user's password or NT hash to be known.
-     It is the preferred method for forensic investigators or red teamers who have compromised the Domain Controller.
-     The MasterKey is the intermediate key required to decrypt the actual secrets stored in Credentials or Vaults.
+     使用先前导出的域备份密钥（.pvk 文件）解密用户的 MasterKey。这种方法很强大，因为它不需要知道用户的密码或 NT 哈希。这是已入侵域控制器的取证调查人员或红队成员的首选方法。MasterKey 是解密存储在凭据或保险库中的实际机密所需的中间密钥。
    command: "impacket-dpapi masterkey -file {{masterkey_path}} -pvk {{pvk_file}}"
 
 # === DECRYPTING SECRETS (CREDENTIALS & VAULTS) ===
 
- - title: impacket-dpapi - decrypt credential file
+ - title: impacket-dpapi - 解密凭据文件
    desc: |
-     Decrypts a Windows Credential file using a previously decrypted MasterKey.
-     Credential files are found in %APPDATA%\Microsoft\Credentials and often contain sensitive passwords for mapped drives or legacy apps.
-     You must provide the decrypted MasterKey (the hexadecimal string) obtained from the 'masterkey' command.
-     The tool will output the decrypted contents, which usually include the target resource, username, and password.
+     使用先前解密的 MasterKey 解密 Windows 凭据文件。凭据文件位于 %APPDATA%\Microsoft\Credentials，通常包含映射驱动器或遗留应用的敏感密码。你必须提供从 masterkey 命令获得的已解密 MasterKey（十六进制字符串）。工具会输出解密后的内容，通常包括目标资源、用户名和密码。
    command: "impacket-dpapi credential -file {{cred_file_path}} -masterkey {{decrypted_masterkey}}"
 
- - title: impacket-dpapi - decrypt vault credentials
+ - title: impacket-dpapi - 解密保险库凭据
    desc: |
-     Unlocks Windows Vault files which are used to store web credentials (IE/Edge), Windows passwords, and App secrets.
-     Vault files are usually located in %LOCALAPPDATA%\Microsoft\Vault or %APPDATA%\Microsoft\Vault.
-     This command requires the decrypted MasterKey associated with the specific vault entry to reveal the plaintext data.
-     It is essential for recovering saved browser passwords or other system-level cached credentials.
+     解锁用于存储 Web 凭据（IE/Edge）、Windows 密码和应用机密的 Windows 保险库文件。保险库文件通常位于 %LOCALAPPDATA%\Microsoft\Vault 或 %APPDATA%\Microsoft\Vault。此命令需要与特定保险库条目关联的已解密 MasterKey 才能揭示明文数据。对于恢复已保存的浏览器密码或其他系统级缓存凭据至关重要。
    command: "impacket-dpapi vault -file {{vault_file_path}} -masterkey {{decrypted_masterkey}}"
 
 # === ADVANCED UTILITIES ===
 
- - title: impacket-dpapi - process credential history (credhist)
+ - title: impacket-dpapi - 处理凭据历史（credhist）
    desc: |
-     Decrypts the CREDHIST file which tracks the history of a user's password changes.
-     This is useful when a MasterKey was encrypted with an older password that is no longer the current one.
-     By processing the CREDHIST file, you can link old passwords to the decryption process of older DPAPI blobs.
-     Requires the user's SID and a valid password (current or historical) to begin the chain of decryption.
+     解密追踪用户密码更改历史的 CREDHIST 文件。当 MasterKey 是用不再是当前的旧密码加密时非常有用。通过处理 CREDHIST 文件，你可以将旧密码链接到较旧 DPAPI 数据块的解密过程。需要用户的 SID 和有效密码（当前或历史）来开始解密链。
    command: "impacket-dpapi credhist -file {{credhist_path}} -sid {{user_sid}} -password {{password}}"
 
- - title: impacket-dpapi - unprotect generic DPAPI blob
+ - title: impacket-dpapi - 解密通用 DPAPI 数据块
    desc: |
-     Provides a wrapper for the CryptUnprotectData functionality to decrypt generic DPAPI-protected blobs.
-     This is used for arbitrary data blobs found in the registry or third-party application configuration files.
-     You need to provide the decrypted MasterKey that was used to protect the specific blob of data.
-     It is a versatile command for manual analysis of custom applications that rely on the Windows DPAPI for security.
+     提供 CryptUnprotectData 功能的包装器，用于解密通用的 DPAPI 保护数据块。用于在注册表或第三方应用配置文件中找到的任意数据块。你需要提供用于保护该特定数据块的已解密 MasterKey。它是手动分析依赖 Windows DPAPI 进行安全的自定义应用的通用命令。
    command: "impacket-dpapi unprotect -data {{hex_blob}} -masterkey {{decrypted_masterkey}}"

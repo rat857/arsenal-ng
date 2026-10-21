@@ -3,60 +3,60 @@ tags: [text-processing, linux, scripting, data-extraction, report-generation, pe
 
 actions:
 # === BASIC EXTRACTION ===
- - title: awk - print specific columns
+ - title: awk - 打印指定列
    desc: |
-     This command is used to extract specific fields or columns from a text file or command output. By default, awk treats whitespace as the field separator, making it ideal for parsing the output of commands like ls or ps. It is a fundamental tool for narrowing down large datasets to just the relevant pieces of information.
+     该命令用于从文本文件或命令输出中提取特定字段或列。默认情况下 awk 将空白视为字段分隔符，非常适合解析 ls 或 ps 等命令的输出。它是将大型数据集缩小到相关信息的根本性工具。
    command: "awk '{print ${{column_number|1}}}' {{input_file}}"
 
- - title: awk - print multiple columns with custom text
+ - title: awk - 打印多列并添加自定义文本
    desc: |
-     Use this command to combine multiple fields and add descriptive text labels to the output. This is particularly helpful for generating readable reports or preparing data for other scripts. You can include as many columns as needed by separating them with commas in the print statement.
+     使用此命令组合多个字段并为输出添加描述性文本标签。这对于生成可读报告或为其他脚本准备数据特别有帮助。你可以在 print 语句中用逗号分隔来包含任意数量的列。
    command: "awk '{print \"User: \" $1 \" - ID: \" ${{id_column|3}}}' {{input_file}}"
 
- - title: awk - custom field separator
+ - title: awk - 自定义字段分隔符
    desc: |
-     The field separator option allows awk to process files that do not use standard whitespace, such as CSV or colon-delimited files. By defining the separator with the -F flag, awk correctly identifies each field based on the provided character. This is essential for parsing system configuration files like /etc/passwd or application logs.
+     字段分隔符选项使 awk 能够处理不使用标准空白的文件，例如 CSV 或冒号分隔的文件。通过 -F 标志定义分隔符，awk 会根据提供的字符正确识别每个字段。这对于解析 /etc/passwd 等系统配置文件或应用日志至关重要。
    command: "awk -F '{{separator|:}}' '{print $1, ${{column_index|3}}}' {{input_file}}"
 
 # === FILTERING AND SEARCHING ===
- - title: awk - filter by numeric condition
+ - title: awk - 按数值条件过滤
    desc: |
-     This command filters lines based on a logical or mathematical comparison of a specific column's value. It only outputs lines where the condition evaluates to true, such as a process ID being higher than a certain limit. This is a powerful way to perform conditional data analysis directly from the terminal.
+     该命令根据对特定列值的逻辑或数学比较来过滤行。它只输出条件为真的行，例如进程 ID 高于某个限制的行。这是一种直接从终端执行条件数据分析的强大方式。
    command: "awk '${{column_index|3}} {{operator|>}} {{threshold|100}}' {{input_file}}"
 
- - title: awk - pattern matching with regex
+ - title: awk - 使用正则表达式匹配模式
    desc: |
-     Awk can act as a sophisticated filter by searching for specific regular expression patterns within the input. Unlike grep, awk allows you to perform additional actions or print specific columns only when a match is found. Use this to isolate specific error codes or keywords within complex log files.
+     awk 可以充当复杂的过滤器，在输入中搜索特定的正则表达式模式。与 grep 不同，awk 允许你在找到匹配时执行附加操作或仅打印特定列。使用它在复杂的日志文件中隔离特定的错误码或关键字。
    command: "awk '/{{pattern|ERROR}}/' {{input_file}}"
 
- - title: awk - filter by specific field match
+ - title: awk - 按指定字段匹配过滤
    desc: |
-     This action targets a specific column for pattern matching rather than searching the entire line. This prevents "false positives" that might occur if the pattern exists in a different, irrelevant field. It is highly effective when you know exactly which column contains the data you are searching for.
+     该操作针对特定列进行模式匹配，而非搜索整行。这可防止模式出现在无关字段中时产生的“误报”。当你确切知道哪一列包含要搜索的数据时，它非常有效。
    command: "awk '${{column_index|1}} ~ /{{pattern|admin}}/' {{input_file}}"
 
 # === BUILT-IN VARIABLES AND LOGIC ===
- - title: awk - print row numbers and field counts
+ - title: awk - 打印行号与字段数
    desc: |
-     The built-in variables NR (Number of Record) and NF (Number of Fields) provide metadata about the file structure. NR tracks the current line number, while NF tracks how many columns are present on the current line. Use this to validate data integrity or to add line numbering to your output for easier reference.
+     内置变量 NR（记录数）与 NF（字段数）提供关于文件结构的元数据。NR 跟踪当前行号，NF 跟踪当前行有多少列。使用它来验证数据完整性，或为输出添加行号以便于引用。
    command: "awk '{print \"Line: \" NR, \"Fields: \" NF, \"Content: \" $0}' {{input_file}}"
 
- - title: awk - pass external shell variables
+ - title: awk - 传入外部 Shell 变量
    desc: |
-     The -v flag allows you to inject external shell variables into the awk environment safely. This makes your awk commands dynamic and suitable for use within larger automation scripts or loops. It is the preferred way to pass parameters into an awk command without complex string escaping.
+     -v 标志允许你将外部 Shell 变量安全地注入 awk 环境。这使你的 awk 命令变得动态，适合用于更大的自动化脚本或循环。它是无需复杂字符串转义即可将参数传入 awk 命令的首选方式。
    command: "awk -v my_var=\"{{value|search_term}}\" '$0 ~ my_var' {{input_file}}"
 
 # === DATA PROCESSING AND STATISTICS ===
- - title: awk - calculate sum of a column
+ - title: awk - 计算某列之和
    desc: |
-     Awk can perform arithmetic operations across multiple rows and store the results in variables. The END block is used to print the final result after the entire file has been processed. This is a quick and efficient way to calculate totals, such as summing file sizes or total network traffic from a log.
+     awk 可以跨多行执行算术运算并将结果存储在变量中。END 块用于在文件处理完毕后打印最终结果。这是快速高效计算总量的方式，例如求和日志中的文件大小或总网络流量。
    command: "awk '{sum+=${{column_index|1}}} END {print \"Total Sum: \", sum}' {{input_file}}"
 
- - title: awk - global string substitution
+ - title: awk - 全局字符串替换
    desc: |
-     The gsub function performs a global find-and-replace operation on the input text. This allows you to sanitize data or reformat strings before they are printed or passed to the next command. It is more flexible than sed when you need to perform replacements based on column-specific logic.
+     gsub 函数对输入文本执行全局查找替换操作。这使你能在打印或传递给下一个命令之前净化数据或重新格式化字符串。当你需要基于特定列的逻辑进行替换时，它比 sed 更灵活。
    command: "awk '{gsub(/{{search_pattern|old_text}}/, \"{{replacement|new_text}}\"); print}' {{input_file}}"
 
- - title: awk - range selection between patterns
+ - title: awk - 两个模式之间的范围选择
    desc: |
-     This command extracts all lines that fall between two specific patterns, including the lines containing the patterns themselves. This is extremely useful for extracting specific sections of a configuration file or a block of logs between two timestamps. It effectively isolates relevant chunks of data from a larger file.
+     该命令提取落在两个特定模式之间的所有行，包括包含这些模式本身的行。这对于提取配置文件中的特定段落或两个时间戳之间的一段日志极为有用。它能有效地从较大的文件中隔离出相关数据块。
    command: "awk '/{{start_pattern|BEGIN}}/, /{{end_pattern|END}}/' {{input_file}}"

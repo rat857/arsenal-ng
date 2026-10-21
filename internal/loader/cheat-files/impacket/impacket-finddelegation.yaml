@@ -3,69 +3,61 @@ tags: [pentest, active-directory, security, enumeration, kerberos, delegation, i
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: impacket-findDelegation - basic domain enumeration
+  - title: impacket-findDelegation - 基础域枚举
     desc: |
-      Performs a comprehensive scan of the target domain to identify all accounts with delegation rights.
-      This command identifies Unconstrained, Constrained, and Resource-Based Constrained Delegation (RBCD).
-      It is a critical reconnaissance step for finding lateral movement or privilege escalation paths.
-      The output includes the account name, the type of delegation, and the services they are allowed to delegate to.
+      对目标域进行全面扫描，识别所有具有委派权限的账户，包括无约束、约束和基于资源的约束委派（RBCD）。
+      这是发现横向移动或权限提升路径的关键侦察步骤。
+      输出包括账户名、委派类型以及允许委派到的服务。
     command: "impacket-findDelegation {{domain}}/{{username}}:{{password}}@{{dc_ip}}"
 
-  - title: impacket-findDelegation - enumeration with NTLM hashes
+  - title: impacket-findDelegation - 使用 NTLM 哈希进行枚举
     desc: |
-      Queries the domain for delegation relationships using NTLM hashes for authentication.
-      This is particularly useful in Pass-the-Hash (PtH) scenarios where the cleartext password is unknown.
-      The hash should be provided in the format LMHASH:NTHASH.
-      If you only have the NT hash, use the empty LM representation: aad3b435b51404eeaad3b435b51404ee:{{nt_hash}}.
+      使用 NTLM 哈希进行身份认证来查询域内的委派关系，适用于明文密码未知的 Pass-the-Hash（PtH）场景。
+      哈希格式应为 LMHASH:NTHASH。
+      如果只有 NT 哈希，请使用空 LM 表示：aad3b435b51404eeaad3b435b51404ee:{{nt_hash}}。
     command: "impacket-findDelegation -hashes {{hash}} {{domain}}/{{username}}@{{dc_ip}}"
 
   # === ADVANCED FILTERING & SCOPING ===
-  - title: impacket-findDelegation - query specific user
+  - title: impacket-findDelegation - 查询特定用户
     desc: |
-      Targets a specific user or service account to check its delegation configuration.
-      Use this when you have identified a high-privilege account and want to verify if it can be exploited via delegation.
-      This narrows down the output, making it easier to parse in large environments with many delegated accounts.
-      It helps in verifying if manual changes to an account's delegation settings have been applied correctly.
+      针对特定用户或服务账户检查其委派配置。
+      当你已识别出高权限账户并想确认其是否可被利用时使用，可缩小输出范围，便于在大型环境中解析。
+      也有助于验证对账户委派设置的手动更改是否正确生效。
     command: "impacket-findDelegation -user {{target_user}} {{domain}}/{{username}}:{{password}}@{{dc_ip}}"
 
-  - title: impacket-findDelegation - include disabled accounts
+  - title: impacket-findDelegation - 包含已禁用账户
     desc: |
-      Forces the tool to include accounts that are marked as disabled in Active Directory.
-      By default, many tools skip disabled accounts, but these accounts might still have dangerous delegation rights.
-      An attacker who gains the ability to re-enable an account could leverage these pre-existing delegation settings.
-      This provides a more complete security audit of the domain's historical delegation configurations.
+      强制工具纳入 Active Directory 中标记为已禁用的账户。
+      许多工具默认跳过已禁用账户，但这些账户可能仍保留危险的委派权限。
+      能够重新启用账户的攻击者可利用这些既有委派设置，此选项可提供更完整的安全审计。
     command: "impacket-findDelegation -disabled {{domain}}/{{username}}:{{password}}@{{dc_ip}}"
 
-  - title: impacket-findDelegation - cross-domain enumeration
+  - title: impacket-findDelegation - 跨域枚举
     desc: |
-      Queries a different domain than the one used for authentication by utilizing domain trusts.
-      The -target-domain parameter specifies which domain's delegation objects should be listed.
-      This is essential in multi-domain forest environments to identify cross-domain escalation paths.
-      Ensure the provided credentials have sufficient permissions to read LDAP objects in the target domain.
+      利用域信任关系查询与用于身份认证不同的域。
+      -target-domain 参数用于指定要列出委派对象的目标域，在多域林环境中识别跨域提权路径时至关重要。
+      请确保提供的凭据有足够权限读取目标域中的 LDAP 对象。
     command: "impacket-findDelegation -target-domain {{target_domain}} {{domain}}/{{username}}:{{password}}@{{dc_ip}}"
 
   # === AUTHENTICATION VARIANTS ===
-  - title: impacket-findDelegation - kerberos authentication
+  - title: impacket-findDelegation - Kerberos 身份认证
     desc: |
-      Uses Kerberos tickets (CCACHE) for authentication instead of NTLM.
-      You must have a valid Kerberos ticket in your environment (defined by the KRB5CCNAME variable).
-      The -no-pass flag ensures the tool does not prompt for a password and relies solely on the ticket.
-      This method is stealthier and helps bypass environments where NTLM authentication is restricted or disabled.
+      使用 Kerberos 票据（CCACHE）而非 NTLM 进行身份认证。
+      环境中必须已有有效的 Kerberos 票据（由 KRB5CCNAME 变量指定）。
+      -no-pass 标志确保工具不提示输入密码，此方法更隐蔽，有助于绕过 NTLM 受限或禁用的环境。
     command: "impacket-findDelegation -k -no-pass {{domain}}/{{username}}@{{dc_ip}}"
 
-  - title: impacket-findDelegation - authenticate with AES key
+  - title: impacket-findDelegation - 使用 AES 密钥认证
     desc: |
-      Uses a specific AES hex key (128 or 256 bits) for Kerberos authentication.
-      This is an alternative to using passwords or NTLM hashes when performing Kerberos-based attacks.
-      It is often used when an AES key has been extracted from a domain controller or a compromised host.
-      This command bypasses the need for the original cleartext password while still utilizing modern encryption.
+      使用特定的 AES 十六进制密钥（128 或 256 位）进行 Kerberos 身份认证。
+      这是执行基于 Kerberos 攻击时替代密码或 NTLM 哈希的方式，常用于已从域控制器或失陷主机提取出 AES 密钥时。
+      此命令无需原始明文密码，同时仍使用现代加密。
     command: "impacket-findDelegation -aesKey {{hex_key}} {{domain}}/{{username}}@{{dc_ip}}"
 
   # === TROUBLESHOOTING ===
-  - title: impacket-findDelegation - debug mode with timestamps
+  - title: impacket-findDelegation - 带时间戳的调试模式
     desc: |
-      Executes the enumeration with verbose debug output and timestamps for every log entry.
-      This is helpful for troubleshooting connection issues, LDAP query failures, or authentication errors.
-      The timestamps help in correlating the tool's activity with domain controller logs or network captures.
-      Use this if the tool returns no results unexpectedly or if you encounter "Access Denied" errors.
+      以详细的调试输出执行枚举，并为每条日志记录添加时间戳。
+      有助于排查连接问题、LDAP 查询失败或身份认证错误。
+      时间戳有助于将工具活动与域控制器日志或网络抓包进行关联，当工具意外无结果或遇到“拒绝访问”错误时使用。
     command: "impacket-findDelegation -debug -ts {{domain}}/{{username}}:{{password}}@{{dc_ip}}"

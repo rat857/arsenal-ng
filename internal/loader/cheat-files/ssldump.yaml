@@ -3,68 +3,60 @@ tags: [network, security, pentest, tls, ssl, analyzer, sniffing, decryption]
 
 actions:
   # === CAPTURE AND ANALYSIS ===
-  - title: ssldump - live capture on interface
+  - title: ssldump - 在接口上实时捕获
     desc: |
-      Sniff SSL/TLS traffic live from a specific network interface. This is the most basic usage for 
-      real-time monitoring of handshakes and identifying protocol versions used by clients and servers. 
-      Note that you typically need root or administrative privileges to capture traffic directly from 
-      a hardware interface.
+      从特定网络接口实时嗅探 SSL/TLS 流量。
+      这是实时监控握手并识别客户端和服务器所用协议版本的最基本用法。
+      请注意，通常需要 root 或管理权限才能直接从硬件接口捕获流量。
     command: "ssldump -i {{interface|eth0}}"
 
-  - title: ssldump - analyze capture file
+  - title: ssldump - 分析捕获文件
     desc: |
-      Analyze SSL/TLS traffic stored in a previously captured pcap file. This allows for offline 
-      analysis of network traffic without being actively connected to the target environment. 
-      It is particularly useful for investigating captured logs from tools like tcpdump or Wireshark 
-      to identify handshake details.
+      分析存储在之前捕获的 pcap 文件中的 SSL/TLS 流量。
+      这允许在未主动连接到目标环境的情况下进行离线流量分析。
+      它对于调查来自 tcpdump 或 Wireshark 等工具的捕获日志以识别握手细节特别有用。
     command: "ssldump -r {{dumpfile}}"
 
-  - title: ssldump - detailed handshake analysis
+  - title: ssldump - 详细握手分析
     desc: |
-      Display the full SSL/TLS handshake process with verbose output including certificate details. 
-      The verbose flag provides deeper insight into extensions, cipher suite negotiation, and 
-      certificate chains. Use this command when debugging connection failures or verifying 
-      security configurations of a web server.
+      显示完整的 SSL/TLS 握手过程，并以详细输出包含证书详情。
+      详细标志可提供对扩展、加密套件协商和证书链的深入了解。
+      在调试连接失败或验证 Web 服务器的安全配置时使用此命令。
     command: "ssldump -i {{interface|eth0}} -v"
 
   # === DECRYPTION ===
-  - title: ssldump - decrypt traffic using private key
+  - title: ssldump - 使用私钥解密流量
     desc: |
-      Decrypt SSL/TLS application data by providing the server's RSA private key file. This 
-      functionality only works for RSA key exchanges and will not work for cipher suites 
-      utilizing Diffie-Hellman (PFS) as the session keys cannot be derived from the private key 
-      alone. Ensure the key file is accessible and provide the password if the key is encrypted.
+      通过提供服务器的 RSA 私钥文件来解密 SSL/TLS 应用数据。
+      此功能仅适用于 RSA 密钥交换，不适用于使用 Diffie-Hellman（PFS）的加密套件，因为仅凭私钥无法导出会话密钥。
+      确保密钥文件可访问，如果密钥已加密，请提供密码。
     command: "ssldump -r {{dumpfile}} -k {{keyfile}} -p {{password}}"
 
-  - title: ssldump - decrypt using keylog file
+  - title: ssldump - 使用 keylog 文件解密
     desc: |
-      Decrypt traffic using secrets provided in a standard SSL key log file format. This method is 
-      effective for decrypting modern cipher suites that use Perfect Forward Secrecy (PFS), such 
-      as those used by modern browsers. The log file must contain the pre-master secrets or 
-      session keys exported during the capture session.
+      使用标准 SSL 密钥日志文件格式提供的机密解密流量。
+      此方法对于解密使用完美前向保密（PFS）的现代加密套件（如现代浏览器使用的）非常有效。
+      日志文件必须包含捕获会话期间导出的预主密钥或会话密钥。
     command: "ssldump -r {{dumpfile}} -l {{sslkeylogfile}}"
 
   # === FILTERING AND OUTPUT ===
-  - title: ssldump - capture with BPF filters
+  - title: ssldump - 使用 BPF 过滤器捕获
     desc: |
-      Apply Berkeley Packet Filters (BPF) to limit the traffic processed to specific hosts or ports. 
-      Filtering is essential in high-traffic environments to reduce CPU load and focus on 
-      relevant data. The filter syntax is identical to tcpdump, allowing for complex logic like 
-      targeting a specific IP and port combination.
+      应用伯克利包过滤器（BPF）将处理的流量限制到特定主机或端口。
+      在高流量环境中，过滤对于减少 CPU 负载并聚焦相关数据至关重要。
+      过滤器语法与 tcpdump 相同，允许针对特定 IP 和端口组合等复杂逻辑。
     command: "ssldump -i {{interface|eth0}} host {{target}} and port {{port|443}}"
 
-  - title: ssldump - timestamped output
+  - title: ssldump - 带时间戳的输出
     desc: |
-      Display captured packets with absolute or relative timestamps for chronological analysis. 
-      The -t flag prints the time of each packet, which helps in correlating network events 
-      with application logs. This is vital when investigating the latency of handshakes or 
-      timing-based connection issues.
+      显示带有绝对或相对时间戳的捕获数据包，用于按时间顺序分析。
+      -t 标志打印每个数据包的时间，这有助于将网络事件与应用日志关联。
+      在调查握手延迟或基于时序的连接问题时至关重要。
     command: "ssldump -i {{interface|eth0}} -t"
 
-  - title: ssldump - write filtered traffic to pcap
+  - title: ssldump - 将过滤后的流量写入 pcap
     desc: |
-      Save the captured traffic to a file in pcap format while simultaneously analyzing it. 
-      This is useful for archiving suspicious traffic for later forensic analysis or for 
-      sharing with other team members. Use the -w flag followed by the desired filename 
-      to ensure the raw packet data is preserved.
+      将捕获的流量保存为 pcap 格式文件，同时进行分析。
+      这对于归档可疑流量以供后续取证分析或与其他团队成员分享很有用。
+      使用 -w 标志后跟所需文件名，以确保原始数据包数据被保留。
     command: "ssldump -i {{interface|eth0}} -w {{outpcapfile|output.pcap}}"

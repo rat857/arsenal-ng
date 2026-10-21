@@ -3,101 +3,77 @@ tags: [recon, enumeration, osint, security, pentest, infrastructure]
 
 actions:
 # === DISCOVERY ACTIONS ===
- - title: tldfinder - basic TLD discovery
+ - title: tldfinder - 基础 TLD 发现
    desc: |
-     Performs a standard discovery scan for the specified domain name. This command is 
-     the primary way to identify private or internal top-level domains associated with an 
-     organization. It helps mapping the extended digital footprint that isn't always 
-     visible via standard subdomain enumeration.
+     对指定域名执行标准发现扫描。该命令是识别与组织关联的私有或内部顶级域名的主要方式。
+     它有助于测绘扩展的数字足迹，这些足迹通过标准子域名枚举并不总是可见。
    command: "tldfinder -d {{target_domain}}"
 
- - title: tldfinder - comprehensive discovery
+ - title: tldfinder - 全面发现
    desc: |
-     Uses all available sources to find domains and private TLDs, ensuring maximum 
-     coverage. While this mode is slower than the default scan, it provides the most 
-     thorough results by querying every supported provider. Use this when performing 
-     deep reconnaissance where missing a single asset could be critical.
+     使用所有可用数据源查找域名和私有 TLD，确保最大覆盖。虽然此模式比默认扫描慢，但通过查询每个受支持的提供方可提供最彻底的结果。
+     在执行深度侦察时使用，因为遗漏单个资产可能造成严重后果。
    command: "tldfinder -d {{target_domain}} -all"
 
- - title: tldfinder - custom discovery mode
+ - title: tldfinder - 自定义发现模式
    desc: |
-     Changes the enumeration logic to focus on specific types of discovery such as dns, 
-     tld, or domain. This allows the researcher to pivot their strategy based on the 
-     initial findings or specific target infrastructure requirements. The default 
-     mode is usually dns, but tld mode is specialized for finding unique suffixes.
+     更改枚举逻辑，聚焦于 dns、tld 或 domain 等特定发现类型。这使研究人员可以根据初步发现或特定目标基础设施需求调整策略。
+     默认模式通常是 dns，而 tld 模式专门用于查找独特后缀。
    command: "tldfinder -d {{target_domain}} -dm {{mode|tld}}"
 
 # === FILTERING AND SOURCES ===
- - title: tldfinder - filter by specific sources
+ - title: tldfinder - 按特定数据源过滤
    desc: |
-     Restricts the discovery process to a comma-separated list of specific sources. 
-     This is useful for focusing on providers that are known to have high-quality 
-     data for a specific region or target type. It also helps in avoiding sources 
-     that may be slow or currently experiencing downtime.
+     将发现过程限制在逗号分隔的特定数据源列表。这对于专注于已知对特定地区或目标类型拥有高质量数据的提供方很有用。
+     它还有助于避免可能较慢或当前宕机的数据源。
    command: "tldfinder -d {{target_domain}} -s {{sources|censys,whoisxmlapi}}"
 
- - title: tldfinder - exclude specific sources
+ - title: tldfinder - 排除特定数据源
    desc: |
-     Skips the specified sources during the enumeration process to save time or avoid 
-     rate limits. If a particular source is consistently failing or providing duplicate 
-     data, excluding it can significantly streamline the discovery workflow. Use the 
-     -ls flag first to identify the exact names of the sources you wish to exclude.
+     在枚举过程中跳过指定数据源，以节省时间或避免限速。如果某个数据源持续失败或提供重复数据，排除它可以显著简化发现工作流。
+     先用 -ls 参数确认要排除的数据源的确切名称。
    command: "tldfinder -d {{target_domain}} -es {{excluded_sources|dnsrepo}}"
 
- - title: tldfinder - match specific domain patterns
+ - title: tldfinder - 匹配特定域名模式
    desc: |
-     Filters the output to only display domains that match a specific string or 
-     a list provided in a file. This is helpful when looking for specific sub-brands 
-     or environments (like "dev" or "prod") within a massive list of results. It 
-     reduces manual work by focusing only on relevant patterns for the engagement.
+     过滤输出，仅显示匹配特定字符串或文件中列表的域名。当在大量结果中查找特定子品牌或环境（如 dev 或 prod）时很有帮助。
+     它只关注任务相关的模式，从而减少手动工作。
    command: "tldfinder -d {{target_domain}} -m {{match_pattern|dev}}"
 
 # === RESOLUTION AND OUTPUT ===
- - title: tldfinder - resolve active domains
+ - title: tldfinder - 解析活跃域名
    desc: |
-     Attempts to resolve the discovered domains to ensure they are currently active. 
-     This action filters out historical or dead records, providing a list of 
-     reachable targets for further exploitation or vulnerability scanning. Note 
-     that this increases network traffic and may be detected by security monitoring.
+     尝试解析已发现的域名，确保它们当前活跃。此操作过滤掉历史或失效记录，提供可访问目标的列表，供进一步利用或漏洞扫描。
+     注意这会增加网络流量，可能被安全监控检测到。
    command: "tldfinder -d {{target_domain}} -active"
 
- - title: tldfinder - include IP addresses
+ - title: tldfinder - 包含 IP 地址
    desc: |
-     Displays the IP addresses associated with active domains found during the scan. 
-     This requirement necessitates the use of the -active flag to perform the DNS 
-     resolution. It provides immediate context regarding the hosting environment 
-     and allows for IP-based filtering or grouping of assets.
+     显示扫描过程中发现的活跃域名关联的 IP 地址。此要求需要使用 -active 参数来执行 DNS 解析。
+     它提供关于托管环境的即时上下文，并允许按 IP 对资产进行过滤或分组。
    command: "tldfinder -d {{target_domain}} -active -oI"
 
- - title: tldfinder - structured JSON output
+ - title: tldfinder - 结构化 JSON 输出
    desc: |
-     Exports the discovery results into a JSON Lines format for easy processing 
-     by other tools. This is the preferred method for integrating tldfinder into 
-     automated CI/CD pipelines or custom reconnaissance frameworks. It captures 
-     all metadata including the source of each found domain if configured.
+     将发现结果导出为 JSON Lines 格式，便于其他工具处理。这是将 tldfinder 集成到自动化 CI/CD 流水线或自定义侦察框架的首选方法。
+     如果已配置，它会捕获所有元数据，包括每个已发现域名的来源。
    command: "tldfinder -d {{target_domain}} -oJ -o {{output_file|results.json}}"
 
 # === UTILITIES ===
- - title: tldfinder - silent mode for piping
+ - title: tldfinder - 静默模式用于管道
    desc: |
-     Suppresses the banner and all informational messages, outputting only the 
-     discovered domains. This is essential when piping the output directly into 
-     other tools like httpx, nmap, or subfinder. It prevents errors caused by 
-     non-domain strings being passed down the command line pipeline.
+     抑制横幅和所有信息消息，仅输出发现的域名。在将输出直接管道传递给 httpx、nmap 或 subfinder 等工具时必不可少。
+     它可以防止非域名字符串在命令行管道中向下传递时引发错误。
    command: "tldfinder -d {{target_domain}} -silent"
 
- - title: tldfinder - list all available sources
+ - title: tldfinder - 列出所有可用数据源
    desc: |
-     Prints a comprehensive list of all data sources currently supported by the 
-     tool. This is useful for verifying which providers are active and checking 
-     if you have the necessary API keys configured for paid services. It should 
-     be run periodically to see new sources added in tool updates.
+     打印工具当前支持的所有数据源的完整列表。这对于验证哪些提供方处于活跃状态以及检查你是否已为付费服务配置必要的 API key 很有用。
+     应定期运行以查看工具更新中新增的数据源。
    command: "tldfinder -ls"
 
- - title: tldfinder - update tool
+ - title: tldfinder - 更新工具
    desc: |
-     Updates the tldfinder binary to the latest available version from the 
-     official repository. Keeping the tool updated ensures you have the latest 
-     source modules, bug fixes, and performance improvements. It may require 
-     write permissions to the directory where the binary is located.
+     将 tldfinder 二进制文件更新到官方仓库提供的最新版本。保持工具更新可确保你拥有最新的数据源模块、错误修复和性能改进。
+     它可能需要二进制文件所在目录的写权限。
    command: "tldfinder -up"

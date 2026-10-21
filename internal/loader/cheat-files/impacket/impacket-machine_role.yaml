@@ -4,62 +4,55 @@ tags: [pentest, network, security, enumeration, active-directory, impacket, reco
 # === AUTHENTICATION METHODS ===
 
 actions:
- - title: impacket-machine_role - basic password authentication
+ - title: impacket-machine_role - 基础密码认证
    desc: |
-     Retrieve the host's role and primary domain details using standard username and password authentication.
-     This command is the standard way to identify whether a target is a Domain Controller, a member server, or a workstation.
-     It is essential for initial reconnaissance to map out the Active Directory environment architecture.
-     Be aware that multiple failed login attempts may trigger account lockout policies.
+     使用标准的用户名和密码认证获取主机的角色及主域详细信息。
+     该命令是识别目标是域控制器、成员服务器还是工作站的标准方式。
+     对于梳理 Active Directory 环境架构的初始侦察至关重要，请注意多次登录失败可能触发账户锁定策略。
    command: "impacket-machine_role {{domain/username|CONTOSO/Administrator}}:{{password}}@{{target_ip}}"
 
- - title: impacket-machine_role - pass-the-hash authentication
+ - title: impacket-machine_role - Pass-the-Hash 认证
    desc: |
-     Perform host role enumeration using NTLM hashes instead of a cleartext password.
-     This is particularly useful during lateral movement when you have acquired a user's hash but not their password.
-     The hash must be provided in the LMHASH:NTHASH format; if you only have the NT hash, prefix it with an empty LM hash.
-     This method bypasses the need for interactive login credentials.
+     使用 NTLM 哈希而非明文密码执行主机角色枚举。
+     在横向移动中已获得用户哈希但未获得密码时尤为有用。
+     哈希必须为 LMHASH:NTHASH 格式；只有 NT 哈希时前面加空 LM 哈希，此方法无需交互式登录凭据。
    command: "impacket-machine_role -hashes {{hash}} {{domain/username|CONTOSO/Administrator}}@{{target_ip}}"
 
- - title: impacket-machine_role - kerberos authentication
+ - title: impacket-machine_role - Kerberos 身份认证
    desc: |
-     Authenticate using Kerberos tickets stored in a ccache file.
-     This requires the KRB5CCNAME environment variable to be set to the path of your valid Kerberos ticket.
-     Use the -no-pass flag to ensure the tool uses the ticket instead of prompting for a password.
-     This is a stealthier method often used in environments where NTLM is disabled or heavily monitored.
+     使用存储在 ccache 文件中的 Kerberos 票据进行认证。
+     这需要将 KRB5CCNAME 环境变量设置为有效 Kerberos 票据的路径。
+     使用 -no-pass 标志确保工具使用票据而不提示密码，此方法更隐蔽，常用于 NTLM 被禁用或严格监控的环境。
    command: "impacket-machine_role -k -no-pass {{domain/username|CONTOSO/Administrator}}@{{target_name}}"
 
- - title: impacket-machine_role - kerberos with aes key
+ - title: impacket-machine_role - 使用 AES 密钥的 Kerberos 认证
    desc: |
-     Authenticate via Kerberos using a specific AES hex key (128 or 256 bits).
-     This provides a way to use Kerberos authentication without a password or a pre-existing ticket file.
-     It is highly effective for testing or bypassing certain security controls that monitor ticket requests.
-     Ensure the -k flag is included to signal the use of Kerberos.
+     使用特定的 AES 十六进制密钥（128 或 256 位）通过 Kerberos 认证。
+     提供了一种无需密码或既有票据文件即可使用 Kerberos 认证的方式。
+     对于测试或绕过监控票据请求的某些安全控制非常有效，请确保包含 -k 标志以表示使用 Kerberos。
    command: "impacket-machine_role -k -aesKey {{aes_key}} {{domain/username}}@{{target_name}}"
 
 # === CONNECTION AND NETWORK OPTIONS ===
 
- - title: impacket-machine_role - custom smb port
+ - title: impacket-machine_role - 自定义 SMB 端口
    desc: |
-     Connect to the target using a non-standard SMB port.
-     This is useful when targets are behind port forwards or when SMB is bound to a custom port for obfuscation.
-     By default, the tool attempts to connect to port 445.
-     Changing the port can help bypass simple firewall rules that only block standard ports.
+     使用非标准 SMB 端口连接到目标。
+     当目标位于端口转发之后，或 SMB 为混淆而绑定到自定义端口时很有用。
+     默认情况下工具尝试连接 445 端口，更改端口有助于绕过仅封锁标准端口的简单防火墙规则。
    command: "impacket-machine_role -port {{port|445}} {{domain/username}}:{{password}}@{{target_ip}}"
 
- - title: impacket-machine_role - specify target ip and dc ip
+ - title: impacket-machine_role - 指定目标 IP 和 DC IP
    desc: |
-     Explicitly define both the target IP and the Domain Controller IP address.
-     The -target-ip flag is useful when the target name provided in the connection string cannot be resolved by DNS.
-     The -dc-ip flag ensures that Kerberos or domain-related queries are sent to the correct Domain Controller.
-     This is often necessary in complex or isolated networking environments.
+     显式指定目标 IP 和域控制器 IP 地址。
+     -target-ip 标志在连接字符串中的目标名称无法被 DNS 解析时很有用。
+     -dc-ip 标志确保 Kerberos 或域相关查询发送到正确的域控制器，复杂或隔离的网络环境中通常需要。
    command: "impacket-machine_role -target-ip {{target_ip}} -dc-ip {{dc_ip}} {{domain/username}}:{{password}}@{{hostname}}"
 
 # === LOGGING AND TROUBLESHOOTING ===
 
- - title: impacket-machine_role - debug and timestamps
+ - title: impacket-machine_role - 调试与时间戳
    desc: |
-     Run the tool with debug mode enabled and timestamps added to every output line.
-     Debug mode provides a verbose log of the underlying RPC calls and SMB negotiations, which is vital for troubleshooting.
-     Timestamps help in documenting the exact time of actions for reporting and correlation with server-side logs.
-     Use this when the tool fails silently or returns unexpected errors.
+     启用调试模式运行工具，并为每一行输出添加时间戳。
+     调试模式提供底层 RPC 调用和 SMB 协商的详细日志，对排查至关重要。
+     时间戳有助于记录操作的精确时间以便报告并与服务端日志关联，当工具静默失败或返回意外错误时使用。
    command: "impacket-machine_role -debug -ts {{domain/username}}:{{password}}@{{target_ip}}"

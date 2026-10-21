@@ -4,78 +4,68 @@ tags: [pivoting, network, tunneling, proxy, pentest, security]
 # === LISTENER CONFIGURATION ===
 
 actions:
-  - title: ligolo-proxy - basic listener
+  - title: ligolo-proxy - 基础监听器
     desc: |
-      Starts a basic proxy listener on all available interfaces using the default port. 
-      This is the standard starting point for the Ligolo-ng server to accept incoming connections from remote agents. 
-      By default, it looks for certificate files in the certs directory to establish a TLS connection.
+      使用默认端口在所有可用接口上启动基础代理监听器。这是 Ligolo-ng 服务器接受远程 agent 传入连接的标准起点。
+      默认情况下，它会在 certs 目录中查找证书文件以建立 TLS 连接。
     command: "ligolo-proxy -laddr {{listening_address|0.0.0.0:11601}}"
 
-  - title: ligolo-proxy - self-signed certificate mode
+  - title: ligolo-proxy - 自签名证书模式
     desc: |
-      Automatically generates and uses self-signed TLS certificates for the session. 
-      This is useful for rapid deployment when you do not have pre-existing certificates or a public domain. 
-      It ensures that the communication between the agent and the proxy remains encrypted despite the lack of a trusted CA.
+      自动生成并使用会话的自签名 TLS 证书。当你没有现成证书或公共域名时，用于快速部署很有用。
+      尽管缺少受信任的 CA，它仍能确保 agent 与代理之间的通信保持加密。
     command: "ligolo-proxy -selfcert -selfcert-domain {{domain|ligolo}}"
 
-  - title: ligolo-proxy - custom certificate files
+  - title: ligolo-proxy - 自定义证书文件
     desc: |
-      Starts the proxy using specific paths for the TLS certificate and private key files. 
-      Use this when you have purchased a certificate or generated one using an internal Certificate Authority. 
-      Ensure that the user running the proxy has read permissions for the specified file paths.
+      使用指定的 TLS 证书和私钥文件路径启动代理。当你购买了证书或使用内部证书颁发机构生成证书时使用。
+      确保运行代理的用户对指定文件路径有读取权限。
     command: "ligolo-proxy -certfile {{cert_path|certs/cert.pem}} -keyfile {{key_path|certs/key.pem}}"
 
 # === ADVANCED MODES ===
 
-  - title: ligolo-proxy - automated Let's Encrypt (autocert)
+  - title: "ligolo-proxy - 自动化 Let's Encrypt（autocert）"
     desc: |
-      Requests and manages TLS certificates automatically via Let's Encrypt. 
-      This mode requires port 80 to be accessible from the internet to complete the ACME challenge. 
-      It is ideal for long-term setups on public-facing servers where valid certificates are preferred for stealth or compatibility.
+      通过 Let's Encrypt 自动请求和管理 TLS 证书。此模式要求端口 80 可从互联网访问以完成 ACME 挑战。
+      适合面向公网服务器的长期部署，在这些场景下有效证书更利于隐蔽性或兼容性。
     command: "ligolo-proxy -autocert -allow-domains {{domains|example.com}}"
 
-  - title: ligolo-proxy - websocket listener
+  - title: ligolo-proxy - WebSocket 监听器
     desc: |
-      Configures the proxy to listen using a websocket transport layer. 
-      Prefixing the address with https:// enables encrypted websocket communication, which can help bypass certain restrictive firewalls or load balancers. 
-      This is a powerful feature for tunneling traffic through environments that only allow web-based protocols.
+      配置代理使用 WebSocket 传输层进行监听。在地址前加上 https:// 可启用加密的 WebSocket 通信，有助于绕过某些限制性防火墙或负载均衡器。
+      这是通过只允许 Web 协议的环境隧道传输流量的强大功能。
     command: "ligolo-proxy -laddr {{websocket_address|https://0.0.0.0:443}}"
 
 # === OPERATIONAL MODES ===
 
-  - title: ligolo-proxy - daemon mode
+  - title: ligolo-proxy - 守护进程模式
     desc: |
-      Runs the proxy server in the background as a daemon without an interactive command-line interface. 
-      This is suitable for persistent installations on a jump box where you don't need to interact with the proxy shell. 
-      Note that you will need to manage the process via standard OS tools (like kill or systemctl) once started.
+      在后台以守护进程方式运行代理服务器，无需交互式命令行界面。适合在跳板机上持久安装，且无需与代理 shell 交互。
+      注意启动后需要通过标准 OS 工具（如 kill 或 systemctl）管理进程。
     command: "ligolo-proxy -daemon -laddr {{listening_address|0.0.0.0:11601}}"
 
-  - title: ligolo-proxy - verbose logging
+  - title: ligolo-proxy - 详细日志
     desc: |
-      Starts the proxy with verbose output enabled to provide more detailed information about connections and errors. 
-      This is highly recommended for troubleshooting initial connectivity issues between the agent and the proxy. 
-      It displays metadata about incoming agent registrations and potential TLS handshake failures.
+      以启用详细输出的方式启动代理，提供关于连接和错误的更多信息。强烈推荐用于排查 agent 与代理之间的初始连接问题。
+      它会显示传入 agent 注册的元数据以及可能的 TLS 握手失败。
     command: "ligolo-proxy -v"
 
-  - title: ligolo-proxy - skip banner
+  - title: ligolo-proxy - 跳过横幅
     desc: |
-      Launches the proxy server without displaying the ASCII art banner at startup. 
-      This is useful when logging the output to a file or when running the tool in a clean terminal environment. 
-      It does not affect the functionality of the proxy itself, only the visual feedback upon launch.
+      启动代理服务器时不显示启动时的 ASCII 艺术横幅。当将输出记录到文件或在干净的终端环境中运行时很有用。
+      它不影响代理本身的功能，只影响启动时的视觉反馈。
     command: "ligolo-proxy -nobanner"
 
 # === PROFILING AND CONFIG ===
 
-  - title: ligolo-proxy - custom configuration file
+  - title: ligolo-proxy - 自定义配置文件
     desc: |
-      Specifies a configuration file to load settings from rather than passing them via command line arguments. 
-      This allows for more complex or reusable configurations that can be version controlled or easily shared. 
-      The format of the config file must match the expected structure required by the tool.
+      指定一个配置文件来加载设置，而不是通过命令行参数传递。这允许更复杂或可复用的配置，可以纳入版本控制或方便共享。
+      配置文件格式必须符合工具要求的预期结构。
     command: "ligolo-proxy -config {{config_file|config.yaml}}"
 
-  - title: ligolo-proxy - performance profiling
+  - title: ligolo-proxy - 性能分析
     desc: |
-      Writes a CPU profile to a specified file for performance analysis. 
-      This is generally used by developers or advanced users to diagnose high CPU usage or bottlenecks in the proxy. 
-      The resulting file can be analyzed using standard Go profiling tools like pprof.
+      将 CPU profile 写入指定文件以进行性能分析。通常由开发者或高级用户用于诊断代理的高 CPU 使用率或瓶颈。
+      生成的文件可用 pprof 等标准 Go 分析工具进行分析。
     command: "ligolo-proxy -cpuprofile {{profile_name|cpu.prof}}"

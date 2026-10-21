@@ -3,126 +3,96 @@ tags: [subdomain, enumeration, reconnaissance, passive, osint, security, pentest
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: subfinder - basic domain scan
+  - title: subfinder - 基础域名扫描
     desc: |
-      Performs a passive subdomain discovery for a single target domain.
-      This is the most common starting point for reconnaissance and attack surface mapping.
-      It queries various passive online sources without sending traffic directly to the target.
-      Results are displayed in the terminal with default formatting.
+      对单个目标域名执行被动子域名发现。这是侦察和攻击面测绘最常见的起点。它会查询各种被动在线数据源，而不直接向目标发送流量。
+      结果以默认格式显示在终端中。
     command: "subfinder -d {{domain}}"
 
-  - title: subfinder - multiple domain scan
+  - title: subfinder - 多域名扫描
     desc: |
-      Discovers subdomains for multiple targets listed in a specific file.
-      Use this when you have a large scope of domains to analyze simultaneously.
-      The input file should contain one domain per line.
-      This approach is highly efficient for bug bounty hunters and enterprise security audits.
+      为文件中列出的多个目标发现子域名。当你需要同时分析大量域名范围时使用。输入文件应每行包含一个域名。
+      这种方式对漏洞赏金猎人和企业安全审计非常高效。
     command: "subfinder -dL {{file|domains.txt}}"
 
-  - title: subfinder - active resolution
+  - title: subfinder - 主动解析
     desc: |
-      Identifies subdomains and verifies if they are currently active.
-      The -active flag instructs the tool to resolve the found subdomains to ensure they point to an IP.
-      This helps filter out "stale" or non-existent DNS records from the passive results.
-      Note that this step involves active DNS queries, unlike the standard passive-only mode.
+      识别子域名并验证它们当前是否处于活跃状态。-active 参数指示工具解析发现的子域名，确保它们指向某个 IP。
+      这有助于从被动结果中过滤掉过期或不存在的 DNS 记录。注意该步骤涉及主动 DNS 查询，不同于标准的纯被动模式。
     command: "subfinder -d {{domain}} -active"
 
   # === SOURCE MANAGEMENT ===
-  - title: subfinder - list available sources
+  - title: subfinder - 列出可用数据源
     desc: |
-      Displays all the passive sources currently supported by subfinder.
-      Some sources require API keys to be configured in the provider-config.yaml file.
-      Checking this list helps you understand where the data is coming from.
-      It also indicates which sources are available for use without any additional setup.
+      显示 subfinder 当前支持的所有被动数据源。部分数据源需要在 provider-config.yaml 文件中配置 API key。
+      查看此列表有助于了解数据的来源。它也会显示哪些数据源无需额外配置即可使用。
     command: "subfinder -ls -active"
 
-  - title: subfinder - use all sources
+  - title: subfinder - 使用全部数据源
     desc: |
-      Triggers a comprehensive scan using every available source in the library.
-      This mode is slower than the default scan because it waits for responses from all providers.
-      It is recommended when thoroughness is more important than speed.
-      Ensure your API keys are configured for maximum efficiency when using this flag.
+      使用库中所有可用数据源触发一次全面扫描。此模式比默认扫描慢，因为它需要等待所有提供方的响应。
+      当全面性比速度更重要时推荐使用。使用此参数时请确保已配置 API key 以获得最高效率。
     command: "subfinder -d {{domain}} -all"
 
-  - title: subfinder - specific source selection
+  - title: subfinder - 指定数据源选择
     desc: |
-      Limits the discovery process to a specific set of selected sources.
-      Use this to focus on highly reliable sources like crtsh or virustotal.
-      Multiple sources can be provided as a comma-separated list.
-      This is useful for bypassing slow sources or focusing on specific data types.
+      将发现过程限制在特定的数据源集合。用它专注于 crtsh 或 virustotal 等高度可靠的数据源。多个数据源可以通过逗号分隔的列表提供。
+      这对于绕过慢速数据源或聚焦特定数据类型很有用。
     command: "subfinder -d {{domain}} -s {{sources|crtsh,github,censys}}"
 
-  - title: subfinder - exclude specific sources
+  - title: subfinder - 排除特定数据源
     desc: |
-      Runs a scan while ignoring specific sources that might be slow or unreliable in your region.
-      This helps in optimizing the scan time by removing problematic providers.
-      It is particularly useful if a certain source is currently down or rate-limiting your IP.
-      Provide the names of the sources to be skipped as a comma-separated string.
+      执行扫描时忽略在你的地区可能较慢或不可靠的特定数据源。这有助于通过移除有问题的提供方来优化扫描时间。
+      当某个数据源当前宕机或对你的 IP 限速时尤为有用。以逗号分隔字符串的形式提供要跳过的数据源名称。
     command: "subfinder -d {{domain}} -es {{exclude_sources|google,bing}}"
 
   # === FILTERING & OUTPUT ===
-  - title: subfinder - silent output for piping
+  - title: subfinder - 静默输出用于管道
     desc: |
-      Prints only the discovered subdomains to the console without any banners or metadata.
-      This is essential when piping the output to other tools like httpx, nuclei, or naabu.
-      It eliminates the need for manual cleanup of the tool's output.
-      Perfect for automation scripts and command-line one-liners.
+      仅将发现的子域名输出到控制台，不显示任何横幅或元数据。这在将输出管道传递给 httpx、nuclei 或 naabu 等工具时必不可少。
+      它免去了手动清理工具输出的需要。非常适合自动化脚本和命令行单行命令。
     command: "subfinder -d {{domain}} -silent"
 
-  - title: subfinder - save output to file
+  - title: subfinder - 将输出保存到文件
     desc: |
-      Writes the discovery results to a specific text file for later analysis.
-      This prevents the loss of data and allows for easy documentation of findings.
-      If the file doesn't exist, subfinder will create it automatically.
-      Useful for keeping a record of subdomains during different stages of a pentest.
+      将发现结果写入指定文本文件，供后续分析。这可以防止数据丢失，并便于记录发现结果。如果文件不存在，subfinder 会自动创建。
+      在渗透测试不同阶段记录子域名时很有用。
     command: "subfinder -d {{domain}} -o {{output|results.txt}}"
 
-  - title: subfinder - JSON format output
+  - title: subfinder - JSON 格式输出
     desc: |
-      Generates output in JSONL (JSON Lines) format which contains rich metadata.
-      The output includes not only the subdomain but also the sources that found it.
-      This is the preferred format for integrating subfinder with databases or custom parsers.
-      Use this if you need to perform complex data analysis on the results.
+      生成 JSONL（JSON Lines）格式的输出，其中包含丰富的元数据。输出不仅包含子域名，还包含发现它的数据源。
+      这是将 subfinder 与数据库或自定义解析器集成的首选格式。如果你需要对结果进行复杂数据分析，请使用此格式。
     command: "subfinder -d {{domain}} -oJ"
 
-  - title: subfinder - include IP addresses
+  - title: subfinder - 包含 IP 地址
     desc: |
-      Displays the IP addresses associated with the discovered subdomains.
-      This command automatically enables the -active flag because resolution is required to find IPs.
-      It provides a more complete picture of the target's infrastructure.
-      Only subdomains that successfully resolve to an IP will be included in the output.
+      显示与发现的子域名关联的 IP 地址。该命令会自动启用 -active 参数，因为查找 IP 需要解析。
+      它能更完整地呈现目标基础设施。只有成功解析到 IP 的子域名才会包含在输出中。
     command: "subfinder -d {{domain}} -active -oI"
 
   # === PERFORMANCE & ADVANCED ===
-  - title: subfinder - rate limiting
+  - title: subfinder - 限速
     desc: |
-      Controls the speed of the scan by limiting the number of HTTP requests sent per second.
-      This is important for avoiding rate-limiting or blocks from passive source providers.
-      If you are using many API keys, you might want to increase this value.
-      Conversely, decrease it if you are experiencing frequent timeouts or connection resets.
+      通过限制每秒发送的 HTTP 请求数来控制扫描速度。这对于避免被动数据源提供方的限速或封禁非常重要。
+      如果你使用大量 API key，可能需要提高该值。反之，如果频繁遇到超时或连接重置，则应降低该值。
     command: "subfinder -d {{domain}} -rl {{limit|10}}"
 
-  - title: subfinder - custom resolvers
+  - title: subfinder - 自定义解析器
     desc: |
-      Specifies a list of custom DNS resolvers to use for the -active resolution phase.
-      By default, subfinder uses system resolvers, but custom ones (like Google or Cloudflare) can be faster.
-      You can provide a single resolver or a file containing a list of resolvers.
-      This helps in bypassing local DNS restrictions and improving resolution accuracy.
+      指定用于 -active 解析阶段的自定义 DNS 解析器列表。默认情况下 subfinder 使用系统解析器，但自定义解析器（如 Google 或 Cloudflare）可能更快。
+      你可以提供单个解析器，也可以提供包含解析器列表的文件。这有助于绕过本地 DNS 限制并提高解析准确性。
     command: "subfinder -d {{domain}} -active -r {{resolvers|8.8.8.8,1.1.1.1}}"
 
-  - title: subfinder - recursive discovery
+  - title: subfinder - 递归发现
     desc: |
-      Enables recursive subdomain discovery on sources that support it.
-      This allows the tool to find sub-subdomains (e.g., dev.api.example.com).
-      While more comprehensive, it may increase the scan time significantly.
-      Only a subset of sources handles recursive queries effectively.
+      在支持的数据源上启用递归子域名发现。这使工具能够找到子子域名（例如 dev.api.example.com）。
+      虽然更全面，但可能显著增加扫描时间。只有部分数据源能有效处理递归查询。
     command: "subfinder -d {{domain}} -recursive"
 
   # === SYSTEM ===
-  - title: subfinder - update tool
+  - title: subfinder - 更新工具
     desc: |
-      Automatically checks for and installs the latest version of subfinder from GitHub.
-      Keeping the tool updated ensures you have the latest source providers and bug fixes.
-      This requires an active internet connection and write permissions to the binary path.
-      It is recommended to run this periodically to maintain tool efficiency.
+      自动检查并从 GitHub 安装最新版本的 subfinder。保持工具更新可确保你拥有最新的数据源提供方和漏洞修复。
+      这需要有效的网络连接以及对二进制路径的写权限。建议定期运行以保持工具效率。
     command: "subfinder -up"

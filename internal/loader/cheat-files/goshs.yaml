@@ -3,89 +3,60 @@ tags: [network, file-sharing, security, web, pentest, server, webdav, sftp]
 
 actions:
   # === BASIC USAGE ===
-  - title: goshs - start basic server
+  - title: goshs - 启动基础服务器
     desc: |
-      Start the web server with default settings on all interfaces. This is the most common 
-      way to quickly share files in the current directory over port 8000. It provides a 
-      clean web interface for browsing and downloading files.
+      以默认设置在所有接口上启动 Web 服务器。这是快速在 8000 端口共享当前目录中文件的最常见方式。它提供干净的 Web 界面用于浏览和下载文件。
     command: "goshs -p {{port|8000}} -d {{directory|./}}"
 
-  - title: goshs - upload only mode
+  - title: goshs - 仅上传模式
     desc: |
-      Start the server in a mode that only allows file uploads. Use this when you want 
-      to collect files from other users without allowing them to see or download existing 
-      files in the directory. It is particularly useful for receiving exfiltrated data or 
-      reports during a security assessment.
+      以仅允许文件上传的模式启动服务器。当你只想从其他用户收集文件，而不让他们查看或下载目录中已有文件时使用。对于在安全评估期间接收外泄数据或报告特别有用。
     command: "goshs -uo -p {{port|8000}} -uf {{upload_folder|./uploads}}"
 
-  - title: goshs - silent mode without directory listing
+  - title: goshs - 无目录列表的静默模式
     desc: |
-      Run the server without providing a directory listing to the user. This effectively 
-      hides the file structure, requiring the user to know the exact filename to download it. 
-      This adds a small layer of obscurity for sensitive file transfers.
+      运行服务器时不向用户提供目录列表。这能有效隐藏文件结构，要求用户知道确切的文件名才能下载。它为敏感文件传输增加了一层轻微的隐蔽性。
     command: "goshs -si"
 
   # === SECURITY AND AUTHENTICATION ===
-  - title: goshs - basic authentication
+  - title: goshs - 基础认证
     desc: |
-      Secure the server using standard HTTP Basic Authentication. This requires users to 
-      provide a valid username and password before they can access any content. It is 
-      highly recommended when hosting the server on a public or shared network to prevent 
-      unauthorized access.
+      使用标准 HTTP Basic Authentication 保护服务器。这要求用户在访问任何内容之前提供有效的用户名和密码。在公共或共享网络上托管服务器时强烈推荐，以防止未授权访问。
     command: "goshs -b '{{username|admin}}:{{password|password123}}'"
 
-  - title: goshs - self-signed TLS
+  - title: goshs - 自签名 TLS
     desc: |
-      Enable encrypted communication using a self-signed SSL/TLS certificate. This 
-      protects the data in transit from being sniffed on the network. Note that browsers 
-      will display a certificate warning since the certificate is not signed by a 
-      trusted Certificate Authority.
+      使用自签名 SSL/TLS 证书启用加密通信。这保护传输中的数据免于在网络中被嗅探。请注意，由于证书未经可信证书颁发机构签名，浏览器会显示证书警告。
     command: "goshs -s -ss"
 
-  - title: goshs - ip whitelisting
+  - title: goshs - IP 白名单
     desc: |
-      Restrict access to the server so that only specific IP addresses can connect. 
-      This is a powerful security feature that prevents any connection attempts from 
-      unauthorized hosts. Multiple IP addresses can be provided as a comma-separated list.
+      限制服务器访问，只允许特定 IP 地址连接。这是一项强大的安全功能，可阻止来自未授权主机的任何连接尝试。多个 IP 地址可以逗号分隔列表的形式提供。
     command: "goshs -ipw {{allowed_ips|127.0.0.1,192.168.1.100}}"
 
   # === ADVANCED PROTOCOLS ===
-  - title: goshs - webdav support
+  - title: goshs - WebDAV 支持
     desc: |
-      Enable the WebDAV protocol alongside the standard web interface. This allows 
-      users to mount the server directory as a local network drive on Windows, macOS, 
-      or Linux. It is very useful for managing files as if they were on a local disk 
-      rather than using a browser.
+      在标准 Web 界面之外启用 WebDAV 协议。这允许用户在 Windows、macOS 或 Linux 上将服务器目录挂载为本地网络驱动器。对于像管理本地磁盘一样管理文件（而非使用浏览器）非常有用。
     command: "goshs -w -wp {{webdav_port|8001}}"
 
-  - title: goshs - sftp server
+  - title: goshs - SFTP 服务器
     desc: |
-      Activate a built-in SFTP server for secure file transfers over SSH. This provides 
-      a robust alternative to HTTP for users who prefer using command-line SFTP clients 
-      or FileZilla. You can customize the listening port to avoid conflicts with 
-      existing SSH services.
+      激活内置 SFTP 服务器，通过 SSH 进行安全文件传输。为喜欢使用命令行 SFTP 客户端或 FileZilla 的用户提供 HTTP 之外的可靠替代方案。你可以自定义监听端口以避免与现有 SSH 服务冲突。
     command: "goshs -sftp -sp {{sftp_port|2022}}"
 
   # === AUTOMATION AND LOGGING ===
-  - title: goshs - webhook notifications
+  - title: goshs - Webhook 通知
     desc: |
-      Configure the server to send real-time notifications to a webhook URL when 
-      actions occur. This is ideal for monitoring when a file is uploaded, downloaded, 
-      or deleted by a user. It supports popular providers like Discord, Slack, and 
-      Mattermost for easy integration into your workflow.
+      配置服务器在发生操作时向 Webhook URL 发送实时通知。非常适合监控用户上传、下载或删除文件的时间。支持 Discord、Slack 和 Mattermost 等主流提供商，便于集成到你的工作流中。
     command: "goshs -W -Wu {{webhook_url}} -Wp {{provider|Discord}} -We {{events|all}}"
 
-  - title: goshs - verbose logging to file
+  - title: goshs - 详细日志写入文件
     desc: |
-      Run the server with verbose output and redirect the logs to a specific file. 
-      This is essential for auditing purposes and troubleshooting connection issues. 
-      It captures detailed information about every request made to the server.
+      以详细输出运行服务器，并将日志重定向到特定文件。这对于审计目的和排查连接问题至关重要。它捕获对服务器发出的每个请求的详细信息。
     command: "goshs -V -o > {{logfile|access.log}}"
 
-  - title: goshs - use configuration file
+  - title: goshs - 使用配置文件
     desc: |
-      Start the server using a predefined YAML configuration file instead of 
-      command-line arguments. This allows for complex setups to be easily reused 
-      and version-controlled. You can generate a sample configuration using the 
-      -P flag to see all available options.
+      使用预定义的 YAML 配置文件而非命令行参数启动服务器。这允许复杂设置易于复用并进行版本控制。你可以使用 -P 参数生成示例配置以查看所有可用选项。
     command: "goshs -C {{config_path|config.yaml}}"

@@ -4,48 +4,56 @@ tags: [dns, enumeration, reconnaissance, footprinting, subdomain, pentest, netwo
 actions:
 # === BASIC ENUMERATION ===
 
- - title: fierce - basic domain scan
+ - title: fierce - 基本域名扫描
    desc: |
-     This command performs a standard reconnaissance of the target domain. It begins by attempting a DNS zone transfer (AXFR) to retrieve all records at once. If the transfer fails, it automatically falls back to brute-forcing subdomains using its internal wordlist. This is the most common starting point for mapping out a target's external attack surface.
+     对目标域名执行标准侦察。
+     它首先尝试 DNS 区域传送（AXFR）一次性检索所有记录，若传送失败，会自动回退到使用内部字典暴力破解子域名，这是映射目标外部攻击面的最常见起点。
    command: "fierce --domain {{domain}}"
 
- - title: fierce - brute force with custom subdomains
+ - title: fierce - 使用自定义子域名暴力破解
    desc: |
-     Use this command to perform a targeted brute force attack using a specific list of subdomain names. This is useful when you have a custom wordlist or suspect specific naming conventions like 'dev', 'staging', or 'vpn'. Providing specific subdomains can significantly speed up the discovery process compared to a full list.
+     使用特定的子域名列表执行定向暴力破解攻击。
+     当你拥有自定义字典或怀疑 dev、staging 或 vpn 等特定命名约定时非常有用，与完整列表相比，提供特定子域名可显著加快发现进程。
    command: "fierce --domain {{domain}} --subdomains {{subdomain_list|admin accounts mail}}"
 
 # === ADVANCED DISCOVERY ===
 
- - title: fierce - wide range enumeration
+ - title: fierce - 广范围枚举
    desc: |
-     This option instructs the tool to expand its search to all IP addresses within the /24 subnet of any discovered subdomain. It is an effective way to find hidden services or development servers that share the same network infrastructure as public ones. Note that this increases the number of DNS queries and may take longer to complete.
+     此选项指示工具将搜索扩展到任何已发现子域名所在 /24 子网内的所有 IP 地址。
+     这是查找与公共服务共享同一网络基础设施的隐藏服务或开发服务器的有效方式，注意这会增加 DNS 查询数量并可能耗时更长。
    command: "fierce --domain {{domain}} --wide"
 
- - title: fierce - verify subdomains with http connection
+ - title: fierce - 通过 HTTP 连接验证子域名
    desc: |
-     This command attempts an HTTP connection to every subdomain that is successfully resolved. It helps the researcher distinguish between dormant DNS records and active web applications. This is a critical step for identifying live web targets for subsequent vulnerability scanning or manual testing.
+     对每个成功解析的子域名尝试 HTTP 连接。
+     帮助研究人员区分休眠的 DNS 记录与活跃的 Web 应用，这是识别用于后续漏洞扫描或手动测试的活跃 Web 目标的关键步骤。
    command: "fierce --domain {{domain}} --connect"
 
 # === INFRASTRUCTURE ANALYSIS ===
 
- - title: fierce - scan nearby ip addresses
+ - title: fierce - 扫描邻近 IP 地址
    desc: |
-     This command traverses a specified number of IP addresses surrounding the ones discovered during the initial DNS lookup. It is designed to identify contiguous IP blocks that might belong to the same organization but lack public DNS entries. Use this to uncover "shadow IT" or secondary infrastructure that is not explicitly linked to the primary domain.
+     遍历初始 DNS 查询发现地址周围指定数量的 IP 地址。
+     旨在识别可能属于同一组织但缺乏公开 DNS 条目的连续 IP 块，可用于发现未与主域名明确关联的影子 IT 或次级基础设施。
    command: "fierce --domain {{domain}} --traverse {{count|10}}"
 
- - title: fierce - limited traversal search
+ - title: fierce - 受限遍历搜索
    desc: |
-     Use this command to limit the IP traversal search to specific domains or suffixes. This is particularly useful when the target's infrastructure is hosted in a shared environment like AWS or Azure to avoid scanning unrelated third-party assets. It ensures that the reconnaissance remains focused and relevant to the engagement's scope.
+     将 IP 遍历搜索限制在特定域名或后缀。
+     当目标基础设施托管在 AWS 或 Azure 等共享环境中时尤为有用，可避免扫描无关的第三方资产，确保侦察保持聚焦并与任务范围相关。
    command: "fierce --domain {{domain}} --subdomains {{subdomain|admin}} --search {{filter_domain}}"
 
- - title: fierce - scan internal ip range
+ - title: fierce - 扫描内部 IP 范围
    desc: |
-     This command allows the user to scan specific IP ranges using a designated DNS server. It is primarily used during internal network assessments to map out local hostnames and services. You must provide the IP of the internal DNS server to ensure that private records are correctly resolved.
+     允许用户使用指定的 DNS 服务器扫描特定 IP 范围。
+     主要用于内部网络评估，以映射本地主机名和服务，你必须提供内部 DNS 服务器的 IP 以确保私有记录被正确解析。
    command: "fierce --dns-servers {{dns_server}} --range {{ip_range|10.0.0.0/24}}"
 
 # === OUTPUT AND LOGGING ===
 
- - title: fierce - save output to file
+ - title: fierce - 保存输出到文件
    desc: |
-     This command redirects the standard output of the tool into a text file for later analysis. It is essential for documenting findings and providing data for reports or further processing by other tools. Ensure you have the necessary write permissions in the directory where the output file is being created.
+     将工具的标准输出重定向到文本文件以供日后分析。
+     对记录发现以及为报告或其他工具的进一步处理提供数据至关重要，确保在输出文件所在目录拥有必要的写入权限。
    command: "fierce --domain {{domain}} > {{output_file|results.txt}}"

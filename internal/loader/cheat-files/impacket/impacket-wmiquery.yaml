@@ -3,67 +3,67 @@ tags: [network, windows, pentest, enumeration, wmi, security, impacket]
 
 actions:
   # === AUTHENTICATION METHODS ===
-  - title: impacket-wmiquery - interactive shell with password
+  - title: impacket-wmiquery - 使用密码的交互式 shell
     desc: |
-      Establishes an interactive WQL shell using standard username and password authentication. 
-      This is the most common way to start enumerating a remote Windows host via WMI. 
-      Once connected, you can issue SELECT queries to retrieve system information, process lists, or service states.
+      使用标准用户名和密码身份验证建立交互式 WQL shell。
+      这是开始通过 WMI 枚举远程 Windows 主机的最常见方式。
+      连接后，你可以发出 SELECT 查询来检索系统信息、进程列表或服务状态。
     command: "impacket-wmiquery {{domain}}/{{username}}:{{password}}@{{target_ip}}"
 
-  - title: impacket-wmiquery - authenticate using NTLM hashes
+  - title: impacket-wmiquery - 使用 NTLM 哈希进行身份验证
     desc: |
-      Performs authentication using NTLM hashes instead of a plaintext password, enabling Pass-the-Hash (PtH) attacks. 
-      This is particularly useful during post-exploitation when you have recovered hashes from memory or the SAM database. 
-      The format for hashes is LMHASH:NTHASH; if the LM hash is empty, use the format :NTHASH.
+      使用 NTLM 哈希而非明文密码执行身份验证，实现传递哈希（PtH）攻击。
+      当你从内存或 SAM 数据库恢复出哈希后，这在后利用阶段特别有用。
+      哈希格式为 LMHASH:NTHASH；如果 LM 哈希为空，请使用 :NTHASH 格式。
     command: "impacket-wmiquery -hashes {{hash}} {{domain}}/{{username}}@{{target_ip}}"
 
-  - title: impacket-wmiquery - authenticate using Kerberos
+  - title: impacket-wmiquery - 使用 Kerberos 进行身份验证
     desc: |
-      Uses Kerberos tickets for authentication, which is often more stealthy and avoids sending NTLM traffic over the network. 
-      The -k flag instructs the tool to look for a valid TGT in the location specified by the KRB5CCNAME environment variable. 
-      It is highly recommended to use the target's FQDN (Fully Qualified Domain Name) rather than an IP address when using Kerberos.
+      使用 Kerberos 票据进行身份验证，通常更隐蔽，并避免在网络上发送 NTLM 流量。
+      -k 标志指示工具在 KRB5CCNAME 环境变量指定的位置查找有效的 TGT。
+      使用 Kerberos 时，强烈建议使用目标的 FQDN（完全限定域名）而非 IP 地址。
     command: "impacket-wmiquery -k -no-pass -dc-ip {{dc_ip}} {{domain}}/{{username}}@{{target_fqdn}}"
 
-  - title: impacket-wmiquery - authenticate using AES keys
+  - title: impacket-wmiquery - 使用 AES 密钥进行身份验证
     desc: |
-      Authenticates using Kerberos AES-128 or AES-256 keys instead of a password or NTLM hash. 
-      This is useful in modern Active Directory environments where NTLM might be disabled or monitored. 
-      The user must provide the hex-encoded AES key and ensure the environment is configured for Kerberos.
+      使用 Kerberos AES-128 或 AES-256 密钥而非密码或 NTLM 哈希进行身份验证。
+      这在 NTLM 可能被禁用或监控的现代 Active Directory 环境中很有用。
+      用户必须提供十六进制编码的 AES 密钥，并确保环境已为 Kerberos 配置。
     command: "impacket-wmiquery -aesKey {{aes_key}} -k -no-pass {{domain}}/{{username}}@{{target_fqdn}}"
 
   # === NAMESPACE AND QUERY OPTIONS ===
-  - title: impacket-wmiquery - query specific namespace
+  - title: impacket-wmiquery - 查询特定命名空间
     desc: |
-      Specifies a non-default WMI namespace for the connection. 
-      The default namespace is 'root/cimv2', but other namespaces like 'root/subscription' are critical for hunting WMI persistence. 
-      Navigating different namespaces allows access to hardware-specific info, virtualization data, or security settings.
+      为连接指定非默认的 WMI 命名空间。
+      默认命名空间是“root/cimv2”，但“root/subscription”等其他命名空间对于搜寻 WMI 持久化至关重要。
+      浏览不同命名空间可以访问硬件特定信息、虚拟化数据或安全设置。
     command: "impacket-wmiquery -namespace {{namespace|root/subscription}} {{domain}}/{{username}}:{{password}}@{{target_ip}}"
 
-  - title: impacket-wmiquery - execute queries from a file
+  - title: impacket-wmiquery - 从文件执行查询
     desc: |
-      Reads and executes a sequence of WQL queries from a local text file. 
-      This automation method is ideal for running complex audit scripts or gathering a standardized set of data across multiple hosts. 
-      Each line in the file should contain a valid WQL query to be executed by the tool.
+      从本地文本文件读取并执行一系列 WQL 查询。
+      这种自动化方法非常适合运行复杂的审计脚本，或在多台主机上收集标准化的数据集。
+      文件中的每一行都应包含一条要由工具执行的有效 WQL 查询。
     command: "impacket-wmiquery -file {{query_file}} {{domain}}/{{username}}:{{password}}@{{target_ip}}"
 
   # === ADVANCED CONFIGURATION ===
-  - title: impacket-wmiquery - set RPC authentication level
+  - title: impacket-wmiquery - 设置 RPC 身份验证级别
     desc: |
-      Defines the RPC authentication level, which can be set to 'default', 'integrity', or 'privacy'. 
-      Some WMI providers, such as the Cluster provider (root/MSCluster), strictly require the 'privacy' level for successful connection. 
-      If you encounter 'Access Denied' errors despite having correct credentials, increasing the auth level to 'privacy' may resolve the issue.
+      定义 RPC 身份验证级别，可设置为“default”“integrity”或“privacy”。
+      某些 WMI 提供程序（如 Cluster 提供程序 root/MSCluster）严格要求“privacy”级别才能成功连接。
+      如果尽管凭据正确仍遇到“Access Denied”错误，将身份验证级别提高到“privacy”可能会解决问题。
     command: "impacket-wmiquery -rpc-auth-level {{level|privacy}} {{domain}}/{{username}}:{{password}}@{{target_ip}}"
 
-  - title: impacket-wmiquery - enable debug and timestamps
+  - title: impacket-wmiquery - 启用调试和时间戳
     desc: |
-      Enables verbose debug output and adds timestamps to every log entry. 
-      This is extremely helpful for troubleshooting connection issues, DCOM errors, or protocol mismatches. 
-      The timestamps help in correlating the tool's activity with network captures or system logs on the target.
+      启用详细调试输出并为每条日志添加时间戳。
+      这对于排查连接问题、DCOM 错误或协议不匹配非常有帮助。
+      时间戳有助于将工具的活动与网络捕获或目标上的系统日志相关联。
     command: "impacket-wmiquery -debug -ts {{domain}}/{{username}}:{{password}}@{{target_ip}}"
 
-  - title: impacket-wmiquery - specify DCOM version
+  - title: impacket-wmiquery - 指定 DCOM 版本
     desc: |
-      Manually sets the DCOM version to be used during the connection attempt. 
-      This can be used to bypass specific security patches or to interoperate with older Windows systems that expect a specific version. 
-      The format required is MAJOR:MINOR, such as 5.7 for most modern Windows environments.
+      手动设置连接尝试期间要使用的 DCOM 版本。
+      这可用于绕过特定安全补丁，或与期望特定版本的较旧 Windows 系统互操作。
+      所需格式为 MAJOR:MINOR，例如大多数现代 Windows 环境的 5.7。
     command: "impacket-wmiquery -com-version {{version|5.7}} {{domain}}/{{username}}:{{password}}@{{target_ip}}"

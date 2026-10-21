@@ -3,74 +3,74 @@ tags: [network, security, pentest, enumeration, msrpc, active-directory, impacke
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: impacket-rpcmap - basic tcp enumeration
+  - title: impacket-rpcmap - 基本 TCP 枚举
     desc: |
-      Identify MSRPC interfaces listening on a remote host via TCP. 
-      This is the most common starting point, usually targeting port 135 to list available services through the Endpoint Mapper (EPM). 
-      It helps in mapping the attack surface of a Windows machine by identifying which RPC services are reachable.
+      通过 TCP 识别远程主机上监听的 MSRPC 接口。
+      这是最常见的起点，通常针对 135 端口，通过端点映射器（EPM）列出可用服务。
+      它有助于通过识别哪些 RPC 服务可达来梳理 Windows 机器的攻击面。
     command: "impacket-rpcmap ncacn_ip_tcp:{{target}}"
 
-  - title: impacket-rpcmap - rpc over http enumeration
+  - title: impacket-rpcmap - 通过 HTTP 的 RPC 枚举
     desc: |
-      Scan for interfaces using the RPC over HTTP protocol, typically on port 593. 
-      This method is useful when standard RPC ports (like 135) are blocked by firewalls but port 593 is left open for legacy support or specific web services. 
-      It attempts to map interfaces via the HTTP transport layer instead of direct TCP.
+      使用 RPC over HTTP 协议（通常在 593 端口）扫描接口。
+      当标准 RPC 端口（如 135）被防火墙阻止，但 593 端口因遗留支持或特定 Web 服务而保持开放时，此方法很有用。
+      它尝试通过 HTTP 传输层而非直接 TCP 来映射接口。
     command: "impacket-rpcmap ncacn_http:{{target}}[593]"
 
-  - title: impacket-rpcmap - named pipe enumeration
+  - title: impacket-rpcmap - 命名管道枚举
     desc: |
-      Enumerate MSRPC interfaces over a specific SMB named pipe. 
-      This action requires SMB access to the target and is effective for discovering services bound to pipes like spoolss, lsass, or samr. 
-      It is a vital step in lateral movement and internal reconnaissance to see which RPC endpoints are exposed via SMB.
+      通过特定 SMB 命名管道枚举 MSRPC 接口。
+      此操作需要对目标的 SMB 访问权限，对于发现绑定到 spoolss、lsass 或 samr 等管道的服务非常有效。
+      它是横向移动和内部侦察中查看通过 SMB 暴露哪些 RPC 端点的重要步骤。
     command: "impacket-rpcmap ncacn_np:{{target}}[\\pipe\\{{pipe_name|spoolss}}]"
 
   # === BRUTEFORCE OPERATIONS ===
-  - title: impacket-rpcmap - brute-force uuids
+  - title: impacket-rpcmap - 暴力枚举 UUID
     desc: |
-      Forcefully attempt to find MSRPC interfaces by bruteforcing UUIDs. 
-      This technique is used when the Management (MGMT) interface is disabled or restricted, preventing a standard listing of services. 
-      It can reveal hidden or undocumented endpoints that do not register themselves with the Endpoint Mapper.
+      通过暴力枚举 UUID 来强制尝试发现 MSRPC 接口。
+      当管理（MGMT）接口被禁用或受限、无法进行标准服务列表时使用此技术。
+      它可以揭示未向端点映射器注册自身的隐藏或未记录端点。
     command: "impacket-rpcmap -brute-uuids ncacn_ip_tcp:{{target}}"
 
-  - title: impacket-rpcmap - brute-force opnums for specific uuid
+  - title: impacket-rpcmap - 暴力枚举特定 UUID 的操作号
     desc: |
-      Identify available operations (opnums) for a specific MSRPC interface. 
-      By bruteforcing opnums, you can determine the range of functions a specific service supports, which is essential for developing or using exploits. 
-      The tool will iterate through operation numbers to see which ones return a valid response rather than an "opnum out of range" error.
+      识别特定 MSRPC 接口的可用操作（opnums）。
+      通过暴力枚举操作号，你可以确定特定服务支持的函数范围，这对于开发或使用漏洞利用至关重要。
+      该工具会遍历操作号，查看哪些返回有效响应，而不是“opnum out of range”错误。
     command: "impacket-rpcmap -brute-opnums -uuid {{uuid}} ncacn_ip_tcp:{{target}}"
 
-  - title: impacket-rpcmap - brute-force interface versions
+  - title: impacket-rpcmap - 暴力枚举接口版本
     desc: |
-      Attempt to identify the major versions of found UUIDs on the target. 
-      Different versions of an RPC interface might have different vulnerabilities or functional capabilities. 
-      You can specify the maximum version to check using the version-max flag to limit the scan range.
+      尝试识别目标上已发现 UUID 的主版本。
+      RPC 接口的不同版本可能具有不同的漏洞或功能。
+      你可以使用 version-max 标志指定要检查的最大版本以限制扫描范围。
     command: "impacket-rpcmap -brute-versions -version-max {{max_version|64}} ncacn_ip_tcp:{{target}}"
 
   # === AUTHENTICATION & ADVANCED TARGETING ===
-  - title: impacket-rpcmap - authenticated enumeration
+  - title: impacket-rpcmap - 已认证枚举
     desc: |
-      Perform MSRPC enumeration using valid domain or local credentials. 
-      Many sensitive RPC interfaces are protected and will not disclose information to unauthenticated users. 
-      Providing credentials allows the tool to bind to more restricted interfaces and retrieve detailed information.
+      使用有效的域或本地凭据执行 MSRPC 枚举。
+      许多敏感的 RPC 接口受到保护，不会向未认证用户泄露信息。
+      提供凭据允许工具绑定到更多受限接口并检索详细信息。
     command: "impacket-rpcmap -auth-rpc {{domain}}/{{username}}:{{password}} ncacn_ip_tcp:{{target}}"
 
-  - title: impacket-rpcmap - authentication with ntlm hashes
+  - title: impacket-rpcmap - 使用 NTLM 哈希进行身份验证
     desc: |
-      Use NTLM hashes for authentication instead of a cleartext password, facilitating Pass-the-Hash (PtH). 
-      This is particularly useful in post-exploitation scenarios where you have extracted hashes but do not have the plaintext password. 
-      Ensure the hash is provided in the format LMHASH:NTHASH.
+      使用 NTLM 哈希而非明文密码进行身份验证，实现传递哈希（PtH）。
+      在你已提取哈希但没有明文密码的后利用场景中特别有用。
+      确保哈希以 LMHASH:NTHASH 格式提供。
     command: "impacket-rpcmap -hashes-rpc {{hash}} ncacn_ip_tcp:{{target}}"
 
-  - title: impacket-rpcmap - targeted ip with hostname binding
+  - title: impacket-rpcmap - 使用主机名绑定的目标 IP
     desc: |
-      Specify a target IP address manually while using a hostname in the string binding. 
-      This is helpful when the target host's NetBIOS name or DNS name cannot be resolved by your local system. 
-      The tool will connect to the IP provided in the target-ip flag while using the name in the binding string for the RPC request.
+      手动指定目标 IP 地址，同时在字符串绑定中使用主机名。
+      当目标主机的 NetBIOS 名称或 DNS 名称无法被本地系统解析时，这很有帮助。
+      工具将连接到 target-ip 标志中提供的 IP，同时在绑定字符串中使用该名称进行 RPC 请求。
     command: "impacket-rpcmap -target-ip {{ip_address}} ncacn_ip_tcp:{{hostname}}"
 
-  - title: impacket-rpcmap - scan through rpc proxy
+  - title: impacket-rpcmap - 通过 RPC 代理扫描
     desc: |
-      Enumerate interfaces through an RPC Proxy, often used in Exchange or RDS environments. 
-      This allows you to test RPC connectivity through web-based proxies that expose internal RPC services to the internet. 
-      It is a specialized command for auditing the security of Outlook AnyWhere or Remote Desktop Gateway configurations.
+      通过 RPC 代理枚举接口，常用于 Exchange 或 RDS 环境。
+      这允许你通过将内部 RPC 服务暴露到互联网的基于 Web 的代理来测试 RPC 连通性。
+      它是审计 Outlook AnyWhere 或远程桌面网关配置安全性的专用命令。
     command: "impacket-rpcmap ncacn_http:{{target}}[{{port|6001}},RpcProxy={{proxy_host}}:443]"

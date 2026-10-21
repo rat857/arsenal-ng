@@ -3,77 +3,59 @@ tags: [network, snmp, scanner, pentest, reconnaissance, enumeration, information
 
 actions:
   # === BASIC SCANNING ===
-  - title: onesixtyone - basic single target scan
+  - title: onesixtyone - 基础单目标扫描
     desc: |
-      Performs a simple SNMP scan against a single IP address using a specific community string.
-      This command is primarily used to verify if a device responds to standard SNMP requests by fetching the sysDescr OID.
-      It is an essential first step in network reconnaissance to identify the hardware and OS version of a target.
-      By default, it uses the community string provided in the command line (e.g., public).
+      使用特定 community 字符串对单个 IP 地址执行简单的 SNMP 扫描。此命令主要通过获取 sysDescr OID 来验证设备是否响应标准 SNMP 请求。
+      这是识别目标硬件和 OS 版本的网络侦察的重要第一步。默认使用命令行中提供的 community 字符串（如 public）。
     command: "onesixtyone {{target}} {{community|public}}"
 
-  - title: onesixtyone - scan a network range
+  - title: onesixtyone - 扫描网络范围
     desc: |
-      Scans an entire CIDR network range to discover active SNMP-enabled devices.
-      This is highly efficient for large-scale discovery because the tool sends requests asynchronously.
-      The output will list all responding IP addresses along with their system descriptions.
-      It is particularly useful during internal penetration tests to map out infrastructure quickly.
+      扫描整个 CIDR 网络范围以发现活动的 SNMP 设备。这对大规模发现非常高效，因为工具异步发送请求。
+      输出会列出所有响应的 IP 地址及其系统描述。在内部渗透测试中特别有助于快速梳理基础设施。
     command: "onesixtyone {{network_range|192.168.1.0/24}} {{community|public}}"
 
   # === ENUMERATION & BRUTE FORCE ===
-  - title: onesixtyone - community string brute force
+  - title: onesixtyone - Community 字符串暴力破解
     desc: |
-      Attempts to find valid SNMP community strings by using a dictionary file against a target.
-      Since many administrators change default strings for security, using a wordlist is crucial for discovery.
-      The tool iterates through the file and reports any successful "handshakes" that return data.
-      Note that while SNMP v1/v2c doesn't usually have lockout policies, high-frequency attempts might be logged by IDS.
+      通过对目标使用字典文件尝试找到有效的 SNMP community 字符串。由于许多管理员出于安全更改默认字符串，使用字典对发现至关重要。
+      工具会遍历文件并报告任何返回数据的成功握手。注意虽然 SNMP v1/v2c 通常没有锁定策略，但高频尝试可能被 IDS 记录。
     command: "onesixtyone -c {{wordlist|/usr/share/doc/onesixtyone/dict.txt}} {{target}}"
 
-  - title: onesixtyone - multi-target scan from file
+  - title: onesixtyone - 从文件多目标扫描
     desc: |
-      Reads a list of target IP addresses or network ranges from an input file and scans them.
-      This allows for more organized testing when you have a pre-filtered list of hosts from other tools like Nmap.
-      You can combine this with a community wordlist to perform mass enumeration across different segments.
-      It is an efficient way to automate the discovery process across multiple disparate targets.
+      从输入文件读取目标 IP 地址或网络范围列表并扫描它们。当你已有来自 Nmap 等其他工具的预过滤主机列表时，可实现更有组织的测试。
+      可结合 community 字典对不同网段执行大规模枚举。这是跨多个不同目标自动化发现过程的高效方式。
     command: "onesixtyone -i {{input_file}} -c {{wordlist|dict.txt}}"
 
   # === ADVANCED CONFIGURATION ===
-  - title: onesixtyone - adjust packet delay for stealth or stability
+  - title: onesixtyone - 调整数据包延迟以实现隐蔽或稳定
     desc: |
-      Sets the waiting interval in milliseconds between sending packets to the target(s).
-      Increasing the delay (default is 10ms) can help bypass simple rate-limiting or prevent network congestion.
-      It is recommended to use a higher value like 100ms when scanning sensitive industrial control systems (ICS).
-      Slower scans are also less likely to trigger high-load alerts on older networking hardware.
+      设置向目标发送数据包之间的等待间隔（毫秒）。增加延迟（默认为 10ms）可帮助绕过简单的速率限制或防止网络拥塞。
+      扫描敏感的工业控制系统（ICS）时建议使用 100ms 等更高值。较慢的扫描也不太可能在较旧的网络硬件上触发高负载告警。
     command: "onesixtyone -w {{delay|100}} -i {{input_file}} -c {{wordlist}}"
 
-  - title: onesixtyone - scan on a custom snmp port
+  - title: onesixtyone - 在自定义 SNMP 端口扫描
     desc: |
-      Targets a non-standard port for SNMP discovery instead of the default UDP port 161.
-      Administrators occasionally move SNMP to different ports to avoid automated discovery and basic scans.
-      This command is useful when initial scans fail but you suspect an SNMP service is hidden elsewhere.
-      Ensure your firewall rules allow outgoing traffic on the specified custom port.
+      针对非标准端口进行 SNMP 发现，而非默认的 UDP 端口 161。管理员偶尔会将 SNMP 移到不同端口以避免自动发现和基础扫描。
+      当初始扫描失败但你怀疑 SNMP 服务藏在别处时，此命令很有用。确保你的防火墙规则允许指定自定义端口的出站流量。
     command: "onesixtyone -p {{port|16161}} {{target}} {{community|public}}"
 
   # === OUTPUT MANAGEMENT ===
-  - title: onesixtyone - log results to a file
+  - title: onesixtyone - 将结果记录到文件
     desc: |
-      Saves the scan results to a specified output file for later analysis and documentation.
-      This is vital for professional engagements where you must provide proof of discovery and findings.
-      The tool will log the IP address, the community string that worked, and the system description.
-      Using this with the quiet mode (-q) is common when you only want the file as a record without terminal clutter.
+      将扫描结果保存到指定输出文件，供后续分析和文档化。在必须提供发现证据的专业测试中至关重要。
+      工具会记录 IP 地址、有效的 community 字符串和系统描述。当只想将文件作为记录而不让终端杂乱时，通常结合安静模式（-q）使用。
     command: "onesixtyone -o {{output_file|results.log}} {{target}} {{community|public}}"
 
-  - title: onesixtyone - short output mode
+  - title: onesixtyone - 简短输出模式
     desc: |
-      Displays only the IP addresses of the responding hosts without the full system description.
-      This "short mode" is perfect for piping the output into other command-line tools or scripts.
-      It allows for quick extraction of "live" SNMP targets for further processing with tools like snmp-check or snmpwalk.
-      It simplifies the terminal view when scanning very large network ranges.
+      只显示响应主机的 IP 地址，不显示完整系统描述。这种简短模式非常适合将输出管道给其他命令行工具或脚本。
+      它允许快速提取存活的 SNMP 目标，以便用 snmp-check 或 snmpwalk 等工具进一步处理。在扫描非常大的网络范围时简化终端视图。
     command: "onesixtyone -s {{target}} {{community|public}}"
 
-  - title: onesixtyone - debug and verbose mode
+  - title: onesixtyone - 调试与详细模式
     desc: |
-      Enables debug mode to provide more information about the packets being sent and received.
-      Using the flag twice (-d -d) increases the verbosity further, showing detailed packet processing.
-      This is primarily used for troubleshooting connectivity issues or verifying if the tool is working correctly.
-      It can help identify why certain hosts are not responding even if they appear to be up.
+      启用调试模式，提供更多关于发送和接收数据包的信息。使用两次该标志（-d -d）会进一步提高详细程度，显示详细的数据包处理。
+      主要用于排查连通性问题或验证工具是否正常工作。可帮助识别为什么某些看似在线的主机没有响应。
     command: "onesixtyone -d {{target}} {{community|public}}"

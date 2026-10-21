@@ -3,134 +3,116 @@ tags: [vulnerability-scanner, security, pentest, automation, network, web, recon
 
 actions:
   # === TARGETING & BASIC SCANS ===
-  - title: nuclei - scan single target
+  - title: nuclei - 扫描单个目标
     desc: |
-      Runs a standard vulnerability scan against a single target URL or host.
-      This command uses the default template directory to identify misconfigurations and vulnerabilities.
-      It is the most common entry point for a quick security assessment of a specific web application.
+      对单个目标 URL 或主机运行标准漏洞扫描。此命令使用默认模板目录识别错误配置和漏洞。
+      这是对特定 Web 应用进行快速安全评估的最常见入口。
     command: "nuclei -u {{target}}"
 
-  - title: nuclei - scan list of targets
+  - title: nuclei - 扫描目标列表
     desc: |
-      Executes templates against multiple targets provided in a line-separated text file.
-      This is ideal for large-scale infrastructure scanning or bug bounty automation.
-      Ensure the file contains valid URLs or IP addresses to avoid resolution errors.
+      对以行分隔文本文件提供的多个目标执行模板。适合大规模基础设施扫描或漏洞赏金自动化。
+      确保文件包含有效的 URL 或 IP 地址以避免解析错误。
     command: "nuclei -l {{targets_file|hosts.txt}}"
 
-  - title: nuclei - automatic scan with technology detection
+  - title: nuclei - 带技术识别的自动扫描
     desc: |
-      Utilizes Wappalyzer-based technology detection to automatically map relevant templates to the target.
-      This mode reduces scan time by only running templates that match the identified tech stack (e.g., WordPress, Nginx).
-      It is highly recommended for efficient scanning without manually specifying template tags.
+      利用基于 Wappalyzer 的技术检测，自动将相关模板映射到目标。此模式只运行与识别出的技术栈（如 WordPress、Nginx）匹配的模板，从而减少扫描时间。
+      对于无需手动指定模板标签的高效扫描，强烈推荐。
     command: "nuclei -u {{target}} -as"
 
   # === TEMPLATE FILTERING & SELECTION ===
-  - title: nuclei - scan by specific tags
+  - title: nuclei - 按特定标签扫描
     desc: |
-      Filters and runs only the templates that match specific tags like cve, exposure, or default-login.
-      This allows for surgical scanning when looking for specific classes of vulnerabilities.
-      Multiple tags can be provided as a comma-separated list to broaden the scope.
+      过滤并只运行匹配 cve、exposure 或 default-login 等特定标签的模板。这允许在寻找特定类别漏洞时进行精准扫描。
+      可以提供多个以逗号分隔的标签以扩大范围。
     command: "nuclei -u {{target}} -tags {{tags|cve,config,exposure}}"
 
-  - title: nuclei - scan by severity level
+  - title: nuclei - 按严重程度扫描
     desc: |
-      Runs templates filtered by their severity rating, such as critical, high, or medium.
-      This is extremely useful during time-sensitive engagements to prioritize the most impactful findings first.
-      Use this to ignore informational or low-severity findings that might clutter your report.
+      运行按严重程度（如 critical、high 或 medium）过滤的模板。在时间紧迫的测试中，这非常有用，可优先处理影响最大的发现。
+      用它忽略可能会弄乱报告的信息级或低严重程度发现。
     command: "nuclei -u {{target}} -severity {{severity|critical,high}}"
 
-  - title: nuclei - run new templates only
+  - title: nuclei - 仅运行新模板
     desc: |
-      Executes only the templates that were added in the latest release of the nuclei-templates repository.
-      This is a great way to stay updated with the latest 1-day vulnerabilities and zero-day disclosures.
-      It ensures you are checking for the most recent threats without re-scanning old vulnerabilities.
+      只执行 nuclei-templates 仓库最新版本中新增的模板。这是跟上最新 1-day 漏洞和零日披露的绝佳方式。
+      它确保你在检查最新威胁，而无需重新扫描旧漏洞。
     command: "nuclei -u {{target}} -nt"
 
-  - title: nuclei - run specific template directory
+  - title: nuclei - 运行特定模板目录
     desc: |
-      Targets a specific category of vulnerabilities by pointing to a specific template folder.
-      For example, you can point to 'http/cves/' to only check for known CVEs.
-      This helps in focusing the scan on a specific protocol or vulnerability type.
+      通过指向特定模板文件夹来针对特定类别的漏洞。例如，你可以指向 http/cves/ 只检查已知 CVE。
+      这有助于将扫描聚焦于特定协议或漏洞类型。
     command: "nuclei -u {{target}} -t {{template_path|http/vulnerabilities/}}"
 
   # === ADVANCED SCANNING MODES ===
-  - title: nuclei - headless browser scanning
+  - title: nuclei - 无头浏览器扫描
     desc: |
-      Enables templates that require a headless browser to render JavaScript-heavy applications.
-      This is necessary for modern Single Page Applications (SPAs) where standard HTTP requests are insufficient.
-      Note that this requires more system resources and may be slower than standard scanning.
+      启用需要无头浏览器渲染 JavaScript 密集型应用的模板。这对标准 HTTP 请求不足的现代单页应用（SPA）是必要的。
+      注意这需要更多系统资源，可能比标准扫描更慢。
     command: "nuclei -u {{target}} -headless"
 
-  - title: nuclei - DAST / Fuzzing mode
+  - title: nuclei - DAST / 模糊测试模式
     desc: |
-      Enables Dynamic Application Security Testing (DAST) templates focused on parameter fuzzing.
-      This mode attempts to find vulnerabilities like XSS, SQLi, and SSRF by manipulating input fields.
-      Use this with caution as it can be intrusive and might generate a significant amount of traffic.
+      启用聚焦于参数模糊测试的动态应用安全测试（DAST）模板。此模式尝试通过操纵输入字段发现 XSS、SQLi 和 SSRF 等漏洞。
+      请谨慎使用，因为它可能具有侵入性并产生大量流量。
     command: "nuclei -u {{target}} -dast"
 
-  - title: nuclei - passive scanning
+  - title: nuclei - 被动扫描
     desc: |
-      Enables passive HTTP response processing mode, which does not send new requests for every template.
-      It analyzes the responses received from initial requests to identify vulnerabilities or exposures.
-      This is much quieter and less intrusive than active scanning, making it suitable for stealthy reconnaissance.
+      启用被动 HTTP 响应处理模式，不为每个模板发送新请求。它分析初始请求收到的响应以识别漏洞或暴露。
+      这比主动扫描安静得多且侵入性更小，适合隐蔽侦察。
     command: "nuclei -u {{target}} -passive"
 
   # === PERFORMANCE & EVASION ===
-  - title: nuclei - rate limiting and concurrency
+  - title: nuclei - 速率限制与并发
     desc: |
-      Controls the speed of the scan by setting the maximum number of requests per second.
-      Adjusting rate limits is crucial to avoid triggering WAF blocks or crashing fragile legacy services.
-      'rl' sets requests per second, while 'c' sets the number of templates to run in parallel.
+      通过设置每秒最大请求数来控制扫描速度。调整速率限制对于避免触发 WAF 阻断或压垮脆弱的遗留服务至关重要。
+      rl 设置每秒请求数，而 c 设置并行运行的模板数。
     command: "nuclei -u {{target}} -rl {{rate|50}} -c {{concurrency|25}}"
 
-  - title: nuclei - custom headers and cookies
+  - title: nuclei - 自定义 Header 和 Cookie
     desc: |
-      Injects custom HTTP headers or authentication cookies into every request sent by Nuclei.
-      This is essential for scanning protected areas of an application that require an active session.
-      Format the header as 'Header-Name: value' and use multiple flags for multiple headers.
+      向 Nuclei 发送的每个请求注入自定义 HTTP header 或认证 Cookie。这对扫描需要活动会话的应用受保护区域至关重要。
+      将 header 格式化为 Header-Name: value，多个 header 使用多个标志。
     command: "nuclei -u {{target}} -H \"{{header|Cookie: session=12345}}\""
 
-  - title: nuclei - proxy integration
+  - title: nuclei - 代理集成
     desc: |
-      Routes all outgoing traffic through a specified HTTP or SOCKS5 proxy.
-      This can be used to tunnel traffic through Burp Suite for deeper analysis or to mask the scanner's IP address.
-      It is also useful for reaching internal targets through a pivot host.
+      将所有出站流量经由指定的 HTTP 或 SOCKS5 代理转发。可用于将流量隧道到 Burp Suite 进行深入分析，或掩盖扫描器的 IP 地址。
+      也可用于通过跳板主机到达内部目标。
     command: "nuclei -u {{target}} -proxy {{proxy_url|http://127.0.0.1:8080}}"
 
   # === OSINT & EXTERNAL ENGINES ===
-  - title: nuclei - uncover engine (Shodan/Censys)
+  - title: nuclei - Uncover 引擎（Shodan/Censys）
     desc: |
-      Integrates with 'Uncover' to pull targets directly from search engines like Shodan, Censys, or Fofa.
-      This allows you to scan the entire internet for specific patterns or vulnerabilities based on a query.
-      You must have the respective API keys configured in your environment or config file.
+      与 Uncover 集成，直接从 Shodan、Censys 或 Fofa 等搜索引擎拉取目标。这允许你根据查询扫描整个互联网以寻找特定模式或漏洞。
+      你必须在环境或配置文件中配置相应的 API 密钥。
     command: "nuclei -uc -uq \"{{query|app:'Apache}}\" -ue {{engine|shodan}}"
 
   # === REPORTING & OUTPUT ===
-  - title: nuclei - export results to JSON
+  - title: nuclei - 导出结果为 JSON
     desc: |
-      Saves the scan findings into a JSON format for easy integration with other tools or custom scripts.
-      JSON output includes detailed metadata about each finding, including request/response pairs if enabled.
-      This is the preferred format for automated pipelines and data processing.
+      将扫描发现保存为 JSON 格式，便于与其他工具或自定义脚本集成。JSON 输出包含每个发现的详细元数据，若启用还包括请求/响应对。
+      这是自动化流水线和数据处理的首选格式。
     command: "nuclei -u {{target}} -je {{output_file|results.json}}"
 
-  - title: nuclei - export results to Markdown
+  - title: nuclei - 导出结果为 Markdown
     desc: |
-      Generates a human-readable report in Markdown format, organized by vulnerability type.
-      This is perfect for creating quick documentation or reports for clients and stakeholders.
-      The output directory will contain individual files for different findings.
+      生成按漏洞类型组织的 Markdown 格式人类可读报告。适合为客户和利益相关者快速创建文档或报告。
+      输出目录将包含针对不同发现的单独文件。
     command: "nuclei -u {{target}} -me {{output_dir|nuclei_report}}"
 
-  - title: nuclei - silent mode with only findings
+  - title: nuclei - 仅显示发现的静默模式
     desc: |
-      Suppresses all banner and progress information, displaying only the actual vulnerabilities found.
-      This is useful when piping Nuclei output into other command-line tools like 'notify' or 'grep'.
-      It keeps the terminal clean and focuses only on actionable data.
+      抑制所有横幅和进度信息，只显示实际发现的漏洞。当将 Nuclei 输出管道到 notify 或 grep 等其他命令行工具时很有用。
+      它保持终端干净，只聚焦于可操作的数据。
     command: "nuclei -u {{target}} -silent"
 
   # === MAINTENANCE ===
-  - title: nuclei - update templates and tool
+  - title: nuclei - 更新模板和工具
     desc: |
-      Updates the Nuclei engine and the community-provided templates to the latest version.
-      Regular updates are vital because the community adds dozens of new vulnerability templates every week.
-      Run this frequently to ensure your scanning capabilities remain current.
+      将 Nuclei 引擎和社区提供的模板更新到最新版本。定期更新至关重要，因为社区每周都会添加数十个新的漏洞模板。
+      经常运行以确保你的扫描能力保持最新。
     command: "nuclei -ut && nuclei -version"

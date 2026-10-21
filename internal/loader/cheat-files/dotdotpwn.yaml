@@ -4,83 +4,72 @@ tags: [network, security, pentest, enumeration, exploitation, web, fuzzer, direc
 actions:
 # === HTTP & WEB FUZZING ===
 
- - title: dotdotpwn - basic http fuzzing
+ - title: dotdotpwn - 基本 HTTP 模糊测试
    desc: |
-     Performs a standard directory traversal attack against a target web server. 
-     This is the most common starting point for identifying vulnerabilities in web servers running on default ports. 
-     The tool will attempt to access various sensitive files using a variety of traversal patterns.
+     对目标 Web 服务器执行标准的目录遍历攻击。
+     这是识别运行在默认端口上的 Web 服务器漏洞的最常见起点，工具会使用各种遍历模式尝试访问多个敏感文件。
    command: "dotdotpwn -m http -h {{host}}"
 
- - title: dotdotpwn - fuzzing specific URL parameter
+ - title: dotdotpwn - 模糊测试特定 URL 参数
    desc: |
-     Targets a specific URL parameter by replacing its value with the TRAVERSAL keyword. 
-     This is highly effective when you suspect a specific script or endpoint (like download.php?file=) is vulnerable. 
-     You must explicitly include the "TRAVERSAL" string in the URL to indicate the injection point.
+     通过将特定 URL 参数的值替换为 TRAVERSAL 关键字来定向测试该参数。
+     当你怀疑特定脚本或端点（如 download.php?file=）存在漏洞时非常有效，必须在 URL 中显式包含 TRAVERSAL 字符串以指示注入点。
    command: "dotdotpwn -m http-url -u {{url|http://example.com/id.php?file=TRAVERSAL}}"
 
- - title: dotdotpwn - fuzzing using POST method
+ - title: dotdotpwn - 使用 POST 方法模糊测试
    desc: |
-     Changes the default HTTP request method from GET to POST for the specified target. 
-     Many modern applications process file paths or resource identifiers through POST data rather than URL parameters. 
-     This command ensures you are testing the application's handling of data sent in the request body.
+     将指定目标的默认 HTTP 请求方法从 GET 改为 POST。
+     许多现代应用通过 POST 数据而非 URL 参数处理文件路径或资源标识符，此命令可确保测试应用对请求体中数据的处理。
    command: "dotdotpwn -m http -h {{host}} -M POST"
 
- - title: dotdotpwn - search for specific file with keyword match
+ - title: dotdotpwn - 带关键词匹配搜索特定文件
    desc: |
-     Configures the fuzzer to look for a specific file and verify success by matching a text pattern in the response. 
-     This is crucial for reducing false positives, as it ensures the content returned actually contains the expected data (e.g., "root:" in /etc/passwd). 
-     It is especially useful when targets return custom error pages with a 200 OK status code.
+     将模糊器配置为查找特定文件，并通过匹配响应中的文本模式来验证成功。
+     对减少误报至关重要，因为它确保返回的内容确实包含预期数据（如 /etc/passwd 中的 root:），在目标以 200 OK 状态码返回自定义错误页时尤为有用。
    command: "dotdotpwn -m http-url -u {{url_with_traversal}} -f {{file|/etc/passwd}} -k {{keyword|root:}}"
 
 # === PROTOCOL SPECIFIC FUZZING ===
 
- - title: dotdotpwn - ftp service fuzzing
+ - title: dotdotpwn - FTP 服务模糊测试
    desc: |
-     Scans an FTP server to identify directory traversal vulnerabilities that could allow escaping the home directory. 
-     The module uses common FTP commands to test if the service properly restricts file access. 
-     You can provide specific credentials if the server does not support anonymous login.
+     扫描 FTP 服务器以识别可能允许逃逸主目录的目录遍历漏洞。
+     该模块使用常见的 FTP 命令测试服务是否正确限制文件访问，若服务器不支持匿名登录，可提供特定凭据。
    command: "dotdotpwn -m ftp -h {{host}} -U {{username|anonymous}} -P {{password|anonymous@example.com}}"
 
- - title: dotdotpwn - tftp service fuzzing
+ - title: dotdotpwn - TFTP 服务模糊测试
    desc: |
-     Initiates a directory traversal scan against a TFTP (Trivial File Transfer Protocol) service. 
-     TFTP is often used for booting diskless workstations or transferring configuration files and often lacks authentication. 
-     Note that TFTP usually runs on UDP port 69 and might require specific firewall rules to test.
+     对 TFTP（简单文件传输协议）服务发起目录遍历扫描。
+     TFTP 常用于启动无盘工作站或传输配置文件，通常缺乏认证，请注意 TFTP 一般运行在 UDP 69 端口，测试可能需要特定的防火墙规则。
    command: "dotdotpwn -m tftp -h {{host}}"
 
 # === ADVANCED CONFIGURATION & OPTIMIZATION ===
 
- - title: dotdotpwn - advanced scanning with depth and OS type
+ - title: dotdotpwn - 带深度和操作系统类型的高级扫描
    desc: |
-     Optimizes the fuzzing process by specifying the traversal depth and the target operating system. 
-     Setting the OS type (windows, unix, or generic) helps the tool select the most relevant file paths to attempt. 
-     Increasing the depth (e.g., to 8 or 10) allows the tool to search deeper within the file system hierarchy.
+     通过指定遍历深度和目标操作系统来优化模糊测试过程。
+     设置操作系统类型（windows、unix 或 generic）有助于工具选择最相关的文件路径进行尝试，增大深度（如 8 或 10）可让工具在文件系统层级中搜索得更深。
    command: "dotdotpwn -m http -h {{host}} -d {{depth|8}} -o {{os_type|unix}}"
 
- - title: dotdotpwn - fuzzing with Nmap OS detection
+ - title: dotdotpwn - 结合 Nmap 操作系统检测的模糊测试
    desc: |
-     Integrates with Nmap to automatically detect the target's operating system before the scan starts. 
-     This ensures that the fuzzer uses the most intelligent payloads relevant to the actual target environment. 
-     Be aware that this requires Nmap to be installed and might require elevated privileges (sudo) for accurate fingerprinting.
+     集成 Nmap 在扫描开始前自动检测目标操作系统。
+     这可确保模糊器使用与实际目标环境最相关的智能载荷，请注意这需要安装 Nmap，且准确的指纹识别可能需要提权（sudo）。
    command: "dotdotpwn -m http -h {{host}} -O"
 
- - title: dotdotpwn - slow fuzzing with custom delay
+ - title: dotdotpwn - 带自定义延迟的慢速模糊测试
    desc: |
-     Sets a custom time delay between each request sent to the target host. 
-     Using a delay is important to avoid overloading the target server or triggering rate-limiting and Intrusion Detection Systems (IDS). 
-     The value is specified in milliseconds (default is 300ms).
+     设置发送到目标主机的每个请求之间的自定义时间延迟。
+     使用延迟对于避免压垮目标服务器或触发速率限制及入侵检测系统（IDS）很重要，值以毫秒为单位指定（默认 300ms）。
    command: "dotdotpwn -m http -h {{host}} -t {{delay_ms|500}}"
 
- - title: dotdotpwn - quiet mode and report generation
+ - title: dotdotpwn - 静默模式与报告生成
    desc: |
-     Runs the fuzzer in quiet mode while saving the results to a specified report file. 
-     This is ideal for automated pentesting pipelines or long-running scans where you don't want to flood the terminal. 
-     The resulting text file will contain all the successfully identified traversal paths.
+     以静默模式运行模糊器，同时将结果保存到指定的报告文件。
+     非常适合自动化渗透测试管道或不想淹没终端的长时间扫描，生成的文本文件将包含所有成功识别的遍历路径。
    command: "dotdotpwn -m http -h {{host}} -q -r {{report_name|results.txt}}"
 
- - title: dotdotpwn - break on first vulnerability found
+ - title: dotdotpwn - 发现首个漏洞即停止
    desc: |
-     Instructs the tool to stop the fuzzing process immediately after the first vulnerability is confirmed. 
-     This is useful for quick assessments or "Proof of Concept" tasks where you only need to prove a weakness exists. 
-     It saves time and reduces the number of requests sent to the target server.
+     指示工具在确认第一个漏洞后立即停止模糊测试过程。
+     对快速评估或只需证明弱点存在的概念验证任务非常有用，可节省时间并减少发送到目标服务器的请求数量。
    command: "dotdotpwn -m http -h {{host}} -b"

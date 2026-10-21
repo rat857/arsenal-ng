@@ -3,68 +3,68 @@ tags: [network, security, pentest, enumeration, smtp, email, scanner]
 
 actions:
   # === BASIC ENUMERATION ===
-  - title: smtp-user-enum - check single username
+  - title: smtp-user-enum - 检查单个用户名
     desc: |
-      Perform a basic check for a single username on a specific target host using the default VRFY method.
-      This is the quickest way to verify if a known account exists without triggering excessive noise from a wordlist.
-      Be aware that many modern SMTP servers disable the VRFY command by default to prevent this type of reconnaissance.
-      It returns a positive result if the server confirms the existence of the user.
+      使用默认的 VRFY 方法在特定目标主机上对单个用户名执行基础检查。
+      这是验证已知账户是否存在的最快方式，而不会因词表产生过多噪声。
+      请注意，许多现代 SMTP 服务器默认禁用 VRFY 命令以防止此类侦察。
+      如果服务器确认用户存在，它会返回正结果。
     command: "smtp-user-enum -u {{username}} -t {{target}}"
 
-  - title: smtp-user-enum - enumerate users from file
+  - title: smtp-user-enum - 从文件枚举用户
     desc: |
-      Iterate through a list of potential usernames provided in a text file against a specific target host.
-      This action uses the default VRFY method to query the server about each entry in the provided wordlist.
-      It is a standard reconnaissance technique during penetration tests to identify valid system accounts or email addresses.
-      Ensure you use a relevant wordlist to increase the chances of finding valid users.
+      遍历文本文件中提供的潜在用户名列表，对特定目标主机进行查询。
+      此操作使用默认的 VRFY 方法向服务器查询词表中的每个条目。
+      这是渗透测试期间识别有效系统账户或电子邮件地址的标准侦察技术。
+      确保使用相关的词表以增加找到有效用户的机会。
     command: "smtp-user-enum -U {{user_file|/usr/share/wordlists/metasploit/unix_users.txt}} -t {{target}}"
 
   # === METHOD-SPECIFIC ENUMERATION ===
-  - title: smtp-user-enum - enumerate using EXPN method
+  - title: smtp-user-enum - 使用 EXPN 方法枚举
     desc: |
-      Use the EXPN (Expand) SMTP command to identify the members of a mailing list or a single alias.
-      If the server supports EXPN, this method can reveal the actual system usernames associated with an alias or distribution group.
-      This command is often disabled on hardened servers because it discloses internal organizational structure.
-      It is particularly effective for uncovering administrative accounts hidden behind generic aliases.
+      使用 EXPN（Expand）SMTP 命令识别邮件列表或单个别名的成员。
+      如果服务器支持 EXPN，此方法可以揭示与别名或通讯组关联的实际系统用户名。
+      此命令在加固的服务器上通常被禁用，因为它会披露内部组织结构。
+      它对于发现隐藏在通用别名背后的管理账户特别有效。
     command: "smtp-user-enum -M EXPN -U {{user_file}} -t {{target}}"
 
-  - title: smtp-user-enum - enumerate using RCPT TO method
+  - title: smtp-user-enum - 使用 RCPT TO 方法枚举
     desc: |
-      Utilize the RCPT TO method which is often available even when VRFY and EXPN are explicitly disabled.
-      This method mimics the start of a real email delivery process to see if the server accepts the recipient's address.
-      You may need to provide a sender address using the -f flag to bypass basic anti-spam filters that check for valid senders.
-      Note that this method can be more "noisy" in logs compared to VRFY or EXPN.
+      利用 RCPT TO 方法，即使 VRFY 和 EXPN 被显式禁用，它通常仍可用。
+      此方法模拟真实邮件投递过程的开始，以查看服务器是否接受收件人地址。
+      你可能需要使用 -f 标志提供发件人地址，以绕过检查有效发件人的基础反垃圾邮件过滤器。
+      请注意，与 VRFY 或 EXPN 相比，此方法在日志中可能更「嘈杂」。
     command: "smtp-user-enum -M RCPT -f {{from_address|admin@example.com}} -U {{user_file}} -t {{target}}"
 
   # === ADVANCED SCENARIOS ===
-  - title: smtp-user-enum - enumerate full email addresses
+  - title: smtp-user-enum - 枚举完整电子邮件地址
     desc: |
-      Append a specific domain to every username in the list to guess full email addresses instead of just local usernames.
-      This is highly useful when targeting mail servers that host multiple domains or require the full 'user@domain.com' format for validation.
-      It helps in mapping out the corporate email structure accurately for social engineering or further attacks.
-      Use this when the target service acts as a gateway for an entire organization.
+      将特定域名附加到列表中的每个用户名，以猜测完整电子邮件地址，而不仅仅是本地用户名。
+      这在针对托管多个域名或需要完整 user@domain.com 格式进行验证的邮件服务器时非常有用。
+      它有助于准确映射企业电子邮件结构，以用于社会工程或进一步攻击。
+      当目标服务充当整个组织的网关时使用。
     command: "smtp-user-enum -D {{domain}} -U {{user_file}} -t {{target}}"
 
-  - title: smtp-user-enum - scan multiple targets simultaneously
+  - title: smtp-user-enum - 同时扫描多个目标
     desc: |
-      Provide a file containing multiple target IP addresses or hostnames to scan for the same user list.
-      The tool will cycle through each host in the target list, performing enumeration for every user in the username file.
-      This is an efficient way to scan entire network segments or mail clusters for common administrative accounts.
-      Be careful with the combination of large user lists and large target lists as it can take a significant amount of time.
+      提供包含多个目标 IP 地址或主机名的文件，对同一用户列表进行扫描。
+      该工具会循环遍历目标列表中的每个主机，对用户名文件中的每个用户执行枚举。
+      这是扫描整个网段或邮件集群中常见管理账户的高效方式。
+      请注意，大型用户列表与大型目标列表组合可能耗费大量时间。
     command: "smtp-user-enum -U {{user_file}} -T {{target_list}}"
 
-  - title: smtp-user-enum - customized port and process count
+  - title: smtp-user-enum - 自定义端口和进程数
     desc: |
-      Execute a scan on a non-standard TCP port while adjusting the number of parallel processes for speed.
-      Increasing the process count (-m) makes the scan faster but significantly increases the risk of being rate-limited or blocked by a firewall.
-      Specifying a custom port is necessary when SMTP services are moved to ports like 587 or 2525 for obfuscation.
-      Always monitor the output for timeouts or "Connection Refused" errors when increasing concurrency.
+      在非标准 TCP 端口上执行扫描，同时调整并行进程数以提升速度。
+      增加进程数（-m）会使扫描更快，但显著增加被防火墙限速或阻止的风险。
+      当 SMTP 服务出于混淆目的被移动到 587 或 2525 等端口时，指定自定义端口是必要的。
+      增加并发时，始终监控输出中的超时或 Connection Refused 错误。
     command: "smtp-user-enum -p {{port|25}} -m {{processes|10}} -U {{user_file}} -t {{target}}"
 
-  - title: smtp-user-enum - verbose debugging scan
+  - title: smtp-user-enum - 详细调试扫描
     desc: |
-      Run the enumeration with verbose and debugging output enabled to see the raw SMTP responses.
-      This is critical when the tool provides unexpected results or if you suspect the server is providing false positives/negatives.
-      It reveals the exact response codes (like 250, 550, or 451) returned by the remote SMTP server.
-      Use this to troubleshoot connectivity issues or to understand how a specific server's security settings are behaving.
+      启用详细和调试输出运行枚举，以查看原始 SMTP 响应。
+      当工具给出意外结果或你怀疑服务器提供误报/漏报时，这至关重要。
+      它会揭示远程 SMTP 服务器返回的确切响应代码（如 250、550 或 451）。
+      用它来排查连接问题或了解特定服务器安全设置的行为。
     command: "smtp-user-enum -v -d -u {{username}} -t {{target}}"

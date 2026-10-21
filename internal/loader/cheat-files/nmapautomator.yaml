@@ -3,74 +3,64 @@ tags: [network, scanner, pentest, reconnaissance, enumeration, security]
 
 actions:
   # === RECONNAISSANCE & PORT SCANNING ===
-  - title: nmapAutomator.sh - Quick Port Scan
+  - title: nmapAutomator.sh - 快速端口扫描
     desc: |
-      Performs a fast scan to identify open TCP ports on the target host. 
-      This is the most common starting point for reconnaissance and usually completes within 15 seconds. 
-      It is designed to give a quick overview of the attack surface before deeper enumeration.
+      执行快速扫描以识别目标主机上的开放 TCP 端口。这是侦察最常见的起点，通常在 15 秒内完成。
+      它旨在在更深入的枚举前快速概览攻击面。
     command: "nmapAutomator.sh --host {{target}} --type Port"
 
-  - title: nmapAutomator.sh - Network Discovery
+  - title: nmapAutomator.sh - 网络发现
     desc: |
-      Scans the local network segment to identify all live hosts. 
-      This is useful when you are on a local network and need to map out available targets for further testing. 
-      It uses standard host discovery techniques and typically finishes in about 15 seconds.
+      扫描本地网段以识别所有存活主机。当你在本地网络上并需要梳理可用目标以进行进一步测试时很有用。
+      它使用标准主机发现技术，通常约 15 秒完成。
     command: "nmapAutomator.sh --host {{target_ip_range}} --type Network"
 
-  - title: nmapAutomator.sh - Full 65k Port Scan
+  - title: nmapAutomator.sh - 全 65k 端口扫描
     desc: |
-      Runs a comprehensive scan across the entire TCP port range from 1 to 65535. 
-      After discovering open ports, it automatically performs a more thorough service detection scan on those specific ports. 
-      This is highly effective for finding services running on non-standard or "hidden" ports that quick scans might miss.
+      对从 1 到 65535 的整个 TCP 端口范围执行全面扫描。发现开放端口后，会自动在这些特定端口上执行更彻底的服务检测扫描。
+      这对发现在非标准或隐藏端口上运行的服务非常有效，快速扫描可能会漏掉它们。
     command: "nmapAutomator.sh --host {{target}} --type Full"
 
   # === ENUMERATION & VULNERABILITY ANALYSIS ===
-  - title: nmapAutomator.sh - Service Script Scan
+  - title: nmapAutomator.sh - 服务脚本扫描
     desc: |
-      Executes Nmap's default scripts against all identified open ports to gather service information. 
-      It helps in identifying software versions and potential misconfigurations in the services found. 
-      This scan provides more depth than a simple port check and usually takes around 5 minutes.
+      对所有已识别的开放端口执行 Nmap 默认脚本，收集服务信息。有助于识别软件版本和发现服务中的潜在错误配置。
+      此扫描比简单端口检查提供更多深度，通常约需 5 分钟。
     command: "nmapAutomator.sh --host {{target}} --type Script"
 
-  - title: nmapAutomator.sh - UDP Port Scan
+  - title: nmapAutomator.sh - UDP 端口扫描
     desc: |
-      Performs a scan for open UDP services on the target machine. 
-      Note that this action requires sudo or root privileges to craft the necessary raw packets. 
-      UDP scans are essential for finding services like DNS, SNMP, or TFTP that do not use TCP.
+      对目标机器执行开放 UDP 服务扫描。注意此操作需要 sudo 或 root 权限来构造必要的原始数据包。
+      UDP 扫描对于发现 DNS、SNMP 或 TFTP 等不使用 TCP 的服务至关重要。
     command: "sudo nmapAutomator.sh --host {{target}} --type UDP"
 
-  - title: nmapAutomator.sh - Vulnerability Scan
+  - title: nmapAutomator.sh - 漏洞扫描
     desc: |
-      Runs specialized Nmap vulnerability scripts and checks for known CVEs against discovered services. 
-      This is a vital step for identifying exploitable weaknesses automatically without manual searching. 
-      The scan duration varies between 5 to 15 minutes depending on the complexity of the services.
+      运行专门的 Nmap 漏洞脚本，并对发现的服务检查已知 CVE。这是无需手动搜索即可自动识别可利用弱点的关键步骤。
+      扫描时长在 5 到 15 分钟之间，取决于服务的复杂度。
     command: "nmapAutomator.sh --host {{target}} --type Vulns"
 
-  - title: nmapAutomator.sh - Suggestive Reconnaissance
+  - title: nmapAutomator.sh - 建议性侦察
     desc: |
-      Analyzes the target's open ports and suggests specific manual reconnaissance commands. 
-      After the analysis, the script will prompt the user to automatically execute these suggested tools for further enumeration. 
-      This is an excellent way to streamline the workflow by using the right tool for the right service (e.g., gobuster for web).
+      分析目标的开放端口并建议特定的手动侦察命令。分析后，脚本会提示用户自动执行这些建议的工具以进一步枚举。
+      这是通过为正确服务使用正确工具（如对 Web 用 gobuster）来精简工作流程的绝佳方式。
     command: "nmapAutomator.sh --host {{target}} --type Recon"
 
   # === ADVANCED USAGE & AUTOMATION ===
-  - title: nmapAutomator.sh - Comprehensive All-in-One Scan
+  - title: nmapAutomator.sh - 全面一体化扫描
     desc: |
-      Executes every available scan type sequentially for a complete profile of the target. 
-      This includes network, port, script, full, UDP, and vulnerability scans in one go. 
-      While it is the most thorough option, it can take up to 30 minutes to complete.
+      顺序执行每种可用扫描类型，形成目标的完整画像。这包括网络、端口、脚本、全端口、UDP 和漏洞扫描，一次性完成。
+      虽然是最彻底的选项，但可能需要长达 30 分钟才能完成。
     command: "nmapAutomator.sh --host {{target}} --type All"
 
-  - title: nmapAutomator.sh - Scan with Custom DNS and Output
+  - title: nmapAutomator.sh - 使用自定义 DNS 和输出扫描
     desc: |
-      Runs a specific scan type while defining a custom DNS server and a dedicated output directory. 
-      This is useful when the target is in a segmented network or when you need to organize results for a specific project. 
-      Defining an output directory ensures that all logs and Nmap files are saved systematically.
+      运行特定扫描类型，同时定义自定义 DNS 服务器和专用输出目录。当目标位于分段网络中或需要为特定项目整理结果时很有用。
+      定义输出目录可确保所有日志和 Nmap 文件都被系统性保存。
     command: "nmapAutomator.sh --host {{target}} --type {{scan_type|Recon}} --dns {{dns_server|1.1.1.1}} --output {{output_dir|./results}}"
 
-  - title: nmapAutomator.sh - Remote Mode Scan
+  - title: nmapAutomator.sh - 远程模式扫描
     desc: |
-      Executes the tool in remote mode, which is optimized for scans performed across different network segments. 
-      This can help bypass certain local network limitations or timing issues. 
-      Ensure you have a stable connection to the remote host or gateway before initiating this scan.
+      以远程模式执行工具，该模式针对跨不同网段的扫描进行了优化。这可以帮助绕过某些本地网络限制或时序问题。
+      开始此扫描前确保你与远程主机或网关有稳定的连接。
     command: "nmapAutomator.sh --host {{target}} --type {{scan_type|Basic}} --remote {{remote_mode|yes}}"

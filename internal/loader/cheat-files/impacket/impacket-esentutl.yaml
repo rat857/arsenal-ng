@@ -4,54 +4,36 @@ tags: [windows, forensics, active-directory, esent, database, impacket, pentest]
 actions:
 # === DATABASE INFORMATION & RECONNAISSANCE ===
 
- - title: "impacket-esentutl - Display general database information"
+ - title: impacket-esentutl - 显示数据库常规信息
    desc: |
-     This command retrieves general metadata and catalog information from an Extensible Storage Engine (ESE) database file.
-     It is the most common starting point for analyzing Windows-specific databases like ntds.dit or the Windows Search index.
-     Use this to verify the file structure and ensure the database is readable before attempting to extract sensitive data.
-     This action provides a high-level overview of the internal tables and system metadata without modifying the file.
+     此命令从可扩展存储引擎（ESE）数据库文件检索常规元数据和目录信息。它是分析 Windows 专用数据库（如 ntds.dit 或 Windows 搜索索引）的最常见起点。在尝试提取敏感数据之前，用它验证文件结构并确保数据库可读。此操作提供内部表和系统元数据的高层概览，且不修改文件。
    command: "impacket-esentutl {{database_file}} info"
 
- - title: "impacket-esentutl - List database catalog with debug output"
+ - title: impacket-esentutl - 带调试输出列出数据库目录
    desc: |
-     This command runs the info action with debug logging enabled to provide more verbose details about the parsing process.
-     It is particularly useful when dealing with corrupted databases or non-standard ESE versions that might cause parsing errors.
-     The debug output can reveal underlying issues with the database header or page structure that are not visible in standard output.
-     This is recommended for forensic scenarios where data integrity is questionable and detailed logs are required for reports.
+     此命令运行 info 操作并启用调试日志，以提供有关解析过程的更详细详情。当处理可能导致解析错误的损坏数据库或非标准 ESE 版本时特别有用。调试输出可以揭示标准输出中不可见的数据库头或页面结构的底层问题。推荐用于数据完整性存疑且报告需要详细日志的取证场景。
    command: "impacket-esentutl -debug {{database_file}} info"
 
 # === DATA EXTRACTION ===
 
- - title: "impacket-esentutl - Export a specific table from the database"
+ - title: impacket-esentutl - 从数据库导出特定表
    desc: |
-     This command allows for the extraction of all records within a specific table from the ESE database.
-     It is primarily used in Active Directory forensics to pull data from the 'datatable' or other internal structures.
-     The user must provide the exact name of the table as it appears in the database catalog (found via the info command).
-     Exporting tables is a critical step in manually reconstructing database objects or extracting credentials when standard tools fail.
+     此命令允许从 ESE 数据库提取特定表内的所有记录。主要用于 Active Directory 取证，从 datatable 或其他内部结构提取数据。用户必须提供该表在数据库目录中出现的确切名称（可通过 info 命令找到）。当标准工具失败时，导出表是手动重建数据库对象或提取凭据的关键步骤。
    command: "impacket-esentutl {{database_file}} export -table {{table_name}}"
 
- - title: "impacket-esentutl - Export table with timestamped logging"
+ - title: impacket-esentutl - 带时间戳日志导出表
    desc: |
-     This command performs a table export while adding timestamps to every line of the logging output.
-     Timestamping is essential for maintaining a clear audit trail during incident response or legal forensic investigations.
-     It helps investigators correlate the tool's actions with other system logs or network traffic captures.
-     Use this when documentation of the extraction timeline is required for chain of custody or reporting purposes.
+     此命令执行表导出，同时为日志输出的每一行添加时间戳。时间戳对于在事件响应或法律取证调查期间保持清晰的审计跟踪至关重要。它帮助调查人员将工具的操作与其他系统日志或网络流量捕获相关联。当提取时间线的文档对于保管链或报告目的必需时使用。
    command: "impacket-esentutl -ts {{database_file}} export -table {{table_name}}"
 
 # === LOW-LEVEL ANALYSIS ===
 
- - title: "impacket-esentutl - Dump a specific database page"
+ - title: impacket-esentutl - 转储特定数据库页
    desc: |
-     This command performs a low-level hex and ASCII dump of a specific page number within the ESE database.
-     It is used for deep dive analysis of database internals or when searching for specific data fragments in unallocated space.
-     This is an advanced feature typically used by forensic researchers to understand how data is stored or to recover deleted records.
-     Be aware that interpreting raw page data requires significant knowledge of the ESE database page format.
+     此命令对 ESE 数据库中特定页码执行低层的十六进制和 ASCII 转储。用于深入分析数据库内部结构，或在未分配空间中搜索特定数据片段。这是取证研究人员通常用于理解数据存储方式或恢复已删除记录的高级功能。请注意，解释原始页数据需要对 ESE 数据库页格式有相当了解。
    command: "impacket-esentutl {{database_file}} dump -page {{page_number}}"
 
- - title: "impacket-esentutl - Analyze a page with debug information"
+ - title: impacket-esentutl - 带调试信息分析页面
    desc: |
-     This command combines the page dump functionality with debug output to provide a detailed view of the page's internal structure.
-     It helps in identifying page headers, flags, and pointers that define how data is organized within that specific block.
-     This method is highly effective for troubleshooting why certain records cannot be exported or are appearing as corrupted.
-     Use this when you need to validate the physical structure of the database at the block level.
+     此命令将页转储功能与调试输出结合，提供页面内部结构的详细视图。它有助于识别页头、标志和指针，这些定义了数据在该特定块内如何组织。对于排查为何某些记录无法导出或显示为损坏非常有效。当你需要在块级别验证数据库的物理结构时使用。
    command: "impacket-esentutl -debug -page {{page_number}} {{database_file}} dump"

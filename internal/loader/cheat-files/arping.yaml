@@ -3,74 +3,74 @@ tags: [network, scanner, security, pentest, enumeration, discovery, arp]
 
 actions:
 # === BASIC USAGE ===
- - title: arping - basic arp ping
+ - title: arping - 基础 ARP ping
    desc: |
-     Send ARP requests to a specific target IP address on the local network. 
-     This is useful for verifying if a host is alive and obtaining its MAC address even if ICMP (standard ping) is blocked. 
-     Note that this tool requires root privileges to send raw packets and only works within the local broadcast domain.
+     向本地网络上的特定目标 IP 地址发送 ARP 请求。
+     即使 ICMP（标准 ping）被阻止，这对于验证主机是否存活并获取其 MAC 地址也很有用。
+     注意该工具需要 root 权限才能发送原始数据包，且仅在本地广播域内有效。
    command: "arping -i {{interface|eth0}} {{target_ip}}"
 
- - title: arping - ping with specific count
+ - title: arping - 指定次数 ping
    desc: |
-     Stop the arping process after a specified number of packets are sent to the target. 
-     This prevents the command from running indefinitely and is useful for script integration or quick connectivity checks. 
-     The utility will provide a summary of transmitted and received packets once the count is reached.
+     在向目标发送指定数量的数据包后停止 arping 进程。
+     这可防止命令无限运行，适用于脚本集成或快速连通性检查。
+     达到指定次数后，工具会提供已发送与已接收数据包的汇总。
    command: "arping -c {{count|4}} -i {{interface|eth0}} {{target_ip}}"
 
- - title: arping - timeout-based ping
+ - title: arping - 基于超时的 ping
    desc: |
-     Specify a timeout in seconds before the utility exits regardless of how many packets were sent. 
-     This is useful in automated environments where a hanging command could block other processes. 
-     It ensures that the reconnaissance phase does not exceed a predefined time window.
+     无论发送了多少数据包，都以秒为单位指定工具退出前的超时时间。
+     这在自动化环境中很有用，因为挂起的命令可能阻塞其他进程。
+     它确保侦察阶段不超过预定义的时间窗口。
    command: "arping -w {{seconds|5}} -i {{interface|eth0}} {{target_ip}}"
 
 # === ENUMERATION & DETECTION ===
- - title: arping - duplicate ip detection
+ - title: arping - 重复 IP 检测
    desc: |
-     Detect if multiple MAC addresses are responding to the same IP address on the network. 
-     This is a crucial check for identifying IP address conflicts or potential ARP spoofing attacks. 
-     The command will exit with an error code if more than one MAC address responds to the request.
+     检测网络上是否有多个 MAC 地址对同一 IP 地址作出响应。
+     这是识别 IP 地址冲突或潜在 ARP 欺骗攻击的关键检查。
+     如果有多个 MAC 地址响应该请求，命令将以错误码退出。
    command: "arping -d -i {{interface|eth0}} {{target_ip}}"
 
- - title: arping - audible discovery
+ - title: arping - 声音提示发现
    desc: |
-     Enable audible pings that beep every time a successful reply is received from the target. 
-     This is particularly helpful for hardware troubleshooting when you cannot constantly look at the terminal. 
-     Alternatively, use the -e flag to beep only when there is no reply to detect intermittent connectivity.
+     启用声音提示，每当从目标收到成功回复时发出蜂鸣声。
+     当你无法持续查看终端时，这对于硬件排障特别有帮助。
+     也可以使用 -e 标志仅在无回复时蜂鸣，以检测间歇性连通问题。
    command: "arping -a -i {{interface|eth0}} {{target_ip}}"
 
- - title: arping - raw output for scripting
+ - title: arping - 用于脚本的原始输出
    desc: |
-     Display only the MAC address or IP address in a raw format for each reply. 
-     This stripped-down output is ideal for piping into other tools or saving to a list for further enumeration. 
-     It removes all the human-readable metadata, leaving only the essential addressing information.
+     仅以原始格式显示每个回复的 MAC 地址或 IP 地址。
+     这种精简输出非常适合管道到其他工具或保存到列表以供进一步枚举。
+     它移除所有人类可读的元数据，仅保留必要的寻址信息。
    command: "arping -r -i {{interface|eth0}} {{target_ip}}"
 
 # === ADVANCED NETWORKING ===
- - title: arping - ping from unconfigured interface
+ - title: arping - 从未配置接口 ping
    desc: |
-     Send ARP requests using a source IP address of 0.0.0.0. 
-     This is typically used when the local interface has not yet been assigned an IP address, such as during the initial stages of DHCP. 
-     It allows for basic network discovery without needing a valid IP in the subnet.
+     使用源 IP 地址 0.0.0.0 发送 ARP 请求。
+     这通常用于本地接口尚未分配 IP 地址时，例如 DHCP 的初始阶段。
+     它允许在子网中无需有效 IP 即可进行基本网络发现。
    command: "arping -0 -i {{interface|eth0}} {{target_ip}}"
 
- - title: arping - send unsolicited arp
+ - title: arping - 发送主动 ARP
    desc: |
-     Send an unsolicited ARP reply, also known as a Gratuitous ARP, to the network. 
-     This is often used to update the ARP caches of other hosts, for instance, when an IP address moves to a different MAC. 
-     Use this with extreme caution as it can disrupt network traffic if directed at an incorrect address.
+     向网络发送主动 ARP 回复，也称为免费 ARP（Gratuitous ARP）。
+     它常用于更新其他主机的 ARP 缓存，例如当 IP 地址迁移到不同 MAC 时。
+     使用此命令时务必极其谨慎，因为若指向错误地址可能干扰网络流量。
    command: "arping -U -i {{interface|eth0}} {{source_ip}}"
 
- - title: arping - spoofed source address
+ - title: arping - 伪造源地址
    desc: |
-     Send ARP requests using a custom source IP and a custom source MAC address. 
-     This can be used to test how a target or firewall reacts to different identities on the wire. 
-     You may need to enable promiscuous mode using the -p flag if the interface does not own the specified MAC.
+     使用自定义源 IP 与自定义源 MAC 地址发送 ARP 请求。
+     这可用于测试目标或防火墙对线路上不同身份的响应方式。
+     如果接口不拥有指定的 MAC，你可能需要使用 -p 标志启用混杂模式。
    command: "arping -S {{source_ip}} -s {{source_mac}} -p -i {{interface|eth0}} {{target_ip}}"
 
- - title: arping - vlan tagged ping
+ - title: arping - VLAN 标记 ping
    desc: |
-     Send ARP requests containing a specific 802.1Q VLAN tag to a target. 
-     This is essential for testing connectivity across different VLAN segments when the network interface is connected to a trunk port. 
-     It helps in verifying that VLAN tagging and routing are correctly configured on the switch level.
+     向目标发送包含特定 802.1Q VLAN 标记的 ARP 请求。
+     当网络接口连接到中继端口时，这对于测试跨不同 VLAN 网段的连通性至关重要。
+     它有助于验证交换机层面的 VLAN 标记与路由配置是否正确。
    command: "arping -V {{vlan_id|10}} -i {{interface|eth0}} {{target_ip}}"

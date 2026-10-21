@@ -4,78 +4,92 @@ tags: [vulnerability-scanner, cve, reconnaissance, pentest, security, exploitati
 actions:
 # === CONFIGURATION AND DISCOVERY ===
 
- - title: vulnx - authenticate api
+ - title: vulnx - 认证 API
    desc: |
-     Configure your API key to access the ProjectDiscovery vulnerability database. This step is highly recommended to bypass rate limits associated with anonymous searching. You can obtain a free API key from the ProjectDiscovery Cloud website.
+     配置你的 API key 以访问 ProjectDiscovery 漏洞数据库。强烈建议执行此步骤，以绕过匿名搜索相关的限速。
+     你可以从 ProjectDiscovery Cloud 网站获取免费 API key。
    command: "vulnx auth"
 
- - title: vulnx - list available filters
+ - title: vulnx - 列出可用过滤器
    desc: |
-     Show all searchable fields and filter options available in the tool. This helps users understand the specific syntax and data types allowed for complex queries. It provides descriptions, examples, and enum values for fields like severity or CVSS scores.
+     显示工具中所有可搜索字段和过滤选项。这有助于用户理解复杂查询所允许的具体语法和数据类型。
+     它提供 severity 或 CVSS 分数等字段的描述、示例和枚举值。
    command: "vulnx filters"
 
- - title: vulnx - health check
+ - title: vulnx - 健康检查
    desc: |
-     Test the connectivity to the vulnerability database backend. This command ensures that your network environment allows communication with the API and that your credentials are valid. Use this for troubleshooting if searches are failing or returning unexpected errors.
+     测试与漏洞数据库后端的连通性。此命令确保你的网络环境允许与 API 通信，且你的凭据有效。
+     当搜索失败或返回意外错误时，用它进行故障排查。
    command: "vulnx healthcheck"
 
 # === BASIC SEARCHING ===
 
- - title: vulnx - simple keyword search
+ - title: vulnx - 简单关键字搜索
    desc: |
-     Perform a basic search for vulnerabilities related to a specific product or technology. This is the quickest way to find CVEs associated with a keyword like 'apache' or 'nginx'. The output provides a summary of relevant vulnerabilities including their IDs and severity levels.
+     执行与特定产品或技术相关的漏洞基础搜索。这是查找与 apache 或 nginx 等关键字关联的 CVE 的最快方式。
+     输出提供相关漏洞的摘要，包括其 ID 和严重性级别。
    command: "vulnx search {{keyword|apache}}"
 
- - title: vulnx - specific cve lookup
+ - title: vulnx - 特定 CVE 查询
    desc: |
-     Retrieve detailed information about a single vulnerability using its CVE identifier. This command provides a comprehensive breakdown including technical descriptions, affected products, and references. It is the best way to analyze the impact and requirements of a specific known bug.
+     使用 CVE 标识符检索单个漏洞的详细信息。此命令提供全面分解，包括技术描述、受影响产品和参考链接。
+     这是分析特定已知漏洞的影响和要求的最佳方式。
    command: "vulnx id {{cve_id|CVE-2021-44228}}"
 
- - title: vulnx - search with result limit
+ - title: vulnx - 带结果限制的搜索
    desc: |
-     Search for vulnerabilities while restricting the number of returned results. Use this when searching for broad terms to prevent the terminal from being overwhelmed with data. It helps in focusing on the most relevant or recent entries first.
+     搜索漏洞并限制返回结果的数量。搜索宽泛术语时使用，以防止终端被数据淹没。
+     它有助于首先聚焦最相关或最新的条目。
    command: "vulnx search {{keyword|nginx}} --limit {{count|10}}"
 
 # === ADVANCED FILTERING ===
 
- - title: vulnx - search by severity and score
+ - title: vulnx - 按严重性和分数搜索
    desc: |
-     Find vulnerabilities that match a specific severity level or exceed a CVSS score threshold. This is critical for prioritizing remediation efforts on the most dangerous flaws. You can use comparison operators like greater-than to find scores above a certain point.
+     查找匹配特定严重性级别或超过 CVSS 分数阈值的漏洞。这对于优先修复最危险的缺陷至关重要。
+     你可以使用大于等比较运算符查找高于某一点的分数。
    command: "vulnx search \"severity:{{severity|critical}} && cvss_score:>{{score|8.0}}\""
 
- - title: vulnx - filter by exploitable characteristics
+ - title: vulnx - 按可利用特征过滤
    desc: |
-     Filter vulnerabilities that are known to be exploited in the wild or have public Proof of Concepts. This command specifically targets vulnerabilities in the Known Exploited Vulnerabilities (KEV) list or those with Nuclei templates. It is essential for risk-based vulnerability management and penetration testing.
+     过滤已知在野利用或具有公开概念验证的漏洞。此命令专门针对已知被利用漏洞（KEV）列表或具有 Nuclei 模板的漏洞。
+     它对于基于风险的漏洞管理和渗透测试至关重要。
    command: "vulnx search \"is_kev:{{kev_status|true}} && is_poc:{{poc_status|true}}\" --template"
 
- - title: vulnx - search by vendor and product
+ - title: vulnx - 按厂商和产品搜索
    desc: |
-     Narrow down search results to a specific software vendor or product name. This helps in identifying vulnerabilities within a specific stack, such as Microsoft Windows or Oracle Database. You can use the --product or --vendor flags to achieve high precision in your results.
+     将搜索结果缩小到特定软件厂商或产品名称。这有助于识别特定技术栈中的漏洞，如 Microsoft Windows 或 Oracle Database。
+     你可以使用 --product 或 --vendor 参数在结果中实现高精度。
    command: "vulnx search --vendor {{vendor|microsoft}} --product {{product|windows}}"
 
- - title: vulnx - time based search
+ - title: vulnx - 基于时间的搜索
    desc: |
-     Search for vulnerabilities published within a specific timeframe or based on their age in days. This is useful for identifying recently discovered zero-day vulnerabilities or bugs from a specific year. Date formats can include years, months, or specific day ranges.
+     搜索在特定时间范围内发布或按天数计算的漏洞。这对于识别最近发现的零日漏洞或特定年份的漏洞很有用。
+     日期格式可以包括年份、月份或特定日期范围。
    command: "vulnx search \"cve_created_at:>={{year|2024}} && age_in_days:<{{days|30}}\""
 
 # === ANALYSIS AND OUTPUT ===
 
- - title: vulnx - aggregate data analysis
+ - title: vulnx - 聚合数据分析
    desc: |
-     Analyze vulnerability patterns by aggregating data based on specific fields. This command helps you understand which vendors or severities are most prevalent in a given search set. It is an excellent tool for generating high-level security posture reports.
+     通过按特定字段聚合数据来分析漏洞模式。此命令帮助你了解给定搜索集中哪些厂商或严重性最普遍。
+     它是生成高层安全态势报告的绝佳工具。
    command: "vulnx analyze --fields {{field|severity}}"
 
- - title: vulnx - export results to json
+ - title: vulnx - 导出结果为 JSON
    desc: |
-     Save the search results into a machine-readable JSON format for further processing or automation. This allows integration with other tools in a DevSecOps pipeline or for custom scripting. The --output flag ensures the data is saved directly to a file on disk.
+     将搜索结果保存为机器可读的 JSON 格式，供进一步处理或自动化。这允许与 DevSecOps 流水线中的其他工具集成或用于自定义脚本。
+     --output 参数确保数据直接保存到磁盘上的文件。
    command: "vulnx search {{query|log4j}} --json --output {{filename|results.json}}"
 
- - title: vulnx - detailed multi-id lookup
+ - title: vulnx - 详细多 ID 查询
    desc: |
-     Look up multiple CVE IDs simultaneously and retrieve detailed information for each. You can provide a comma-separated list of IDs to get a combined report. This is much faster than running the id command multiple times for a list of findings.
+     同时查询多个 CVE ID，并检索每个的详细信息。你可以提供逗号分隔的 ID 列表以获取组合报告。
+     这比为发现列表多次运行 id 命令快得多。
    command: "vulnx id {{cve_list|CVE-2024-1234,CVE-2024-5678}} --detailed"
 
- - title: vulnx - sorted search results
+ - title: vulnx - 排序搜索结果
    desc: |
-     Search for vulnerabilities and sort the output based on a specific field like CVSS score or creation date. Sorting helps in quickly identifying the highest-risk items or the most recent updates. Use --sort-desc for descending order to see the highest scores at the top.
+     搜索漏洞并根据 CVSS 分数或创建日期等特定字段对输出排序。排序有助于快速识别最高风险项或最近更新。
+     使用 --sort-desc 按降序排列，可在顶部看到最高分。
    command: "vulnx search {{keyword|cms}} --sort-desc {{field|cvss_score}}"

@@ -4,72 +4,48 @@ tags: [active-directory, pentest, exploitation, security, impacket, authenticati
 actions:
   # === BASIC ACCOUNT CREATION ===
 
-  - title: impacket-addcomputer - basic account addition
+  - title: impacket-addcomputer - 基础账户添加
     desc: |
-      Adds a new computer account to the Active Directory domain with a randomly generated name and password. 
-      This is the most common use case for exploiting the default MachineAccountQuota (MAQ) setting, which typically allows any domain user to add up to 10 machines. 
-      The tool will output the name and password of the newly created account upon success. 
-      Note that this requires valid domain user credentials and network access to the Domain Controller.
+      使用随机生成的名称和密码向 Active Directory 域添加新的计算机账户。这是利用默认 MachineAccountQuota（MAQ）设置的最常见用例，该设置通常允许任何域用户最多添加 10 台机器。成功时工具会输出新创建账户的名称和密码。请注意，这需要有效的域用户凭据以及到域控制器的网络访问。
     command: "impacket-addcomputer {{domain}}/{{username}}:{{password}} -dc-ip {{dc_ip}}"
 
-  - title: impacket-addcomputer - add with specific name and password
+  - title: impacket-addcomputer - 使用特定名称和密码添加
     desc: |
-      Creates a computer account using a specific name and a chosen password instead of random values. 
-      The computer name should ideally end with a dollar sign ($) to follow Active Directory naming conventions. 
-      This is useful when you need to match a specific naming scheme or when setting up Resource-Based Constrained Delegation (RBCD). 
-      Ensure the password meets the domain's complexity requirements to avoid errors during creation.
+      使用特定名称和选定密码（而非随机值）创建计算机账户。计算机名最好以美元符号（$）结尾，以遵循 Active Directory 命名约定。当你需要匹配特定命名方案或设置基于资源的约束委派（RBCD）时非常有用。请确保密码满足域的复杂性要求，以避免创建时出错。
     command: "impacket-addcomputer {{domain}}/{{username}}:{{password}} -computer-name {{computer_name$|NEW-MACHINE$}} -computer-pass {{computer_pass|Password123!}} -dc-ip {{dc_ip}}"
 
   # === MAINTENANCE AND MODIFICATION ===
 
-  - title: impacket-addcomputer - reset existing computer password
+  - title: impacket-addcomputer - 重置现有计算机密码
     desc: |
-      Updates the password for an existing computer account without creating a new object. 
-      The -no-add flag is essential here as it tells the tool to skip the creation phase and target an existing SAM account. 
-      This operation requires the authenticated user to have 'Reset Password' permissions over the target computer object. 
-      It is frequently used after gaining some level of control over a machine object's attributes.
+      更新现有计算机账户的密码，而不创建新对象。-no-add 参数在这里至关重要，它告诉工具跳过创建阶段并针对现有的 SAM 账户。此操作要求认证用户对目标计算机对象具有“重置密码”权限。通常在获得对某个机器对象属性的某种控制权后使用。
     command: "impacket-addcomputer {{domain}}/{{username}}:{{password}} -computer-name {{target_computer$|TARGET$}} -computer-pass {{new_pass|SecretPass123}} -no-add -dc-ip {{dc_ip}}"
 
-  - title: impacket-addcomputer - delete computer account
+  - title: impacket-addcomputer - 删除计算机账户
     desc: |
-      Removes a specified computer account from the Active Directory database. 
-      This is a destructive action and should be used with caution during engagements to clean up created artifacts. 
-      The user must have the 'Delete Child' permission on the container (usually CN=Computers) or be the owner of the object. 
-      Verification of the target computer name is recommended to prevent accidental deletion of legitimate production servers.
+      从 Active Directory 数据库中删除指定的计算机账户。这是一个破坏性操作，测试期间清理所创建产物时应谨慎使用。用户必须对容器（通常是 CN=Computers）具有“删除子对象”权限，或者是该对象的所有者。建议验证目标计算机名，防止意外删除合法的生产服务器。
     command: "impacket-addcomputer {{domain}}/{{username}}:{{password}} -computer-name {{target_computer$|TARGET$}} -delete -dc-ip {{dc_ip}}"
 
   # === ADVANCED AUTHENTICATION ===
 
-  - title: impacket-addcomputer - authenticate with NTLM hashes
+  - title: impacket-addcomputer - 使用 NTLM 哈希认证
     desc: |
-      Performs computer account operations using Pass-the-Hash (PtH) authentication. 
-      This allows you to add or modify accounts even if you do not have the cleartext password for the user. 
-      The hash must be provided in the LMHASH:NTHASH format; if you only have the NT hash, use an empty LM hash (aad3b435b51404eeaad3b435b51404ee). 
-      This is standard practice when operating from a compromised machine where only hashes are available.
+      使用 Pass-the-Hash（PtH）认证执行计算机账户操作。即使你没有用户的明文密码，也允许你添加或修改账户。哈希必须以 LMHASH:NTHASH 格式提供；如果只有 NT 哈希，请使用空 LM 哈希（aad3b435b51404eeaad3b435b51404ee）。这是从只有哈希可用的已入侵机器上操作时的标准做法。
     command: "impacket-addcomputer {{domain}}/{{username}} -hashes {{lm_hash|aad3b435b51404eeaad3b435b51404ee}}:{{nt_hash}} -dc-ip {{dc_ip}}"
 
-  - title: impacket-addcomputer - authenticate with Kerberos
+  - title: impacket-addcomputer - 使用 Kerberos 认证
     desc: |
-      Uses Kerberos tickets for authentication instead of NTLM. 
-      This requires a valid Kerberos ticket in the environment's cache (ccache file) or providing an AES key. 
-      When using the -k flag, the -dc-host parameter is often required because Kerberos relies on SPNs which are tied to hostnames rather than IP addresses. 
-      This method is stealthier and works in environments where NTLM authentication has been disabled.
+      使用 Kerberos 票据而非 NTLM 进行认证。这需要环境缓存（ccache 文件）中有有效的 Kerberos 票据，或提供 AES 密钥。使用 -k 参数时，通常需要 -dc-host 参数，因为 Kerberos 依赖绑定到主机名而非 IP 地址的 SPN。这种方法更隐蔽，适用于已禁用 NTLM 认证的环境。
     command: "impacket-addcomputer {{domain}}/{{username}} -k -no-pass -dc-host {{dc_hostname}} -dc-ip {{dc_ip}}"
 
   # === CONNECTION METHODS ===
 
-  - title: impacket-addcomputer - use LDAPS method
+  - title: impacket-addcomputer - 使用 LDAPS 方法
     desc: |
-      Forces the tool to use LDAPS (LDAP over SSL) instead of the default SAMR (SMB) protocol for account creation. 
-      This is necessary when the Domain Controller requires LDAP signing or when SMB (Port 445) is blocked by internal firewalls. 
-      The default LDAPS port is 636, but it can be changed using the -port flag if needed. 
-      Ensure that you have proper network connectivity to the LDAPS port and that the DC has a valid certificate installed.
+      强制工具使用 LDAPS（基于 SSL 的 LDAP）而非默认的 SAMR（SMB）协议创建账户。当域控制器要求 LDAP 签名，或 SMB（445 端口）被内部防火墙阻止时，这是必需的。默认 LDAPS 端口是 636，但需要时可用 -port 参数更改。请确保你对 LDAPS 端口有适当的网络连通性，并且 DC 安装了有效证书。
     command: "impacket-addcomputer {{domain}}/{{username}}:{{password}} -method LDAPS -port {{port|636}} -dc-ip {{dc_ip}}"
 
-  - title: impacket-addcomputer - specify custom computer group
+  - title: impacket-addcomputer - 指定自定义计算机组
     desc: |
-      Adds the new computer account to a specific Organizational Unit (OU) or Container instead of the default CN=Computers. 
-      The group must be specified using its full Distinguished Name (DN) format. 
-      This is useful for bypassing certain Group Policy Objects (GPOs) that apply only to the default Computers container. 
-      The authenticated user must have the 'Create Child' permission on the specified target container.
+      将新计算机账户添加到特定的组织单位（OU）或容器，而非默认的 CN=Computers。组必须使用其完整可分辨名称（DN）格式指定。这对于绕过仅适用于默认 Computers 容器的某些组策略对象（GPO）非常有用。认证用户必须对指定目标容器具有“创建子对象”权限。
     command: "impacket-addcomputer {{domain}}/{{username}}:{{password}} -computer-group {{group_dn|OU=Testing,DC=example,DC=local}} -dc-ip {{dc_ip}}"

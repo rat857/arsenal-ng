@@ -3,44 +3,44 @@ tags: [security, pentest, cryptography, hashing, forensics, reconnaissance]
 
 actions:
 # === IDENTIFICATION ===
- - title: hashid - identify a single hash
+ - title: hashid - 识别单个哈希
    desc: |
-     Identify the algorithm used for a specific hash string provided as input. This is the primary function of the tool when you encounter an unknown hash in a database or capture. It helps narrow down which cracking tools or parameters to use next for password recovery.
+     识别作为输入提供的特定哈希字符串所使用的算法。当你在数据库或捕获数据中遇到未知哈希时，这是该工具的主要功能。它有助于缩小接下来使用哪些破解工具或参数进行密码恢复的范围。
    command: "hashid {{hash_string}}"
 
- - title: hashid - extended identification including salted hashes
+ - title: hashid - 扩展识别（含加盐哈希）
    desc: |
-     Use the extended mode to list all possible hash algorithms, including those that typically use salts. This is useful when a standard scan doesn't provide a clear result or when you suspect a web application hash like vBulletin or IPB. Note that this will increase the number of potential matches significantly, requiring manual verification.
+     使用扩展模式列出所有可能的哈希算法，包括通常使用盐值的算法。当标准扫描未给出明确结果，或当你怀疑是 vBulletin 或 IPB 等 Web 应用哈希时非常有用。请注意，这会显著增加潜在匹配的数量，需要手动验证。
    command: "hashid -e {{hash_string}}"
 
 # === INTEGRATION ===
- - title: hashid - show Hashcat modes
+ - title: hashid - 显示 Hashcat 模式
    desc: |
-     Identify the hash type and display the corresponding Hashcat mode number for each result. This is extremely helpful for security professionals preparing a brute-force attack using Hashcat. It eliminates the manual work of looking up mode numbers in the Hashcat documentation or help menus.
+     识别哈希类型，并为每个结果显示对应的 Hashcat 模式编号。对于准备使用 Hashcat 进行暴力破解的安全专业人员非常有帮助。它省去了在 Hashcat 文档或帮助菜单中手动查找模式编号的工作。
    command: "hashid -m {{hash_string}}"
 
- - title: hashid - show JohnTheRipper formats
+ - title: hashid - 显示 JohnTheRipper 格式
    desc: |
-     Identify the hash type and display the corresponding JohnTheRipper format string. Use this command when you intend to use JohnTheRipper for password recovery or security auditing. It ensures you use the correct format flag during the cracking process to avoid errors.
+     识别哈希类型，并显示对应的 JohnTheRipper 格式字符串。当你打算使用 JohnTheRipper 进行密码恢复或安全审计时使用此命令。它确保你在破解过程中使用正确的格式参数，避免出错。
    command: "hashid -j {{hash_string}}"
 
- - title: hashid - show Hashcat and John formats together
+ - title: hashid - 同时显示 Hashcat 和 John 格式
    desc: |
-     Identify hashes while simultaneously displaying both Hashcat mode numbers and JohnTheRipper format names. This provides a comprehensive overview for users who utilize multiple cracking tools within their environment. It is the most verbose way to identify unknown hashes for exploitation and auditing.
+     识别哈希，同时显示 Hashcat 模式编号和 JohnTheRipper 格式名称。为环境中使用多个破解工具的用户提供全面概览。这是为利用和审计识别未知哈希的最详细方式。
    command: "hashid -m -j {{hash_string}}"
 
 # === FILE OPERATIONS ===
- - title: hashid - identify hashes from a file
+ - title: hashid - 从文件识别哈希
    desc: |
-     Process a list of hashes stored in a text file instead of providing them manually on the command line. This is the most efficient way to analyze multiple unknown hashes extracted from a target system or database. Ensure the file contains one hash per line for accurate identification by the tool.
+     处理存储在文本文件中的哈希列表，而非在命令行手动提供。这是分析从目标系统或数据库提取的多个未知哈希的最有效方式。请确保文件每行包含一个哈希，以便工具准确识别。
    command: "hashid {{input_file|hashes.txt}}"
 
- - title: hashid - save results to a file
+ - title: hashid - 将结果保存到文件
    desc: |
-     Perform hash identification and save the detailed results directly to a specified output file. This is useful for documentation purposes or when integrating the tool into a larger automated penetration testing workflow. It prevents the terminal output from being lost and allows for easier grepping of results later.
+     执行哈希识别，并将详细结果直接保存到指定的输出文件。这对于文档目的或将工具集成到更大的自动化渗透测试工作流中非常有用。它可以防止终端输出丢失，并便于之后对结果进行 grep。
    command: "hashid -o {{output_file|results.txt}} {{hash_string}}"
 
- - title: hashid - process file and output tool formats
+ - title: hashid - 处理文件并输出工具格式
    desc: |
-     Read multiple hashes from a file and output their corresponding cracking tool formats (Hashcat and John) to an external file. This command combines file input, tool mapping, and file output for a streamlined reconnaissance workflow. It is highly recommended when dealing with large password dumps from an assessment.
+     从文件读取多个哈希，并将其对应的破解工具格式（Hashcat 和 John）输出到外部文件。此命令将文件输入、工具映射和文件输出结合起来，实现流线化的侦察工作流。在处理评估中的大型密码转储时强烈推荐。
    command: "hashid -m -j -o {{output_file|cracking_refs.txt}} {{input_file|hashes.txt}}"

@@ -4,136 +4,136 @@ tags: [wireless, security, pentest, wifi, enumeration, exploitation, cracking]
 actions:
 # === INTERFACE MANAGEMENT ===
 
- - title: airmon-ng - check and kill interfering processes
+ - title: airmon-ng - 检查并终止干扰进程
    desc: |
-     Identifies and terminates background processes that could interfere with the wireless card's monitor mode.
-     Processes like NetworkManager, dhclient, and wpa_supplicant often try to manage the interface, causing issues during packet injection.
-     Running this command is a highly recommended first step before starting any wireless assessment to ensure stability.
+     识别并终止可能干扰无线网卡监听模式的后台进程。
+     NetworkManager、dhclient 与 wpa_supplicant 等进程常试图管理接口，导致数据包注入时出现问题。
+     强烈建议在开始任何无线评估前先运行此命令，以确保稳定性。
    command: "airmon-ng check kill"
 
- - title: airmon-ng - start monitor mode
+ - title: airmon-ng - 开启监听模式
    desc: |
-     Enables monitor mode on a specific wireless interface, allowing the card to listen to all traffic on a channel.
-     The command usually creates a new logical interface named with a 'mon' suffix (e.g., wlan0mon).
-     You can optionally specify a channel to lock the interface to that frequency immediately.
+     在指定无线接口上启用监听模式，使网卡能够监听某信道上的所有流量。
+     该命令通常会创建一个以 'mon' 后缀命名的新逻辑接口（如 wlan0mon）。
+     你可以选择指定信道，立即将接口锁定到该频率。
    command: "airmon-ng start {{interface|wlan0}} {{channel}}"
 
- - title: airmon-ng - stop monitor mode
+ - title: airmon-ng - 关闭监听模式
    desc: |
-     Disables monitor mode and returns the wireless interface to managed mode.
-     This is used to clean up after an assessment or to restore standard network connectivity.
-     It removes the monitor mode virtual interface and re-enables the original hardware interface state.
+     禁用监听模式，使无线接口恢复为受管理模式。
+     用于在评估结束后清理现场或恢复正常网络连接。
+     它会移除监听模式的虚拟接口并重新启用原始硬件接口状态。
    command: "airmon-ng stop {{interface|wlan0mon}}"
 
 # === RECONNAISSANCE & CAPTURE ===
 
- - title: airodump-ng - general network scanning
+ - title: airodump-ng - 常规网络扫描
    desc: |
-     Performs a wide-area scan of all nearby access points and connected stations.
-     It displays critical information such as BSSID, signal strength (PWR), beacons, data packets, channel, and encryption type.
-     This tool is essential for identifying targets and seeing which clients are associated with which networks.
+     对附近所有接入点与已连接站点执行广域扫描。
+     它显示 BSSID、信号强度（PWR）、信标、数据包、信道与加密类型等关键信息。
+     该工具对于识别目标并查看哪些客户端关联到哪些网络至关重要。
    command: "airodump-ng {{interface|wlan0mon}}"
 
- - title: airodump-ng - targeted handshake capture
+ - title: airodump-ng - 定向握手捕获
    desc: |
-     Focuses the capture on a specific Access Point (BSSID) on a single channel to capture the WPA/WPA2 4-way handshake.
-     Limiting the scan to one channel increases the probability of capturing the handshake frames without missing them due to channel hopping.
-     The captured data is saved to a file prefix, which will generate several files including a .cap file used for cracking.
+     将捕获聚焦到单信道上的特定接入点（BSSID），以捕获 WPA/WPA2 四次握手。
+     将扫描限制在单个信道可提高捕获握手帧的概率，避免因跳频而遗漏。
+     捕获的数据会保存到文件前缀，将生成包括用于破解的 .cap 文件在内的多个文件。
    command: "airodump-ng -c {{channel}} --bssid {{bssid}} -w {{file_prefix}} {{interface|wlan0mon}}"
 
- - title: airodump-ng - manufacturer lookup
+ - title: airodump-ng - 制造商查询
    desc: |
-     Displays the manufacturer of the Access Points and Stations based on the IEEE OUI list.
-     This helps identify the type of hardware being used (e.g., Cisco, Apple, TP-Link) which can be useful for tailoring attacks.
-     Ensure you run airodump-ng-oui-update periodically to keep the manufacturer database current.
+     根据 IEEE OUI 列表显示接入点与站点的制造商。
+     这有助于识别所使用硬件的类型（如 Cisco、Apple、TP-Link），从而定制攻击。
+     请定期运行 airodump-ng-oui-update 以保持制造商数据库为最新。
    command: "airodump-ng --manufacturer {{interface|wlan0mon}}"
 
 # === ATTACK & INJECTION ===
 
- - title: aireplay-ng - injection test
+ - title: aireplay-ng - 注入测试
    desc: |
-     Tests the wireless card's ability to inject packets into the air and determines the response rate from nearby APs.
-     A successful injection test is mandatory before attempting more complex attacks like deauthentication or ARP replay.
-     It provides a percentage of successfully received responses, indicating the quality of the connection.
+     测试无线网卡向空中注入数据包的能力，并确定附近 AP 的响应率。
+     在尝试去认证或 ARP 重放等更复杂攻击之前，必须成功完成注入测试。
+     它给出成功接收响应的百分比，反映连接质量。
    command: "aireplay-ng -9 {{interface|wlan0mon}}"
 
- - title: aireplay-ng - deauthentication attack
+ - title: aireplay-ng - 去认证攻击
    desc: |
-     Sends deauthentication frames to one or more clients associated with an Access Point.
-     This forces the clients to disconnect and attempt to reconnect, which allows airodump-ng to capture the 4-way handshake.
-     Be careful as this causes a service disruption for the target; always ensure you have permission before use.
+     向与接入点关联的一个或多个客户端发送去认证帧。
+     这会迫使客户端断开并尝试重新连接，从而使 airodump-ng 能够捕获四次握手。
+     请小心，这会对目标造成服务中断；使用前务必确保已获得授权。
    command: "aireplay-ng -0 {{count|5}} -a {{bssid}} -c {{client_mac}} {{interface|wlan0mon}}"
 
- - title: aireplay-ng - fake authentication
+ - title: aireplay-ng - 伪造认证
    desc: |
-     Performs a fake authentication with an Access Point to allow further packet injection.
-     This is primarily used in WEP attacks where you need an associated MAC address to inject packets, but no real clients are connected.
-     It does not actually "crack" the password but tricks the AP into thinking a client is successfully connected.
+     与接入点执行伪造认证，以便进行后续的数据包注入。
+     主要用于 WEP 攻击：你需要一个关联的 MAC 地址来注入数据包，但没有真实客户端连接。
+     它并非真正“破解”密码，而是欺骗 AP 认为某个客户端已成功连接。
    command: "aireplay-ng -1 0 -e {{essid}} -a {{bssid}} -h {{my_mac}} {{interface|wlan0mon}}"
 
- - title: aireplay-ng - ARP request replay
+ - title: aireplay-ng - ARP 请求重放
    desc: |
-     Listens for an ARP packet and then replays it back to the Access Point to generate new IVs (Initialization Vectors).
-     This is the classic method for speeding up WEP cracking by forcing the AP to produce many encrypted packets quickly.
-     You typically need thousands of IVs to successfully crack a WEP key.
+     监听 ARP 数据包并将其重放回接入点，以生成新的 IV（初始化向量）。
+     这是通过迫使 AP 快速产生大量加密数据包来加速 WEP 破解的经典方法。
+     通常需要数千个 IV 才能成功破解 WEP 密钥。
    command: "aireplay-ng -3 -b {{bssid}} -h {{my_mac}} {{interface|wlan0mon}}"
 
 # === CRACKING ===
 
- - title: aircrack-ng - crack WPA/WPA2 with wordlist
+ - title: aircrack-ng - 使用字典破解 WPA/WPA2
    desc: |
-     Attempts to find the pre-shared key (PSK) of a WPA/WPA2 network using a dictionary attack.
-     The tool requires a capture file containing a valid 4-way handshake and a high-quality wordlist.
-     Performance depends on CPU speed, but can be significantly boosted using pre-computed PMK databases.
+     尝试通过字典攻击找出 WPA/WPA2 网络的预共享密钥（PSK）。
+     该工具需要一个包含有效四次握手的捕获文件和一份高质量的字典。
+     性能取决于 CPU 速度，但使用预计算的 PMK 数据库可显著提速。
    command: "aircrack-ng -w {{wordlist|/usr/share/wordlists/rockyou.txt}} -b {{bssid}} {{capture_file.cap}}"
 
- - title: aircrack-ng - crack WEP key
+ - title: aircrack-ng - 破解 WEP 密钥
    desc: |
-     Analyzes captured Initialization Vectors (IVs) to statistically determine the WEP key.
-     Unlike WPA, WEP cracking does not require a wordlist as it exploits mathematical vulnerabilities in the RC4 cipher.
-     The more IVs you capture using aireplay-ng, the higher the chance of a successful crack.
+     分析捕获的初始化向量（IV），通过统计方法确定 WEP 密钥。
+     与 WPA 不同，WEP 破解无需字典，因为它利用了 RC4 密码中的数学漏洞。
+     使用 aireplay-ng 捕获的 IV 越多，成功破解的几率越高。
    command: "aircrack-ng -b {{bssid}} {{capture_file.cap}}"
 
 # === ADVANCED UTILITIES ===
 
- - title: airbase-ng - create fake access point
+ - title: airbase-ng - 创建伪造接入点
    desc: |
-     Simulates an Access Point to perform Evil Twin attacks or "Caffe Latte" attacks against clients.
-     It creates a virtual tunnel interface (at0) which can be used to redirect traffic or serve as a gateway for MITM attacks.
-     This tool is highly versatile for attacking wireless clients rather than the infrastructure itself.
+     模拟接入点以对客户端执行 Evil Twin 攻击或 "Caffe Latte" 攻击。
+     它会创建虚拟隧道接口（at0），可用于重定向流量或充当 MITM 攻击的网关。
+     该工具在攻击无线客户端而非基础设施本身时用途非常广泛。
    command: "airbase-ng -e {{essid}} -c {{channel}} {{interface|wlan0mon}}"
 
- - title: airolib-ng - pre-calculate PMK database
+ - title: airolib-ng - 预计算 PMK 数据库
    desc: |
-     Manages a database of ESSIDs and passwords to pre-calculate Pairwise Master Keys (PMKs).
-     Pre-calculating PMKs allows aircrack-ng to process thousands of passwords per second during a WPA attack, as the heavy computation is done beforehand.
-     This is a three-step process: import ESSIDs, import passwords, and then run the batch calculation.
+     管理 ESSID 与密码数据库，以预计算成对主密钥（PMK）。
+     预计算 PMK 使 aircrack-ng 在 WPA 攻击中每秒处理数千个密码，因为繁重计算已提前完成。
+     这是三步流程：导入 ESSID、导入密码，然后运行批量计算。
    command: "airolib-ng {{db_name}} --batch"
 
- - title: wpaclean - clean pcap for cracking
+ - title: wpaclean - 清理 pcap 以用于破解
    desc: |
-     Extracts only the essential 4-way handshake packets from a large pcap file and removes all other traffic.
-     This results in a much smaller file size, making it easier to share or upload to cloud cracking services.
-     It is a best practice to clean capture files before starting long brute-force sessions.
+     从大型 pcap 文件中仅提取必要的四次握手数据包，并移除所有其他流量。
+     这会使文件体积大大减小，更易于分享或上传到云端破解服务。
+     在开始长时间暴力破解会话前清理捕获文件是最佳实践。
    command: "wpaclean {{output.cap}} {{input.cap}}"
 
- - title: airdecap-ng - decrypt capture files
+ - title: airdecap-ng - 解密捕获文件
    desc: |
-     Decrypts WEP, WPA, or WPA2 capture files once the key or passphrase is known.
-     This allows you to view the actual network traffic (HTTP, DNS, etc.) inside a pcap analyzer like Wireshark.
-     It creates a new file with a '-dec' suffix containing the decrypted packets.
+     在已知密钥或口令后解密 WEP、WPA 或 WPA2 捕获文件。
+     这使你能在 Wireshark 等 pcap 分析器中查看实际的网络流量（HTTP、DNS 等）。
+     它会创建一个带 '-dec' 后缀的新文件，包含解密后的数据包。
    command: "airdecap-ng -e {{essid}} -p {{passphrase}} {{capture_file.cap}}"
 
- - title: besside-ng - automated WPA handshake capture
+ - title: besside-ng - 自动化 WPA 握手捕获
    desc: |
-     An automated tool that attempts to deauthenticate all nearby clients and capture WPA handshakes without user intervention.
-     It is extremely effective for "war-driving" or rapid assessment of multiple networks in range.
-     The handshakes are automatically saved to a file named 'wpa.cap' in the working directory.
+     一种自动化工具，可在无需人工干预的情况下尝试对附近所有客户端去认证并捕获 WPA 握手。
+     它对于 "War-driving" 或快速评估范围内多个网络极为有效。
+     握手会自动保存到工作目录中名为 'wpa.cap' 的文件。
    command: "besside-ng -W {{interface|wlan0mon}}"
 
- - title: airgraph-ng - visualize network relationships
+ - title: airgraph-ng - 可视化网络关系
    desc: |
-     Generates a visual graph (PNG) showing the relationships between Access Points and Clients from an airodump-ng CSV file.
-     It helps in identifying which clients are probing for which networks and the overall structure of the wireless environment.
-     Supports two types of graphs: CAPR (Client to AP Relationship) and CPG (Common Probe Graph).
+     根据 airodump-ng 的 CSV 文件生成显示接入点与客户端关系的可视化图（PNG）。
+     它有助于识别哪些客户端在探测哪些网络以及无线环境的整体结构。
+     支持两种图类型：CAPR（客户端到 AP 关系）与 CPG（公共探测图）。
    command: "airgraph-ng -i {{airodump_csv}} -o {{output_image.png}} -g CAPR"

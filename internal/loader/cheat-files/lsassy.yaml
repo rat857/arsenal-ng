@@ -3,60 +3,71 @@ tags: [active-directory, credential-dumping, pentest, security, lsass, windows, 
 
 actions:
   # === AUTHENTICATION METHODS ===
-  - title: lsassy - dump lsass using domain credentials
+  - title: lsassy - 使用域凭据转储 LSASS
     desc: |
-      Extract credentials from remote hosts using standard domain authentication. This is the primary method for retrieving passwords and hashes when you have valid administrative domain credentials. The tool will target the LSASS process on the remote machine and attempt to pull credentials remotely. Ensure you have administrative rights on the target systems for this to function.
+      使用标准域认证从远程主机提取凭据。这是在你拥有有效管理域凭据时获取密码和哈希的主要方法。
+      工具会针对远程机器上的 LSASS 进程，尝试远程提取凭据。确保你在目标系统上有管理权限，此操作才能生效。
     command: "lsassy -d {{domain}} -u {{username}} -p {{password}} {{targets}}"
 
-  - title: lsassy - authenticate with NT hash (Pass-the-Hash)
+  - title: lsassy - 使用 NT 哈希认证（Pass-the-Hash）
     desc: |
-      Perform remote credential dumping by authenticating with a user's NT hash instead of a plaintext password. This is essential for lateral movement after obtaining hashes from other sources like SAM or NTDS.dit. You can provide the hash in either LM:NT or just NT format. This technique helps bypass the need for cleartext credentials while maintaining administrative access.
+      通过使用用户的 NT 哈希而非明文密码进行认证来执行远程凭据转储。从 SAM 或 NTDS.dit 等其他来源获取哈希后进行横向移动时至关重要。
+      哈希可以以 LM:NT 或仅 NT 格式提供。此技术在保持管理访问的同时帮助绕过对明文凭据的需求。
     command: "lsassy -d {{domain}} -u {{username}} -H {{nt_hash}} {{targets}}"
 
-  - title: lsassy - authenticate with Kerberos ticket
+  - title: lsassy - 使用 Kerberos 票据认证
     desc: |
-      Use an existing Kerberos TGT for authentication to perform dumping without providing a password or hash. Before running this, you must set the KRB5CCNAME environment variable to point to your valid .ccache file. This method is highly effective in environments where Kerberos is preferred and helps avoid triggering alerts related to password-based logins. Use the FQDN of the target for better compatibility with Kerberos.
+      使用现有的 Kerberos TGT 进行认证，无需提供密码或哈希即可执行转储。运行前必须设置 KRB5CCNAME 环境变量指向有效的 .ccache 文件。
+      此方法在偏好 Kerberos 的环境中非常有效，并有助于避免触发与基于密码登录相关的告警。使用目标的 FQDN 可获得更好的兼容性。
     command: "lsassy -k {{targets}}"
 
   # === DUMPING METHODS ===
-  - title: lsassy - dump using Procdump method
+  - title: lsassy - 使用 Procdump 方法转储
     desc: |
-      Utilize the Procdump utility from Sysinternals to dump the LSASS process memory. This method requires you to specify the local path to the procdump.exe binary which will be uploaded to the target. It is a reliable alternative when built-in methods like comsvcs.dll are being blocked or monitored by security software. Be aware that uploading binaries to a target may increase the risk of detection by EDR solutions.
+      利用 Sysinternals 的 Procdump 工具转储 LSASS 进程内存。此方法要求你指定将上传到目标的本地 procdump.exe 二进制文件路径。
+      当 comsvcs.dll 等内置方法被安全软件阻止或监控时，这是可靠的替代方案。注意向目标上传二进制文件可能增加被 EDR 检测的风险。
     command: "lsassy -d {{domain}} -u {{username}} -p {{password}} {{targets}} -m procdump -O procdump_path={{local_procdump_path}}"
 
-  - title: lsassy - dump using Dumpert method
+  - title: lsassy - 使用 Dumpert 方法转储
     desc: |
-      Use the Dumpert tool to dump LSASS memory via direct system calls to bypass API hooking. This method is specifically designed to evade EDR and AV solutions that monitor common Windows APIs used for memory dumping. You must provide the path to the local dumpert.exe or dumpert.dll file. It represents a more advanced and stealthy approach compared to standard dumping techniques.
+      使用 Dumpert 工具通过直接系统调用转储 LSASS 内存，以绕过 API hooking。此方法专为规避监控常见 Windows 内存转储 API 的 EDR 和杀软而设计。
+      你必须提供本地 dumpert.exe 或 dumpert.dll 文件的路径。与标准转储技术相比，它是更高级且更隐蔽的方法。
     command: "lsassy -d {{domain}} -u {{username}} -p {{password}} {{targets}} -m dumpert -O dumpert_path={{local_dumpert_path}}"
 
-  - title: lsassy - dump using nanodump method
+  - title: lsassy - 使用 nanodump 方法转储
     desc: |
-      Employ the nanodump method for a highly specialized and often stealthier dumping process. Nanodump is designed to be a minimalist tool for dumping LSASS, often bypassing modern security controls. This is useful in hardened environments where standard administrative shares or WMI calls are heavily monitored. Like other custom methods, check if specific options are needed for the version of nanodump you are using.
+      采用 nanodump 方法进行高度专业化且通常更隐蔽的转储过程。nanodump 被设计为转储 LSASS 的极简工具，常能绕过现代安全控制。
+      在标准管理共享或 WMI 调用被重点监控的加固环境中很有用。与其他自定义方法一样，检查所用 nanodump 版本是否需要特定选项。
     command: "lsassy -d {{domain}} -u {{username}} -p {{password}} {{targets}} -m nanodump"
 
   # === FILE & DATA OPERATIONS ===
-  - title: lsassy - parse existing remote dump
+  - title: lsassy - 解析现有远程转储
     desc: |
-      Extract credentials from an LSASS dump file that is already present on the remote target system. This is useful if a dump was previously created by another tool or a manual process, preventing the need for a new dumping action. You must specify the remote directory path and the name of the dump file. Note that using --parse-only will prevent lsassy from automatically deleting the dump file after processing.
+      从目标系统上已存在的 LSASS 转储文件中提取凭据。若转储之前已由其他工具或人工流程创建，则无需新的转储操作。
+      你必须指定远程目录路径和转储文件名。注意使用 --parse-only 会阻止 lsassy 在处理后自动删除转储文件。
     command: "lsassy -d {{domain}} -u {{username}} -p {{password}} {{targets}} --parse-only --dump-path {{remote_path|/Windows/Temp}} --dump-name {{dump_name|lsass.dmp}}"
 
-  - title: lsassy - harvest Kerberos tickets and DPAPI keys
+  - title: lsassy - 收集 Kerberos 票据和 DPAPI 密钥
     desc: |
-      Automatically collect Kerberos tickets and DPAPI master keys from the target while dumping credentials. Tickets are saved locally in ccache format, which can be reused for further Kerberos-based attacks. DPAPI master keys are extracted in GUID:SHA1 format for offline decryption of sensitive Windows data. This significantly expands the scope of the post-exploitation phase by gathering various secrets at once.
+      转储凭据时自动从目标收集 Kerberos 票据和 DPAPI 主密钥。票据以 ccache 格式保存在本地，可复用于进一步的 Kerberos 攻击。
+      DPAPI 主密钥以 GUID:SHA1 格式提取，用于离线解密敏感的 Windows 数据。这通过一次性收集多种机密，显著扩展了后利用阶段的覆盖范围。
     command: "lsassy -d {{domain}} -u {{username}} -p {{password}} {{targets}} -K {{kerberos_dir|./tickets}} -M {{masterkeys_file|./masterkeys.txt}}"
 
   # === OUTPUT & PERFORMANCE ===
-  - title: lsassy - output results in JSON format
+  - title: lsassy - 以 JSON 格式输出结果
     desc: |
-      Generate the extracted credential information in JSON format for automated processing or logging. This is particularly useful when lsassy is part of a larger automation pipeline or when you need to parse results with tools like jq. You can combine this with the --outfile flag to save the results directly to a file on your disk. This avoids cluttered terminal output when dealing with a large number of targets.
+      以 JSON 格式生成提取的凭据信息，用于自动化处理或记录。当 lsassy 作为更大自动化流水线的一部分，或需要用 jq 等工具解析结果时特别有用。
+      可结合 --outfile 标志将结果直接保存到磁盘文件，在处理大量目标时避免终端输出混乱。
     command: "lsassy -d {{domain}} -u {{username}} -p {{password}} {{targets}} --format json --outfile {{output_file|results.json}}"
 
-  - title: lsassy - execute with multiple threads
+  - title: lsassy - 多线程执行
     desc: |
-      Increase the speed of the dumping process across multiple targets by using concurrent threads. You can set the number of threads between 1 and 256 depending on your network capacity and target list size. This is ideal for quickly scanning large network ranges or host lists found in an Active Directory environment. Use caution with very high thread counts as it might increase the noisiness of the operation.
+      通过使用并发线程提高对多个目标的转储速度。你可以根据网络容量和目标列表大小将线程数设置在 1 到 256 之间。
+      适合快速扫描大型网络范围或 Active Directory 环境中的主机列表。使用非常高的线程数时要谨慎，因为这可能增加操作的噪音。
     command: "lsassy -d {{domain}} -u {{username}} -p {{password}} {{targets}} --threads {{thread_count|32}}"
 
-  - title: lsassy - filter output for user accounts only
+  - title: lsassy - 仅过滤用户账户输出
     desc: |
-      Filter the results to only display credentials belonging to user accounts, excluding computer account data. This makes the output much cleaner and easier to read during manual analysis, as it focuses on high-value targets. Computer account hashes (ending in $) are often less useful for initial lateral movement compared to domain admin or user accounts. This flag is particularly helpful when dumping a large number of machines simultaneously.
+      过滤结果，只显示属于用户账户的凭据，排除计算机账户数据。这使输出更干净、更易于人工分析，因为它聚焦于高价值目标。
+      计算机账户哈希（以 $ 结尾）对初始横向移动的用处通常不如域管理员或用户账户。同时转储大量机器时，此标志特别有用。
     command: "lsassy -d {{domain}} -u {{username}} -p {{password}} {{targets}} --users"

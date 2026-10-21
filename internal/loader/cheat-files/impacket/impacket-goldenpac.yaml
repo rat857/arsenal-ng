@@ -3,46 +3,46 @@ tags: [network, security, pentest, exploitation, active-directory, impacket, ker
 
 actions:
   # === BASIC EXPLOITATION ===
-  - title: impacket-goldenPac - Basic MS14-068 exploitation
+  - title: impacket-goldenPac - 基础 MS14-068 利用
     desc: |
-      This command performs the full MS14-068 exploit against a target machine using cleartext credentials. 
-      It automatically requests a forged PAC from the Domain Controller, gains administrative access, and executes a remote command (defaults to cmd.exe). 
-      This is the standard starting point when you have a valid set of domain user credentials and the target is likely unpatched.
+      使用明文凭据对目标机器执行完整的 MS14-068 漏洞利用。
+      它会自动向域控制器请求伪造的 PAC，获得管理员访问权限，并执行远程命令（默认为 cmd.exe）。
+      当你拥有一组有效的域用户凭据且目标可能未打补丁时，这是标准的起点。
     command: "impacket-goldenPac {{domain}}/{{username}}:{{password}}@{{target_fqdn}}"
 
-  - title: impacket-goldenPac - Exploitation using NTLM hashes
+  - title: impacket-goldenPac - 使用 NTLM 哈希进行利用
     desc: |
-      Use this command when you have obtained the NTLM hash of a user instead of a cleartext password. 
-      This allows for a Pass-the-Hash (PtH) approach to exploit the MS14-068 vulnerability. 
-      Ensure the hash is provided in the LMHASH:NTHASH format; if the LM hash is unavailable, use the standard empty LM hash string.
+      当你获得的是用户的 NTLM 哈希而非明文密码时使用此命令。
+      这样可以采用 Pass-the-Hash（PtH）方式来利用 MS14-068 漏洞。
+      请确保哈希为 LMHASH:NTHASH 格式；如果 LM 哈希不可用，请使用标准空 LM 哈希字符串。
     command: "impacket-goldenPac -hashes {{hash}} {{domain}}/{{username}}@{{target_fqdn}}"
 
   # === ADVANCED CONNECTIVITY ===
-  - title: impacket-goldenPac - Specify DC and Target IP addresses
+  - title: impacket-goldenPac - 指定 DC 和目标 IP 地址
     desc: |
-      This variation is used when DNS resolution is failing or when the target FQDN does not map correctly to the desired IP. 
-      Explicitly defining the Domain Controller IP via -dc-ip is crucial for retrieving the user's SID, which is a required component for the forged ticket. 
-      Using -target-ip ensures the exploit traffic is directed to the specific host you intend to compromise.
+      当 DNS 解析失败或目标 FQDN 未能正确映射到期望 IP 时使用此变体。
+      通过 -dc-ip 显式指定域控制器 IP 对于获取用户 SID 至关重要，SID 是伪造票据的必需组成部分。
+      使用 -target-ip 可确保漏洞利用流量定向到你打算攻陷的特定主机。
     command: "impacket-goldenPac -dc-ip {{dc_ip}} -target-ip {{target_ip}} {{domain}}/{{username}}:{{password}}@{{target_fqdn}}"
 
-  - title: impacket-goldenPac - Debugging and Timestamps
+  - title: impacket-goldenPac - 调试与时间戳
     desc: |
-      This command enables verbose debugging output and adds timestamps to every log entry. 
-      It is extremely useful for troubleshooting connection timeouts, authentication failures, or Kerberos errors during the exploitation process. 
-      Use this mode in lab environments or when the exploit fails without a clear reason to see the underlying Impacket library interaction.
+      此命令启用详细的调试输出，并为每条日志记录添加时间戳。
+      对于排查利用过程中的连接超时、认证失败或 Kerberos 错误非常有用。
+      在实验环境或漏洞利用无故失败时使用此模式，可查看底层的 Impacket 库交互。
     command: "impacket-goldenPac -debug -ts {{domain}}/{{username}}:{{password}}@{{target_fqdn}}"
 
   # === TICKET AND FILE OPERATIONS ===
-  - title: impacket-goldenPac - Save forged ticket without execution
+  - title: impacket-goldenPac - 保存伪造票据而不执行
     desc: |
-      This command generates the forged Kerberos ticket (Golden Ticket) and saves it to a local CCache file without performing any remote execution. 
-      By specifying 'None' as the command, you avoid triggering PSEXEC-style behavior, which can be significantly stealthier. 
-      The resulting file can be exported and used later with other tools by setting the KRB5CCNAME environment variable.
+      生成伪造的 Kerberos 票据（Golden Ticket）并保存到本地 CCache 文件，而不执行任何远程操作。
+      将命令指定为“None”可避免触发 PSEXEC 风格的行为，从而更加隐蔽。
+      生成的文件可导出，之后通过设置 KRB5CCNAME 环境变量供其他工具使用。
     command: "impacket-goldenPac -w {{output_file|ticket.ccache}} {{domain}}/{{username}}:{{password}}@{{target_fqdn}} None"
 
-  - title: impacket-goldenPac - Upload and execute custom binary
+  - title: impacket-goldenPac - 上传并执行自定义二进制文件
     desc: |
-      Instead of launching the default cmd.exe, this command uploads a local executable to the target and runs it with system privileges. 
-      This is useful for deploying custom reverse shells, post-exploitation agents, or specific enumeration tools. 
-      Be cautious, as uploading files to the disk and creating services for execution is highly likely to be detected by EDR or antivirus solutions.
+      此命令不会启动默认的 cmd.exe，而是将本地可执行文件上传到目标并以系统权限运行。
+      这对于部署自定义反向 shell、后渗透代理或特定枚举工具很有用。
+      请注意，向磁盘上传文件并创建服务来执行，很可能被 EDR 或杀毒软件检测到。
     command: "impacket-goldenPac -c {{local_binary_path}} {{domain}}/{{username}}:{{password}}@{{target_fqdn}} {{binary_arguments|}}"

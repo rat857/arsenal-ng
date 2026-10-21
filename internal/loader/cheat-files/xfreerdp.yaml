@@ -3,97 +3,84 @@ tags: [network, remote-desktop, rdp, security, pentest, exploitation, authentica
 
 actions:
   # === BASIC AUTHENTICATION & CONNECTION ===
-  - title: xfreerdp - basic connection with credentials
+  - title: xfreerdp - 使用凭据的基础连接
     desc: |
-      Connects to a remote Windows machine using standard username and password authentication. 
-      This is the primary method for accessing an RDP server. 
-      Ensure that the target port (default 3389) is reachable through the network.
+      使用标准用户名和密码认证连接到远程 Windows 机器。这是访问 RDP 服务器的主要方法。
+      确保目标端口（默认 3389）可通过网络访问。
     command: "xfreerdp /v:{{target_ip}} /u:{{username}} /p:{{password}}"
 
-  - title: xfreerdp - connection with domain
+  - title: xfreerdp - 带域的连接
     desc: |
-      Initiates a connection specifically including the Active Directory domain. 
-      This is necessary when logging into machines that are part of a corporate network. 
-      If the domain is not specified, the authentication might fail or default to a local account.
+      发起连接时特别包含 Active Directory 域。登录企业网络中的机器时需要。
+      如果未指定域，认证可能失败或默认使用本地账户。
     command: "xfreerdp /v:{{target_ip}} /d:{{domain}} /u:{{username}} /p:{{password}}"
 
-  - title: xfreerdp - ignore certificate validation
+  - title: xfreerdp - 忽略证书验证
     desc: |
-      Connects to the target while suppressing certificate warnings and validation. 
-      This is highly recommended for penetration testers working with self-signed certificates or lab environments. 
-      It prevents the connection from aborting due to "untrusted CA" errors.
+      连接到目标时抑制证书警告和验证。强烈建议渗透测试人员在处理自签名证书或实验环境时使用。
+      它可以防止连接因“不受信任的 CA”错误而中止。
     command: "xfreerdp /v:{{target_ip}} /u:{{username}} /p:{{password}} /cert:ignore"
 
   # === ADVANCED AUTHENTICATION (PENTESTING) ===
-  - title: xfreerdp - pass the hash (PTH)
+  - title: xfreerdp - 哈希传递（PTH）
     desc: |
-      Authenticates to the remote system using an NTLM hash instead of a cleartext password. 
-      This technique is a staple in post-exploitation scenarios where a user's hash has been dumped from memory or SAM. 
-      The target must support Restricted Admin mode or have specific registry settings enabled.
+      使用 NTLM 哈希而非明文密码向远程系统认证。该技术是后渗透场景中的常用手段，即用户的哈希已从内存或 SAM 中提取。
+      目标必须支持 Restricted Admin 模式或已启用特定注册表设置。
     command: "xfreerdp /v:{{target_ip}} /u:{{username}} /pth:{{ntlm_hash}} /cert:ignore"
 
-  - title: xfreerdp - restricted admin mode
+  - title: xfreerdp - 受限管理模式
     desc: |
-      Enables the Restricted Admin mode for the RDP session. 
-      This prevents the transmission of reusable credentials to the remote server, protecting the client. 
-      It is often required for successful Pass-the-Hash attacks on modern Windows systems.
+      为 RDP 会话启用 Restricted Admin 模式。这可以防止向远程服务器传输可重用凭据，从而保护客户端。
+      在现代 Windows 系统上成功进行哈希传递攻击通常需要它。
     command: "xfreerdp /v:{{target_ip}} /u:{{username}} /p:{{password}} +restricted-admin /cert:ignore"
 
-  - title: xfreerdp - nla security force
+  - title: xfreerdp - 强制 NLA 安全
     desc: |
-      Forces the connection to use Network Level Authentication (NLA). 
-      NLA is a more secure method that requires the user to authenticate before a full RDP session is established. 
-      Use this if the server strictly requires NLA and negotiation fails automatically.
+      强制连接使用网络级认证（NLA）。NLA 是一种更安全的方法，要求用户在建立完整 RDP 会话前先进行认证。
+      如果服务器严格要求 NLA 且协商自动失败，请使用此参数。
     command: "xfreerdp /v:{{target_ip}} /u:{{username}} /p:{{password}} /sec:nla /cert:ignore"
 
   # === RESOURCE REDIRECTION & FILE OPERATIONS ===
-  - title: xfreerdp - map local drive for file transfer
+  - title: xfreerdp - 映射本地驱动器用于文件传输
     desc: |
-      Maps a local directory on the client machine to the remote RDP session as a network share. 
-      This is the most efficient way to transfer files, tools, or scripts between the attacker and the victim. 
-      The folder will appear inside "This PC" on the remote Windows machine.
+      将客户端机器上的本地目录作为网络共享映射到远程 RDP 会话。这是在攻击者和受害者之间传输文件、工具或脚本的最高效方式。
+      该文件夹将出现在远程 Windows 机器的“此电脑”中。
     command: "xfreerdp /v:{{target_ip}} /u:{{username}} /p:{{password}} /drive:{{share_name|myshare}},{{local_path|/tmp}} /cert:ignore"
 
-  - title: xfreerdp - enable clipboard and sound
+  - title: xfreerdp - 启用剪贴板和声音
     desc: |
-      Enables both clipboard synchronization and audio redirection. 
-      This allows for copying text or files between the host and guest via the clipboard. 
-      Sound redirection is useful if you need to monitor system alerts or multimedia on the target.
+      同时启用剪贴板同步和音频重定向。这允许通过剪贴板在主机和客户机之间复制文本或文件。
+      如果你需要监控目标上的系统警报或多媒体，声音重定向会很有用。
     command: "xfreerdp /v:{{target_ip}} /u:{{username}} /p:{{password}} +clipboard /sound:sys:alsa /cert:ignore"
 
-  - title: xfreerdp - smartcard redirection
+  - title: xfreerdp - 智能卡重定向
     desc: |
-      Redirects local smartcard readers to the remote session. 
-      This is commonly used in high-security environments for multi-factor authentication. 
-      Ensure the local pcscd service is running before using this flag.
+      将本地智能卡读卡器重定向到远程会话。这通常用于高安全环境中的多因素认证。
+      使用此参数前确保本地 pcscd 服务正在运行。
     command: "xfreerdp /v:{{target_ip}} /u:{{username}} /p:{{password}} /smartcard:{{device_name}} /cert:ignore"
 
   # === DISPLAY & USER EXPERIENCE ===
-  - title: xfreerdp - fullscreen mode with dynamic resolution
+  - title: xfreerdp - 带动态分辨率的全屏模式
     desc: |
-      Starts the RDP session in fullscreen mode and enables dynamic resolution. 
-      Dynamic resolution allows the remote desktop to automatically resize when you change the window size. 
-      Use the key combination Ctrl+Alt+Enter to toggle fullscreen mode during the session.
+      以全屏模式启动 RDP 会话并启用动态分辨率。动态分辨率允许远程桌面在你改变窗口大小时自动调整大小。
+      会话期间使用 Ctrl+Alt+Enter 组合键切换全屏模式。
     command: "xfreerdp /v:{{target_ip}} /u:{{username}} /p:{{password}} /f +dynamic-resolution /cert:ignore"
 
-  - title: xfreerdp - specific resolution and smart sizing
+  - title: xfreerdp - 特定分辨率和智能缩放
     desc: |
-      Sets a fixed window resolution and enables smart sizing. 
-      Smart sizing scales the remote desktop display to fit the window size without changing the remote resolution. 
-      This is useful when working with high-resolution monitors while accessing lower-resolution targets.
+      设置固定窗口分辨率并启用智能缩放。智能缩放会缩放远程桌面显示以适配窗口大小，而不改变远程分辨率。
+      在访问低分辨率目标时使用高分辨率显示器会很有用。
     command: "xfreerdp /v:{{target_ip}} /u:{{username}} /p:{{password}} /w:{{width|1280}} /h:{{height|720}} /smart-sizing /cert:ignore"
 
   # === NETWORK & GATEWAY ===
-  - title: xfreerdp - connection via RDP gateway
+  - title: xfreerdp - 通过 RDP 网关连接
     desc: |
-      Connects to a target machine through an intermediate RDP Gateway. 
-      Gateways are often used to provide access to internal RDP servers from the internet via HTTPS. 
-      You must provide credentials for both the gateway and the final destination server.
+      通过中间 RDP 网关连接到目标机器。网关通常用于通过 HTTPS 从互联网提供对内部 RDP 服务器的访问。
+      你必须为网关和最终目标服务器都提供凭据。
     command: "xfreerdp /v:{{target_ip}} /u:{{username}} /p:{{password}} /g:{{gateway_address}} /gu:{{gateway_user}} /gp:{{gateway_password}} /cert:ignore"
 
-  - title: xfreerdp - prevent session lock
+  - title: xfreerdp - 防止会话锁定
     desc: |
-      Attempts to prevent the remote session from locking due to inactivity. 
-      It injects fake mouse motion events at specified intervals to keep the session active. 
-      This is helpful when monitoring long-running tasks or waiting for background processes.
+      尝试防止远程会话因不活动而锁定。它按指定间隔注入虚假鼠标移动事件以保持会话活跃。
+      在监控长时间运行任务或等待后台进程时很有帮助。
     command: "xfreerdp /v:{{target_ip}} /u:{{username}} /p:{{password}} /prevent-session-lock:{{interval_sec|60}} /cert:ignore"

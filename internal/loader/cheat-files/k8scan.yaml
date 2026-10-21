@@ -4,61 +4,72 @@ tags: [kubernetes, k8s, security, scanner, pentest, devops, enumeration, rbac]
 # === SCANNING OPERATIONS ===
 
 actions:
-  - title: k8scan - perform basic cluster scan
+  - title: k8scan - 执行基础集群扫描
     desc: |
-      Initiate a basic, read-only security scan across the entire Kubernetes cluster. This command identifies common misconfigurations and security risks without making changes to the environment. It is ideal for a quick overview of the cluster's current security posture. No administrative changes are made during this process.
+      对整个 Kubernetes 集群发起只读的基础安全扫描。该命令在不改动环境的情况下识别常见错误配置和安全风险。
+      适合快速了解集群当前的安全态势，过程中不会做任何管理性变更。
     command: "k8scan scan"
 
-  - title: k8scan - scan excluding system namespaces
+  - title: k8scan - 排除系统命名空间扫描
     desc: |
-      Run a security scan while skipping system-related namespaces like kube-system and kube-public. This helps focus on user-deployed applications and services where configuration errors are more common. Use this to reduce noise from infrastructure components that are often managed by cloud providers. It streamlines the remediation process for application developers.
+      运行安全扫描时跳过 kube-system、kube-public 等系统相关命名空间。这有助于聚焦用户部署的应用和服务，这些地方配置错误更常见。
+      用于减少云厂商管理的基础设施组件带来的噪音，简化应用开发者的整改流程。
     command: "k8scan scan --exclude-system"
 
-  - title: k8scan - scan specific namespace
+  - title: k8scan - 扫描指定命名空间
     desc: |
-      Target a specific Kubernetes namespace for a focused security evaluation. This is particularly useful in multi-tenant clusters or when auditing a specific project's environment. Ensure you have the necessary RBAC permissions to read resources within the specified namespace. It prevents unnecessary processing of the entire cluster.
+      针对特定 Kubernetes 命名空间进行聚焦的安全评估。在多租户集群或审计特定项目环境时特别有用。
+      确保你有在指定命名空间内读取资源所需的 RBAC 权限，并可避免对整个集群做不必要的处理。
     command: "k8scan scan --namespace {{namespace_name}}"
 
-  - title: k8scan - scan filtered by severity
+  - title: k8scan - 按严重程度过滤扫描
     desc: |
-      Filter the scan results to display only findings that match a specific severity level. Available levels usually include CRITICAL, HIGH, MEDIUM, LOW, and ALL. This allows security teams to prioritize remediation efforts on the most impactful vulnerabilities first. It is highly recommended for high-traffic production environments.
+      过滤扫描结果，只显示匹配特定严重级别的发现。可用级别通常包括 CRITICAL、HIGH、MEDIUM、LOW 和 ALL。
+      这使安全团队能够优先整改影响最大的漏洞，强烈推荐用于高流量生产环境。
     command: "k8scan scan --severity {{severity_level|CRITICAL}}"
 
-  - title: k8scan - scan specific security category
+  - title: k8scan - 扫描指定安全类别
     desc: |
-      Perform a scan focused on a specific category of security checks, such as RBAC or Secret Management. This helps in deep-diving into particular areas of concern without processing unrelated findings. Use the list-categories command to see all available audit types supported by the tool. This is useful for targeted compliance checks.
+      执行聚焦于特定安全检查类别的扫描，例如 RBAC 或 Secret 管理。有助于深入调查特定关注领域，而不处理无关发现。
+      使用 list-categories 命令查看工具支持的所有审计类型，适合定向的合规检查。
     command: "k8scan scan --category {{category_name|RBAC}}"
 
-  - title: k8scan - show top findings
+  - title: k8scan - 显示最重要的发现
     desc: |
-      Limit the output to only show the top N findings discovered during the scan. This is useful for quickly identifying the most glaring issues in a large cluster with many resources. Use this flag to keep the terminal output concise and actionable. It helps avoid "alert fatigue" during initial assessments.
+      限制输出，只显示扫描过程中发现的前 N 个发现。用于快速识别资源众多的大型集群中最突出的问题。
+      使用此标志可保持终端输出简洁可操作，并有助于在初步评估中避免告警疲劳。
     command: "k8scan scan --top {{finding_count|10}}"
 
 # === REPORTING AND OUTPUT ===
 
-  - title: k8scan - generate full audit report
+  - title: k8scan - 生成完整审计报告
     desc: |
-      Generate comprehensive reports in multiple formats including HTML, JSON, and terminal output simultaneously. This is essential for creating documentation for compliance audits or sharing results with other teams. Custom filenames can be specified to organize periodic audit trails. Ensure you have write permissions in the target directory.
+      同时生成 HTML、JSON 和终端输出等多种格式的完整报告。这对于创建合规审计文档或与其他团队共享结果至关重要。
+      可以指定自定义文件名来整理定期审计记录。确保你在目标目录有写权限。
     command: "k8scan scan --output {{output_format|all}} -f {{filename|security-audit}}"
 
-  - title: k8scan - scan and serve report
+  - title: k8scan - 扫描并提供报告服务
     desc: |
-      Run a full cluster scan and immediately launch the built-in web server to view the results. This provides a convenient way to interact with HTML reports without manually opening files. The server will host the report on a specified port, which defaults to 8000 if not provided. This is the fastest way to visualize findings in a browser.
+      运行完整集群扫描，并立即启动内置 Web 服务器查看结果。这提供了与 HTML 报告交互的便捷方式，无需手动打开文件。
+      服务器会在指定端口托管报告，若未提供则默认为 8000。这是在浏览器中可视化发现的最快方式。
     command: "k8scan scan --exclude-system --output html --serve --port {{port|9000}}"
 
 # === UTILITIES AND SERVING ===
 
-  - title: k8scan - serve existing report files
+  - title: k8scan - 提供现有报告文件
     desc: |
-      Start a secure HTTP server to host previously generated report files. This command is useful for sharing audit results with colleagues over a network using a temporary endpoint. Note that the server automatically shuts down after 30 minutes for security purposes. You can specify multiple files to be served at once.
+      启动安全的 HTTP 服务器以托管之前生成的报告文件。此命令适合通过临时端点与同事在网络上共享审计结果。
+      注意服务器出于安全考虑会在 30 分钟后自动关闭。你可以指定一次提供多个文件。
     command: "k8scan serve {{report_path|reports/security-audit.html}} --port {{port|8000}}"
 
-  - title: k8scan - list available scan categories
+  - title: k8scan - 列出可用扫描类别
     desc: |
-      Retrieve a list of all supported vulnerability and configuration categories that the tool can audit. This allows users to understand the scope of the scanner and identify specific modules for targeted scans. It is a helpful reference before running category-specific commands. No cluster connectivity is required for this informational command.
+      获取工具可审计的所有受支持的漏洞和配置类别列表。使用户了解扫描器的覆盖范围，并为定向扫描识别特定模块。
+      在运行类别特定命令前是很有用的参考。此信息性命令无需集群连接。
     command: "k8scan list-categories"
 
-  - title: k8scan - show usage examples
+  - title: k8scan - 显示用法示例
     desc: |
-      Display a collection of practical command-line examples directly in the terminal output. This provides quick access to common usage patterns and advanced flag combinations for users who need a refresher. It is an excellent resource for learning the tool's capabilities without consulting external documentation.
+      直接在终端输出中显示一系列实用命令行示例。为需要复习的用户提供常见用法模式和高级标志组合的快速参考。
+      这是无需查阅外部文档即可学习工具能力的优秀资源。
     command: "k8scan show-examples"

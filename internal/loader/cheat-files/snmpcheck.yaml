@@ -4,62 +4,62 @@ tags: [network, scanner, security, pentest, enumeration, snmp, reconnaissance]
 # === ENUMERATION ACTIONS ===
 
 actions:
- - title: snmp-check - basic enumeration
+ - title: snmp-check - 基础枚举
    desc: |
-     Performs a standard SNMP enumeration against a target using default settings. 
-     This command attempts to retrieve system information, network interfaces, and running processes using the 'public' community string and SNMPv1.
-     It is the most common starting point for gathering intelligence from a networked device like a router, switch, or server.
-     Note that many modern systems might have the default 'public' community string disabled for security reasons.
+     使用默认设置对目标执行标准 SNMP 枚举。
+     此命令尝试使用 public 团体字符串和 SNMPv1 获取系统信息、网络接口和运行进程。
+     它是从路由器、交换机或服务器等联网设备收集情报的最常见起点。
+     请注意，许多现代系统可能出于安全原因禁用了默认的 public 团体字符串。
    command: "snmp-check {{target}}"
 
- - title: snmp-check - custom community string
+ - title: snmp-check - 自定义团体字符串
    desc: |
-     Connects to the target using a specific SNMP community string. 
-     Community strings act as a clear-text password in SNMP versions 1 and 2c to authorize access to the Management Information Base (MIB). 
-     If the default 'public' string is not accepted, you must provide a valid string discovered via brute-force or documentation.
-     Successful authentication can reveal sensitive data such as routing tables, software versions, and user accounts.
+     使用特定的 SNMP 团体字符串连接到目标。
+     在 SNMP 版本 1 和 2c 中，团体字符串充当明文密码，用于授权访问管理信息库（MIB）。
+     如果默认的 public 字符串不被接受，你必须提供通过暴力破解或文档发现的有效字符串。
+     成功的认证可以揭示路由表、软件版本和用户账户等敏感数据。
    command: "snmp-check -c {{community|public}} {{target}}"
 
- - title: snmp-check - version 2c enumeration
+ - title: snmp-check - 版本 2c 枚举
    desc: |
-     Forces the tool to use SNMP version 2c for communication with the target. 
-     SNMPv2c is more prevalent in modern environments as it supports 64-bit counters and provides better error handling than version 1. 
-     Using this version is often necessary when scanning high-performance networking equipment or newer operating systems.
-     If the target does not respond to version 1 requests, switching to 2c is the logical next step.
+     强制工具使用 SNMP 版本 2c 与目标通信。
+     SNMPv2c 在现代环境中更普遍，因为它支持 64 位计数器并提供比版本 1 更好的错误处理。
+     在扫描高性能网络设备或较新的操作系统时，通常需要使用此版本。
+     如果目标不响应版本 1 请求，切换到 2c 是合乎逻辑的下一步。
    command: "snmp-check -v 2c -c {{community|public}} {{target}}"
 
- - title: snmp-check - custom port scan
+ - title: snmp-check - 自定义端口扫描
    desc: |
-     Directs the tool to a specific UDP port instead of the default SNMP port 161. 
-     Administrators sometimes move the SNMP service to a non-standard port to hide it from automated scanners or to avoid conflicts. 
-     You should use this option if your initial port scan (e.g., via Nmap) identified an SNMP service running elsewhere.
-     Always ensure that the target port is reachable and not blocked by intermediate firewalls.
+     将工具指向特定的 UDP 端口，而不是默认的 SNMP 端口 161。
+     管理员有时会将 SNMP 服务移动到非标准端口以躲避自动化扫描器或避免冲突。
+     如果你的初始端口扫描（例如通过 Nmap）识别到 SNMP 服务运行在其他位置，应使用此选项。
+     始终确保目标端口可达且未被中间防火墙阻止。
    command: "snmp-check -p {{port|161}} {{target}}"
 
 # === SPECIALIZED CHECKS ===
 
- - title: snmp-check - write access detection
+ - title: snmp-check - 检测写入权限
    desc: |
-     Specifically tests whether the provided community string grants write permissions on the target. 
-     Finding an SNMP community string with write access is a critical security vulnerability, as it may allow an attacker to modify device configurations. 
-     This action is performed as a separate check from the standard enumeration to highlight potential exploitation paths.
-     Be cautious when testing write access on production systems, as unauthorized changes can lead to service disruptions.
+     专门测试所提供的团体字符串是否在目标上授予写入权限。
+     发现具有写入权限的 SNMP 团体字符串是严重的安全漏洞，因为它可能允许攻击者修改设备配置。
+     此操作作为独立于标准枚举的检查执行，以突出潜在的利用路径。
+     在生产系统上测试写入权限时要谨慎，因为未经授权的更改可能导致服务中断。
    command: "snmp-check -c {{community|private}} -w {{target}}"
 
- - title: snmp-check - disable tcp enumeration
+ - title: snmp-check - 禁用 TCP 枚举
    desc: |
-     Instructs the tool to skip the enumeration of TCP connections and listening ports. 
-     This is useful for speeding up the scanning process when you only care about hardware details or network interface statistics. 
-     It also reduces the amount of SNMP traffic sent, making the scan slightly less noisy on the network.
-     Use this flag if the target has a massive number of active connections that cause the tool to hang or produce excessive output.
+     指示工具跳过 TCP 连接和监听端口的枚举。
+     当你只关心硬件详情或网络接口统计信息时，这有助于加快扫描过程。
+     它还会减少发送的 SNMP 流量，使扫描在网络上的噪声略低。
+     当目标有大量活动连接导致工具挂起或产生过多输出时使用此标志。
    command: "snmp-check -d {{target}}"
 
 # === PERFORMANCE & TIMING ===
 
- - title: snmp-check - timing and retries tuning
+ - title: snmp-check - 调优时序和重试
    desc: |
-     Adjusts the timeout duration and the number of retries for SNMP requests. 
-     These parameters are vital when scanning targets over high-latency links, satellite connections, or unstable networks. 
-     Increasing the timeout ensures the tool waits longer for a response, while increasing retries helps overcome packet loss.
-     The default timeout is 5 seconds, and the default retry count is 1.
+     调整 SNMP 请求的超时时长和重试次数。
+     这些参数在通过高延迟链路、卫星连接或不稳定网络扫描目标时至关重要。
+     增加超时可确保工具等待响应更久，而增加重试有助于克服数据包丢失。
+     默认超时为 5 秒，默认重试次数为 1。
    command: "snmp-check -t {{timeout|5}} -r {{retries|1}} {{target}}"
