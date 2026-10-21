@@ -1,6 +1,11 @@
 <h1 align="center">arsenal-ng</h1>
 
 <p align="center">
+  <b>🇨🇳 中文汉化版（Chinese Localization）</b><br>
+  本仓库是 <a href="https://github.com/halilkirazkaya/arsenal-ng">halilkirazkaya/arsenal-ng</a> 的汉化分支：TUI 界面与全部 2940 条命令的标题、描述已翻译为简体中文。
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Go-1.24.0+-00ADD8?style=flat&logo=go" alt="Go Version">
   <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20macOS-lightgrey" alt="Platform">
   <img src="https://img.shields.io/github/license/halilkirazkaya/arsenal-ng?color=yellow" alt="License">
@@ -28,7 +33,7 @@
 ### Option 1: Go Install
 
 ```bash
-go install -v github.com/halilkirazkaya/arsenal-ng/cmd/arsenal-ng@latest
+go install -v github.com/rat857/arsenal-ng/cmd/arsenal-ng@main
 ```
 > Requires Go 1.24.0 Ensure `$(go env GOPATH)/bin` is in your `$PATH`.
 
@@ -44,7 +49,7 @@ sudo apt install arsenal-ng
 ### Option 3: Build from Source Code
 
 ```bash
-git clone https://github.com/halilkirazkaya/arsenal-ng.git
+git clone https://github.com/rat857/arsenal-ng.git
 cd arsenal-ng
 make build
 ./bin/arsenal-ng
@@ -65,6 +70,26 @@ source ~/.zshrc
 echo "alias a='arsenal-ng'" >> ~/.bashrc
 source ~/.bashrc
 ```
+---
+
+## 中文汉化说明（Localization）
+
+本分支基于 [arsenal-ng](https://github.com/halilkirazkaya/arsenal-ng) v1.8，汉化内容如下：
+
+- **TUI 界面**：菜单、帮助页、状态栏、变量/工具列表、`set`/`unset` 提示、错误信息
+- **命令库**：全部 248 个文件、2940 条命令的 `title` 与 `desc`
+
+`tool`、`command`、`tags` 及 `{{占位符}}` 保持英文原样，搜索时中英文均可命中。
+
+### 编译安装
+
+```bash
+git clone https://github.com/rat857/arsenal-ng.git
+cd arsenal-ng
+go build -o arsenal-ng ./cmd/arsenal-ng
+sudo install -m 0755 arsenal-ng /usr/local/bin/arsenal-ng   # 或放入任意 PATH 目录
+```
+
 ---
 
 ## Platform Support
@@ -333,7 +358,7 @@ actions:
 ### Building from Source
 
 ```bash
-git clone https://github.com/halilkirazkaya/arsenal-ng.git
+git clone https://github.com/rat857/arsenal-ng.git
 cd arsenal-ng
 make build
 # Binary will be in ./bin/arsenal-ng
